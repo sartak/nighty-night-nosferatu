@@ -1,0 +1,5 @@
+{
+  "extends": "stripe",
+  "parser": "babel-eslint",
+  "plugins": ["only-warn"],
+}
