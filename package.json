@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@babel/core": "7.4.3",
+    "@hot-loader/react-dom": "^16.8.6",
     "@svgr/webpack": "4.1.0",
     "babel-eslint": "10.0.1",
     "babel-jest": "^24.8.0",
@@ -70,6 +71,9 @@
   "babel": {
     "presets": [
       "react-app"
+    ],
+    "plugins": [
+      "react-hot-loader/babel"
     ]
   },
   "devDependencies": {
@@ -80,6 +84,7 @@
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-only-warn": "^1.0.1",
     "eslint-plugin-react": "^7.13.0",
-    "prettier": "^1.17.1"
+    "prettier": "^1.17.1",
+    "react-hot-loader": "^4.8.5"
   }
 }
