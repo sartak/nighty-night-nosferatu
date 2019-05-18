@@ -1,0 +1,72 @@
+.Manage {
+  margin-top: 8px;
+  margin-right: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  width: auto !important;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.Manage .dg.main {
+  width: 100% !important;
+}
+
+.Manage .dg.main > .close-button {
+  display: none;
+}
+
+.Manage .dg .property-name {
+  width: 60%;
+}
+
+.Manage .dg .c {
+  width: 40%;
+}
+
+.Manage .dg .cr.listen {
+  color: #aaa;
+}
+
+.Manage .dg .cr.listen.function,
+.Manage .dg .cr.listen.function .property-name,
+.Manage .dg .cr.listen.function *,
+.Manage .dg .cr.listen.boolean,
+.Manage .dg .cr.listen.boolean * {
+  cursor: default;
+}
+
+.Manage .dg .cr.listen input,
+.Manage .dg .cr.listen select {
+  pointer-events: none;
+}
+
+.Manage .dg .cr.boolean div {
+  display: flex;
+}
+
+.Manage .dg .cr.boolean .property-name {
+  width: 100%;
+}
+
+.Manage .dg .cr.boolean .c {
+  width: auto;
+  margin-right: 4px;
+}
+
+.Manage .dg li:not(.folder):nth-child(even) {
+  background: #202020;
+}
+
+.Manage .dg .cr.function:not(.listen):hover,
+.Manage .dg .cr.boolean:not(.listen):hover {
+  background: #3c3c3c !important;
+}
+
+.Manage .dg li.cr.listen:not(.folder):hover {
+  background: #1a1a1a;
+}
+
+.Manage .dg li.cr.listen:not(.folder):nth-child(even):hover {
+  background: #202020;
+}

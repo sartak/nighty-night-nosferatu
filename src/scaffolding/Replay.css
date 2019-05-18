@@ -1,0 +1,103 @@
+.Replay {
+  user-select: none;
+  background: rgb(215, 215, 228);
+  width: auto !important;
+  min-width: 200px;
+  max-width: 400px;
+  margin-top: 8px;
+  margin-right: 8px;
+  border-radius: 8px;
+}
+
+.Replay .button {
+  cursor: pointer;
+  font-family: Apple Color Emoji;
+}
+
+.Replay .repeat-off.button {
+  opacity: 0.5;
+}
+
+.Replay .replays .replay .name {
+  cursor: pointer;
+}
+
+.Replay .controls {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  background: rgb(204, 204, 216);
+}
+
+.Replay .controls .button {
+  margin: 0 0.5em;
+}
+
+.Replay .controls .recording.button {
+  animation-name: recording;
+  animation-duration: 4s;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+}
+
+@keyframes recording {
+  0% {
+    filter: sepia(100%) hue-rotate(290deg);
+  }
+  100% {
+    filter: sepia(100%) hue-rotate(290deg) brightness(80%);
+  }
+}
+
+.Replay .replays {
+  height: 160px;
+  overflow: scroll;
+  list-style-type: none;
+  padding: 8px 16px;
+  margin: 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.Replay .replays .replay {
+  padding: 0.12em 0;
+}
+
+.Replay .replays .replay .drag,
+.Replay .replays .replay .edit,
+.Replay .replays .replay .delete {
+  visibility: hidden;
+}
+
+.Replay .replays .replay .drag {
+  margin-right: 1em;
+  letter-spacing: -3px;
+  cursor: move;
+  font-weight: bold;
+  color: #AAAAAA;
+}
+
+.Replay .replays .replay.editing .name {
+  display: none;
+}
+
+.Replay .replays .replay:hover .drag,
+.Replay .replays .replay:hover .edit,
+.Replay .replays .replay:hover .delete {
+  visibility: visible;
+}
+
+.Replay .replays .replay.editing .drag,
+.Replay .replays .replay.active .drag,
+.Replay .replays .replay.editing .edit,
+.Replay .replays .replay.active .edit,
+.Replay .replays .replay.editing .delete,
+.Replay .replays .replay.active .delete {
+  visibility: hidden !important;
+}
+
+.Replay .replays .replay .name,
+.Replay .replays .replay input {
+  margin: 0 0.5em;
+}

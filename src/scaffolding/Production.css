@@ -1,0 +1,27 @@
+.production .game-metadata img {
+  height: 1.4em;
+  width: 1.4em;
+  vertical-align: bottom;
+}
+
+.production .game-metadata .url {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+  font-size: 0.8em;
+}
+
+.production .game-metadata {
+  margin-top: 2em;
+  text-align: center;
+  font-size: 1.2em;
+  line-height: 1.6em;
+}
+
+.production .game-metadata a {
+  text-decoration: none;
+}
+
+.production .game-metadata h2 {
+  font-style: italic;
+}
+

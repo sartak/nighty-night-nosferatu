@@ -1,6 +1,49 @@
 {
   "name": "ld-slate",
+  "homepage": "/",
   "version": "0.1.0",
+  "productionDisplay": {
+    "displayName": "ld-slate",
+    "analyticsId": "",
+    "authorName": "",
+    "authorURL": "",
+    "authorTwitter": "",
+    "authorTwitch": "",
+    "eventDescription": "",
+    "eventNamePre": "",
+    "eventNameBold": "",
+    "eventNamePost": "",
+    "eventURL": "",
+    "themeDescription": "",
+    "themePre": "",
+    "themeItalic": "",
+    "themePost": "",
+    "repoURL": ""
+  },
+  "developmentDisplay": {
+    "links": [
+      [
+        "https://labs.phaser.io/",
+        "labs"
+      ],
+      [
+        "https://photonstorm.github.io/phaser3-docs/",
+        "phaser-docs"
+      ],
+      [
+        "https://lodash.com/docs/4.17.11",
+        "lodash"
+      ],
+      [
+        "https://sfbgames.com/chiptone/",
+        "chiptone"
+      ],
+      [
+        "https://pernyblom.github.io/abundant-music/index.html",
+        "abundant"
+      ]
+    ]
+  },
   "private": true,
   "dependencies": {
     "@babel/core": "7.4.3",

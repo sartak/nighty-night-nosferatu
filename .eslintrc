@@ -2,4 +2,8 @@
   "extends": "stripe",
   "parser": "babel-eslint",
   "plugins": ["only-warn"],
+  "rules": {
+    "class-methods-use-this": ["off"],
+    "no-multi-assign": ["off"]
+  }
 }

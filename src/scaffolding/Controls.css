@@ -1,0 +1,80 @@
+#engine-container #controls {
+  opacity: 0;
+  transition: opacity 1s linear;
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  right: 0;
+  height: 32px;
+  user-select: none;
+  cursor: default;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-top-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  padding: 8px 16px;
+}
+
+body.scaled {
+  cursor: none;
+}
+
+body.mouseMoved.scaled {
+  cursor: default;
+}
+
+body.mouseMoved #engine-container #controls {
+  opacity: 1;
+  transition: opacity 0.25s linear;
+}
+
+body.scaled #engine-container #controls {
+  position: fixed;
+  background-color: #191919;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 16px;
+}
+
+#engine-container #controls .volume,
+#engine-container #controls .fullscreen {
+  display: inline-flex;
+  vertical-align: middle;
+  color: white;
+}
+
+#engine-container #controls .volume input {
+  cursor: pointer;
+}
+
+#engine-container #controls div + div {
+  margin-left: 20px;
+}
+
+#engine-container #controls .fullscreen .button {
+  cursor: pointer;
+  border: 1px solid white;
+  padding: 0px 4px;
+  height: 20px;
+  transition: background-color 0.2s linear;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+
+#engine-container #controls .fullscreen .button:hover {
+  background-color: #303030;
+}
+
+#engine-container #controls .fullscreen .label {
+  font-size: 18px;
+  width: 100%;
+}
+
+#engine-container #controls .fullscreen .label.enter {
+  transform: rotate(-45deg);
+  width: 14px;
+  line-height: 24px;
+}
+
+#engine-container #controls .fullscreen .label.exit {
+  line-height: 22px;
+}

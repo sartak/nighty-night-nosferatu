@@ -1,0 +1,27 @@
+.development .sidebar {
+  margin-left: 840px;
+}
+
+.development .sidebar > ul {
+  list-style-type: none;
+  padding: 0;
+  text-align: center;
+}
+
+.development .links {
+  margin-bottom: 0;
+}
+
+.development .links li {
+  display: inline-block;
+  margin-right: 0.5em;
+}
+
+.development .links li a {
+  text-decoration: none;
+  color: blue;
+}
+
+body.scaled .development .sidebar {
+  display: none;
+}
