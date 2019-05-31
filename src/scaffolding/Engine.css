@@ -30,12 +30,6 @@ body.natural #engine-container canvas {
   margin-right: auto;
 }
 
-body.natural .development #engine-container {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-}
-
 .production #engine-container {
   position: relative;
 }

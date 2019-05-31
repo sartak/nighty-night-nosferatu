@@ -1,5 +1,15 @@
+body.natural .development #engine-container {
+  margin-top: 16px;
+  margin-left: 16px;
+  position: absolute;
+}
+
 .development .sidebar {
   margin-left: 840px;
+  overflow: scroll;
+  box-sizing: border-box;
+  padding-bottom: 2em;
+  height: 100vh;
 }
 
 .development .sidebar > ul {
