@@ -52,11 +52,12 @@ export default class CommandManager {
     return [...this._scenes.values()];
   }
 
-  attachScene(scene) {
+  attachScene(scene, suppressRepeatFrames) {
     this._scenes.set(scene, {
       scene,
       ignoreAlls: {},
       speculativeRecording: scene.game.debug ? [] : null,
+      suppressRepeatFrames,
     });
   }
 
@@ -246,8 +247,8 @@ export default class CommandManager {
     });
   }
 
-  addFrameToList(list, frame) {
-    if (list.length) {
+  addFrameToList(suppressRepeatFrames, list, frame) {
+    if (!suppressRepeatFrames && list.length) {
       const prevFrame = list[list.length - 1];
       let isSame = true;
       Object.keys(this._spec).forEach((key) => {
@@ -405,7 +406,7 @@ export default class CommandManager {
     const manager = this.getManager(scene);
     const frame = this.heldCommands(onlyUnsuppressable);
     if (manager.recording) {
-      this.addFrameToList(manager.recording.commands, frame);
+      this.addFrameToList(manager.suppressRepeatFrames, manager.recording.commands, frame);
     }
     return frame;
   }
@@ -424,7 +425,7 @@ export default class CommandManager {
       || this.captureInputFrame(scene, onlyUnsuppressable);
 
     if (manager.speculativeRecording) {
-      this.addFrameToList(manager.speculativeRecording, frame);
+      this.addFrameToList(manager.suppressRepeatFrames, manager.speculativeRecording, frame);
     }
 
     this.processCommands(scene, dt);

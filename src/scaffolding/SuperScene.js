@@ -25,7 +25,7 @@ export default class SuperScene extends Phaser.Scene {
     }
 
     this.command = this.game.command;
-    this.command.attachScene(this);
+    this.command.attachScene(this, config._timeSightTarget);
 
     this.rnd = {};
 
@@ -346,13 +346,14 @@ export default class SuperScene extends Phaser.Scene {
         this.calculateTimeSight();
       } else if (replay.timeSightFrameCallback) {
         this.game._replayPreflight += 1;
+        const manager = this.command.getManager(this);
 
         this._timeSightTargetEnded = () => {
-          replay.timeSightFrameCallback(this, time, dt, true);
+          replay.timeSightFrameCallback(this, time, dt, manager.speculativeRecording, true);
         };
 
         while (!this._timeSightTargetDone) {
-          replay.timeSightFrameCallback(this, time, dt, false);
+          replay.timeSightFrameCallback(this, time, dt, manager.speculativeRecording, false);
           time += dt;
           loop.step(time);
 
@@ -392,7 +393,7 @@ export default class SuperScene extends Phaser.Scene {
       {
         ...this._replay,
         timeSight: false,
-        timeSightFrameCallback: (scene, frameTime, frameDt, isLast) => {
+        timeSightFrameCallback: (scene, frameTime, frameDt, preflight, isLast) => {
           objectDt += frameDt;
           const objects = scene.renderTimeSightFrameInto(this, objectDt, frameTime, frameDt, isLast);
           if (!objects) {
@@ -404,6 +405,7 @@ export default class SuperScene extends Phaser.Scene {
           this._timeSightFrames.push({
             objects,
             props: {...manageableProps},
+            preflight: [...preflight],
           });
           objectDt = 0;
         },
@@ -486,6 +488,7 @@ export default class SuperScene extends Phaser.Scene {
       frame.objects.forEach((object) => {
         object.setInteractive();
         object._timeSightAlpha = object.alpha;
+        object._timeSightFrame = frame;
       });
     });
 
@@ -493,6 +496,8 @@ export default class SuperScene extends Phaser.Scene {
       if (this._timeSightRemoveFocusTimer) {
         this._timeSightRemoveFocusTimer.destroy();
       }
+
+      this.game.canvas.style.cursor = 'pointer';
 
       let matchedFrame;
       frames.forEach((frame) => {
@@ -527,8 +532,26 @@ export default class SuperScene extends Phaser.Scene {
       this._timeSightRemoveFocusTimer = this.time.addEvent({
         delay: 100,
         callback: () => {
+          this.game.canvas.style.cursor = '';
           this.beginTimeSightAlphaAnimation();
         },
+      });
+    });
+
+    this.input.on('gameobjectdown', (pointer, activeObject) => {
+      if (this._timeSightRemoveFocusTimer) {
+        this._timeSightRemoveFocusTimer.destroy();
+      }
+
+      const replay = this._replay;
+
+      this.game.stopReplay();
+      this.game.beginReplay({
+        ...replay,
+        timeSight: false,
+        snapshot: true,
+        preflight: activeObject._timeSightFrame.preflight,
+        commands: [],
       });
     });
   }
