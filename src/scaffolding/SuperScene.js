@@ -396,7 +396,7 @@ export default class SuperScene extends Phaser.Scene {
         timeSightFrameCallback: (scene, frameTime, frameDt, preflight, isLast) => {
           objectDt += frameDt;
           const objects = scene.renderTimeSightFrameInto(this, objectDt, frameTime, frameDt, isLast);
-          if (!objects) {
+          if (!objects || !objects.length) {
             return;
           }
 
