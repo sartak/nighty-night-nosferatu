@@ -428,6 +428,10 @@ export default class SuperScene extends Phaser.Scene {
   beginTimeSightAlphaAnimation() {
     const frames = this._timeSightFrames;
 
+    if (!frames.length) {
+      return;
+    }
+
     overrideProps(frames[0].props);
 
     let loopAlpha;
