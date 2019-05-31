@@ -413,53 +413,120 @@ export default class SuperScene extends Phaser.Scene {
 
           this.game.loop.wake();
 
-          const frames = this._timeSightFrames;
-
-          overrideProps(frames[0].props);
-
-          let loopAlpha;
-          // eslint-disable-next-line prefer-const
-          loopAlpha = (frame, n) => {
-            const {objects, props} = frame;
-
-            overrideProps(props);
-
-            objects.forEach((object, i) => {
-              const {alpha} = object;
-              this.tweens.add({
-                targets: object,
-                alpha: 0.7,
-                duration: 200,
-                onComplete: () => {
-                  this.tweens.add({
-                    targets: object,
-                    alpha,
-                    duration: 200,
-                    onComplete: () => {
-                      if (i === 0) {
-                        frame.timer = this.time.addEvent({
-                          delay: 100 * frames.length + 1000,
-                          callback: () => loopAlpha(frame, n),
-                        });
-                      }
-                    },
-                  });
-                },
-              });
-            });
-          };
-
-          frames.forEach((frame, n) => {
-            frame.timer = this.time.addEvent({
-              delay: 100 * n + 1000,
-              callback: () => {
-                loopAlpha(frame, n);
-              },
-            });
-          });
+          this.beginTimeSightAlphaAnimation();
         },
       },
     );
+  }
+
+  beginTimeSightAlphaAnimation() {
+    const frames = this._timeSightFrames;
+
+    overrideProps(frames[0].props);
+
+    let loopAlpha;
+    // eslint-disable-next-line prefer-const
+    loopAlpha = (frame, n) => {
+      const {objects, props} = frame;
+
+      overrideProps(props);
+
+      objects.forEach((object, i) => {
+        object._timeSightAlphaTween = this.tweens.add({
+          targets: object,
+          alpha: 0.7,
+          duration: 200,
+          onComplete: () => {
+            object._timeSightAlphaTween = this.tweens.add({
+              targets: object,
+              alpha: object._timeSightAlpha,
+              duration: 200,
+              onComplete: () => {
+                if (i === 0) {
+                  frame.timer = this.time.addEvent({
+                    delay: 100 * frames.length + 1000,
+                    callback: () => loopAlpha(frame, n),
+                  });
+                }
+              },
+            });
+          },
+        });
+      });
+    };
+
+    frames.forEach((frame, n) => {
+      frame.timer = this.time.addEvent({
+        delay: 100 * n + 1000,
+        callback: () => {
+          loopAlpha(frame, n);
+        },
+      });
+    });
+
+    if (this._timeSightMouseInput) {
+      frames.forEach((frame) => {
+        frame.objects.forEach((object) => {
+          object.alpha = object._timeSightAlpha;
+        });
+      });
+
+      return;
+    }
+
+    this._timeSightMouseInput = true;
+
+    this.input.topOnly = true;
+
+    frames.forEach((frame) => {
+      frame.objects.forEach((object) => {
+        object.setInteractive();
+        object._timeSightAlpha = object.alpha;
+      });
+    });
+
+    this.input.on('gameobjectover', (pointer, activeObject) => {
+      if (this._timeSightRemoveFocusTimer) {
+        this._timeSightRemoveFocusTimer.destroy();
+      }
+
+      let matchedFrame;
+      frames.forEach((frame) => {
+        if (frame.timer) {
+          frame.timer.destroy();
+        }
+
+        frame.objects.forEach((object) => {
+          if (object._timeSightAlphaTween) {
+            object._timeSightAlphaTween.stop();
+          }
+
+          object.alpha = object._timeSightAlpha;
+
+          if (object === activeObject) {
+            matchedFrame = frame;
+            object.alpha = 1;
+          }
+        });
+      });
+
+      if (matchedFrame) {
+        overrideProps(matchedFrame.props);
+      }
+    });
+
+    this.input.on('gameobjectout', (pointer, activeObject) => {
+      if (this._timeSightRemoveFocusTimer) {
+        this._timeSightRemoveFocusTimer.destroy();
+      }
+
+      this._timeSightRemoveFocusTimer = this.time.addEvent({
+        delay: 100,
+        callback: () => {
+          this.beginTimeSightAlphaAnimation();
+        },
+      });
+    });
   }
 
   endedReplay() {
