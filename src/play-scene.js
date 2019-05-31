@@ -62,9 +62,7 @@ export default class PlayScene extends SuperScene {
   }
 
   launchTimeSight() {
-    const restore = super.launchTimeSight();
-
-    return restore;
+    super.launchTimeSight();
   }
 
   renderTimeSightFrameInto(scene, phantomDt, time, dt, isLast) {

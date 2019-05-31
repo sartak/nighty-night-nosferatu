@@ -371,28 +371,12 @@ export default class SuperScene extends Phaser.Scene {
     // eslint-disable-next-line no-console
     console.info('Calculating timeSight');
 
-    if (this._restoreTimeSight) {
-      this._restoreTimeSight.forEach((callback) => callback());
-    }
-
-    if (this._timeSightFrames) {
-      this._timeSightFrames.forEach(({objects, timer}) => {
-        if (timer) {
-          timer.stop();
-        }
-
-        objects.forEach((child) => {
-          child.destroy();
-        });
-      });
-    }
-
     this._timeSightFrames = [];
 
     this.scene.setActive(false);
     this.scene.setVisible(false);
 
-    this._restoreTimeSight = this.launchTimeSight();
+    this.launchTimeSight();
 
     const target = `scene-${Math.random() * Date.now()}`;
     const targetScene = this.game.scene.add(target, this.constructor, true, {...this.scene.settings.data, _timeSightTarget: true});
@@ -543,7 +527,6 @@ export default class SuperScene extends Phaser.Scene {
         });
       },
     });
-    return [];
   }
 
   propDidChange(key, value) {
