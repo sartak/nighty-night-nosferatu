@@ -346,6 +346,11 @@ export default class SuperScene extends Phaser.Scene {
         this.calculateTimeSight();
       } else if (replay.timeSightFrameCallback) {
         this.game._replayPreflight += 1;
+
+        this._timeSightTargetEnded = () => {
+          replay.timeSightFrameCallback(this, time, dt, true);
+        };
+
         while (!this._timeSightTargetDone) {
           replay.timeSightFrameCallback(this, time, dt, false);
           time += dt;
@@ -357,7 +362,6 @@ export default class SuperScene extends Phaser.Scene {
             return;
           }
         }
-        replay.timeSightFrameCallback(this, time, dt, true);
         this.scene.remove();
         this.game._replayPreflight -= 1;
       } else {
@@ -543,6 +547,10 @@ export default class SuperScene extends Phaser.Scene {
     if (replay.timeSight) {
       this.replaceWithSelf(false);
       return;
+    }
+
+    if (this._timeSightTargetEnded) {
+      this._timeSightTargetEnded();
     }
 
     if (onEnd) {
