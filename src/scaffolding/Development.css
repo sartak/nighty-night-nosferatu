@@ -32,6 +32,7 @@ body.natural .development #engine-container {
   color: blue;
 }
 
-body.scaled .development .sidebar {
+body.scaled .development .sidebar,
+body.scaled .development .Logging {
   display: none;
 }
