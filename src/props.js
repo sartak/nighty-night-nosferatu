@@ -1,9 +1,10 @@
 import {
   builtinPropSpecs, ManageableProps, PropLoader, makePropsWithPrefix,
+  preprocessTileDefinitions,
 } from './scaffolding/lib/props';
 
 const particleImages = [
-  ''
+  '',
 ];
 
 const commands = {
@@ -16,9 +17,9 @@ export const propSpecs = {
 
 };
 
-export const tileDefinitions = {
+export const tileDefinitions = preprocessTileDefinitions({
   '.': null, // background
-};
+});
 
 export const manageableProps = new ManageableProps(propSpecs, particleImages);
 export const propsWithPrefix = makePropsWithPrefix(propSpecs, manageableProps);

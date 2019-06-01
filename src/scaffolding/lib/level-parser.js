@@ -1,3 +1,37 @@
+function flattenInheritance(specs) {
+  Object.entries(specs).forEach(([key, config]) => {
+    if (!config || !config._inherit) {
+      return;
+    }
+
+    const seen = {[key]: true};
+    const nodes = [{...config}];
+
+    let parent = config._inherit;
+    if (!(parent in specs)) {
+      throw new Error(`Inherited from nonexistent parent: ${key} → ${parent}`);
+    }
+
+    while (specs[parent]) {
+      if (seen[parent]) {
+        throw new Error(`Loop detected in tileDefinitions _inherit: ${[...Object.keys(seen), key].join(' → ')}`);
+      }
+
+      seen[parent] = true;
+      nodes.unshift(specs[parent]);
+      parent = specs[parent]._inherit;
+    }
+
+    Object.assign(config, ...nodes);
+  });
+
+  return specs;
+}
+
+export function preprocessTileDefinitions(specs) {
+  return flattenInheritance(specs);
+}
+
 export default function parseLevel(content, tileSpecs, isRectangular) {
   const allLines = content.split('\n');
 
