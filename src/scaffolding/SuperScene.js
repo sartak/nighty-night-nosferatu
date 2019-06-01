@@ -547,6 +547,8 @@ export default class SuperScene extends Phaser.Scene {
         this._timeSightRemoveFocusTimer.destroy();
       }
 
+      this.game.canvas.style.cursor = '';
+
       const replay = this._replay;
 
       this.game.stopReplay();
