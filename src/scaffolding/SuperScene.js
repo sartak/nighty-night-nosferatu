@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import prop, {propsWithPrefix, manageableProps} from '../props';
 import {updatePropsFromStep, overrideProps} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom} from './lib/particles';
+import massageTweenProps from './lib/tweens';
 import {saveField, loadField} from './lib/store';
 
 const baseConfig = {
@@ -737,6 +738,20 @@ export default class SuperScene extends Phaser.Scene {
     this.particleSystems.push({
       particles, emitter, name, options,
     });
+  }
+
+  tween(name, target, options = {}) {
+    // throws error if invalid
+    prop(`${name}.duration`);
+
+    const props = {
+      ...propsWithPrefix(`${name}.`),
+      ...options,
+    };
+
+    const tween = this.tweens.add(massageTweenProps(target, props));
+
+    return tween;
   }
 
   playSound(baseName, variants, volume = 1.0) {

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import {expandParticleProps} from './particles';
+import {expandTweenProps} from './tweens';
 import {freezeStorage, removeAllFields} from './store';
 import {preprocessTileDefinitions} from './level-parser';
 
@@ -181,6 +182,7 @@ export function commandKeyProps(commands) {
 
 export function ManageableProps(propSpecs, particleImages) {
   expandParticleProps(propSpecs, particleImages);
+  expandTweenProps(propSpecs, particleImages);
 
   Object.entries(propSpecs).forEach(([key, spec]) => {
     let [value] = spec;
