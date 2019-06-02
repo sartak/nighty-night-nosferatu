@@ -84,3 +84,9 @@
 .Manage .dg li.cr.listen:not(.folder):nth-child(even):hover {
   background: #202020;
 }
+
+.Manage .dg .closed li:not(.title),
+.Manage .dg .closed ul li,
+.Manage .dg .closed ul li>* {
+  display: none; /* significant perf boost; Chrome avoids rendering */
+}
