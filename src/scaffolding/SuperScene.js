@@ -741,10 +741,12 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   tween(name, target, options = {}) {
-    // throws error if invalid
-    prop(`${name}.duration`);
+    if (name !== null) {
+      // throws error if invalid
+      prop(`${name}.duration`);
+    }
 
-    const props = {
+    const props = name === null ? {...options} : {
       ...propsWithPrefix(`${name}.`),
       ...options,
     };
