@@ -89,6 +89,7 @@ const defaultParticleProps = {
   speedX: [0, -1000, 1000],
   speedY: [0, -1000, 1000],
   tint: [0xFFFFFF],
+  tint_enabled: [false],
   x: [0, -1000, 1000],
   y: [0, -1000, 1000],
   visible: [true],
@@ -120,7 +121,7 @@ export function expandParticleProps(props, particleImages = ['set props/particle
     const seen = {...config};
 
     Object.entries(defaultParticleProps).forEach(([key, value]) => {
-      const propKey = key === 'tint' ? 'tintColor' : key;
+      const propKey = key.replace(/^tint/, 'tintColor');
       const options = key === 'image' ? [particleImages[0], particleImages] : value;
 
       if (key in config) {
@@ -149,11 +150,9 @@ export default function massageParticleProps({...props}) {
   delete props.massageProps;
   delete props.image;
 
-  if (props.tintColor) {
-    if (props.tintColor !== 0xFFFFFF) {
-      props.tint = props.tintColor;
-    }
-    delete props.tintColor;
+  if (props.tintColor_enabled) {
+    props.tint = props.tintColor;
+    delete props.tintColor_enabled;
   }
 
   // these accidentally take precedence over one another
