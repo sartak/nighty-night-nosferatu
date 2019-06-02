@@ -43,12 +43,12 @@ export function builtinPropSpecs(commands) {
     'scene.seed': ['', null, 'scene.settings.data.seed'],
     'scene.music': ['', null, 'currentMusicName'],
     'scene.physicsFps': [0.01, null, 'physics.world.fps'],
-    'scene.images_length': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Image').length],
-    'scene.sprites_length': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Sprite').length],
-    'scene.particles_length': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'ParticleEmitterManager').length],
-    'scene.text_length': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Text').length],
-    'scene.sounds_length': [0, null, 'sounds.length'],
-    'scene.timers_length': [0, null, 'timers.length'],
+    'scene.images': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Image').length],
+    'scene.sprites': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Sprite').length],
+    'scene.particles': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'ParticleEmitterManager').length],
+    'scene.text': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Text').length],
+    'scene.sounds': [0, null, 'sounds.length'],
+    'scene.timers': [0, null, 'timers.length'],
     'scene.physicsColliders_length': [0, null, 'physics.world.colliders._active.length'],
     'scene.debugDraw': [false, (value, scene) => {
       if (value) {

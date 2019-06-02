@@ -100,6 +100,10 @@ const defaultParticleProps = {
 
 export function expandParticleProps(props, particleImages = ['set props/particleImages!']) {
   Object.entries(props).forEach(([name, spec]) => {
+    if (name === 'scene.particles') {
+      return;
+    }
+
     if (name.endsWith('.particle')) {
       throw new Error(`Found ${name}; did you mean ${name}s?`);
     }
