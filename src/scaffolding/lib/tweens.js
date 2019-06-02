@@ -159,28 +159,26 @@ export default function massageTweenProps(target, {...props}) {
     }
   }
 
+  if (massageProps) {
+    massageProps(props);
+  }
+
+  if (props.dx !== originalDx) {
+    const {dx} = props;
+    props.x = target.x + dx;
+  }
+  delete props.dx;
+
+  if (props.dy !== originalDy) {
+    const {dy} = props;
+    props.y = target.y + dy;
+  }
+  delete props.dy;
+
   if (!props.visible) {
-    Object.keys(props).forEach((key) => {
-      if (!invisibleProps[key]) {
-        delete props[key];
-      }
-    });
-  } else {
-    if (massageProps) {
-      massageProps(props);
-    }
-
-    if (props.dx !== originalDx) {
-      const {dx} = props;
-      props.x = target.x + dx;
-    }
-    delete props.dx;
-
-    if (props.dy !== originalDy) {
-      const {dy} = props;
-      props.y = target.y + dy;
-    }
-    delete props.dy;
+    props.duration = 0;
+    delete props.yoyo;
+    delete props.loop;
   }
   delete props.visible;
 
