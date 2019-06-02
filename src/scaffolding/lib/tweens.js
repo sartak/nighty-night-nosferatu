@@ -88,15 +88,15 @@ export function expandTweenProps(props) {
   });
 }
 
-export default function massageTweenProps(target, {...props}) {
+export default function massageTweenProps(target, {...props}, options) {
   const {massageProps} = props;
 
   delete props.massageProps;
 
   Object.entries(props).forEach(([key, config]) => {
     if (key.endsWith('_enabled')) {
-      if (!config) {
-        const main = key.substr(0, key.length - '_enabled'.length);
+      const main = key.substr(0, key.length - '_enabled'.length);
+      if (!config && !options[main]) {
         delete props[main];
       }
       delete props[key];
