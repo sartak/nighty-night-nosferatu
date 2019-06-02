@@ -128,6 +128,9 @@ export function expandParticleProps(props, particleImages = ['set props/particle
         delete seen[key];
       } else if (key === 'preemitOnReload' && config.preemit) {
         props[`${prefix}.${propKey}`] = [true, ...options.slice(1)];
+      } else if (key.endsWith('_enabled')) {
+        const targetKey = key.substr(0, key.length - '_enabled'.length);
+        props[`${prefix}.${propKey}`] = [targetKey in config];
       } else {
         props[`${prefix}.${propKey}`] = options;
       }

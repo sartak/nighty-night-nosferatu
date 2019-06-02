@@ -82,6 +82,9 @@ export function expandTweenProps(props) {
       if (key in config) {
         props[`${prefix}.${key}`] = [config[key], ...value.slice(1)];
         delete seen[key];
+      } else if (key.endsWith('_enabled')) {
+        const targetKey = key.substr(0, key.length - '_enabled'.length);
+        props[`${prefix}.${key}`] = [targetKey in config];
       } else {
         props[`${prefix}.${key}`] = value;
       }
