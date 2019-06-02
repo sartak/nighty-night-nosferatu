@@ -68,6 +68,16 @@ function addController(key, spec, open) {
   const [, ...options] = propSpecs[key];
   const folder = addNestedFolder(key);
 
+  if (key.endsWith('_enabled')) {
+    const prefix = key.substr(0, key.length - '_enabled'.length);
+    if (!(prefix in propSpecs)) {
+      throw new Error(`Prop ${key} does not have corresponding ${prefix}`);
+    }
+    return;
+  }
+
+  const enabledKey = `${key}_enabled`;
+
   let controller;
   if (options.length >= 1 && options[0] === null) {
     controller = folder.add(manageableProps, key).listen();
@@ -89,6 +99,47 @@ function addController(key, spec, open) {
       controller = folder.add(manageableProps, key, ...options);
     }
 
+    let enabledCheckbox;
+
+    if (enabledKey in manageableProps) {
+      const enabled = manageableProps[enabledKey];
+
+      const container = document.createElement('div');
+      container.classList.add('toggle');
+
+      enabledCheckbox = document.createElement('input');
+      enabledCheckbox.setAttribute('type', 'checkbox');
+      if (enabled) {
+        enabledCheckbox.setAttribute('checked', 'checked');
+        enabledCheckbox.checked = true;
+      }
+
+      container.appendChild(enabledCheckbox);
+
+      controller.domElement.closest('.cr').classList.add('disableable');
+
+      const {parentNode} = controller.domElement;
+      parentNode.appendChild(container);
+
+      enabledCheckbox.onchange = (e) => {
+        e.preventDefault();
+        const {checked} = e.target;
+        manageableProps[enabledKey] = checked;
+
+        enabledCheckbox.__suppressChange = true;
+        try {
+          controller.__onChange(manageableProps[key]);
+          controller.__onFinishChange(manageableProps[key]);
+        }
+        catch (err) {
+          enabledCheckbox.__suppressChange = false;
+          throw err;
+        }
+
+        enabledCheckbox.__suppressChange = false;
+      };
+    }
+
     controller.onFinishChange((value) => {
       let ret;
       try {
@@ -106,6 +157,12 @@ function addController(key, spec, open) {
     controller.onChange((value) => {
       let ret;
       try {
+        if (enabledCheckbox && !enabledCheckbox.__suppressChange) {
+          manageableProps[enabledKey] = true;
+          enabledCheckbox.setAttribute('checked', 'checked');
+          enabledCheckbox.checked = true;
+        }
+
         const {game} = window;
         const scene = game.topScene();
         scene.propDidChange(key, value);

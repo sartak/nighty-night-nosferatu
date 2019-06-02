@@ -24,6 +24,20 @@
   width: 40%;
 }
 
+.Manage .dg .disableable {
+  position: relative;
+}
+
+.Manage .dg .disableable .property-name {
+  box-sizing: border-box;
+  padding-right: 26px;
+}
+
+.Manage .dg .disableable .toggle {
+  position: absolute;
+  left: calc(60% - 26px);
+}
+
 .Manage .dg .cr.listen {
   color: #aaa;
 }
