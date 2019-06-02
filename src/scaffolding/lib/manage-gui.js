@@ -130,8 +130,7 @@ function addController(key, spec, open) {
         try {
           controller.__onChange(manageableProps[key]);
           controller.__onFinishChange(manageableProps[key]);
-        }
-        catch (err) {
+        } catch (err) {
           enabledCheckbox.__suppressChange = false;
           throw err;
         }
