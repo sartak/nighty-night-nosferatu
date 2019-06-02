@@ -29,14 +29,6 @@ const tweenEases = [
   'Bounce.easeInOut',
 ];
 
-const invisibleProps = {
-  targets: true,
-  delay: true,
-  duration: true,
-  onComplete: true,
-  onUpdate: true,
-};
-
 const defaultTweenProps = {
   delay: [0, 0, 10000],
   duration: [0, 0, 10000],
@@ -57,7 +49,7 @@ const defaultTweenProps = {
   loop: [0, -1, 100, 1],
   refreshPhysics: [false],
   destroyOnComplete: [false],
-  visible: [true],
+  animated: [true],
 };
 
 export function expandTweenProps(props) {
@@ -175,12 +167,12 @@ export default function massageTweenProps(target, {...props}) {
   }
   delete props.dy;
 
-  if (!props.visible) {
+  if (!props.animated) {
     props.duration = 0;
     delete props.yoyo;
     delete props.loop;
   }
-  delete props.visible;
+  delete props.animated;
 
   return props;
 }
