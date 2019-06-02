@@ -30,6 +30,7 @@ const tweenEases = [
 ];
 
 const defaultTweenProps = {
+  delay_enabled: [true],
   delay: [0, 0, 10000],
   duration: [0, 0, 10000],
   ease: ['Linear', tweenEases],
