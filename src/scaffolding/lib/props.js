@@ -185,6 +185,10 @@ export function ManageableProps(propSpecs, particleImages) {
   expandTweenProps(propSpecs, particleImages);
 
   Object.entries(propSpecs).forEach(([key, spec]) => {
+    if (!Array.isArray(spec)) {
+      throw new Error(`Invalid spec for prop ${key}; expected array, got ${spec}`);
+    }
+
     let [value] = spec;
     // interject the scene and game, and wrap in a try
     if (typeof value === 'function') {
