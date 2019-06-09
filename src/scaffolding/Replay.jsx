@@ -193,12 +193,12 @@ export default class Replay extends React.Component {
 
     return (
       <div className="Replay">
-        <div className="controls">
+        <div className={`controls ${activeReplay ? 'active-replay' : ''} ${activeReplay && activeReplay.timeSight ? 'timeSight' : ''}`}>
           {activeReplay && (
             <React.Fragment>
 
               <span
-                className={`button ${repeat ? 'repeat-on' : 'repeat-off'}`}
+                className={`button repeat ${repeat ? 'repeat-on' : 'repeat-off'}`}
                 title={repeat ? 'Disable automatic repeat' : 'Enable automatic repeat'}
                 onClick={() => this.toggleRepeat()}
               >
