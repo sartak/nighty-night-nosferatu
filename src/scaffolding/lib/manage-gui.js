@@ -283,7 +283,7 @@ function refreshUI() {
 const listenPropsCache = [];
 function regenerateListenPropsCache() {
   listenPropsCache.length = 0;
-  document.querySelectorAll('.Manage ul:not(.closed) > li.listen').forEach((node) => {
+  document.querySelectorAll('.Manage ul:not(.closed) > li.listen:not(.filtered)').forEach((node) => {
     const key = node.dataset.prop;
     const spec = propSpecs[key];
     listenPropsCache.push([key, spec]);
@@ -352,6 +352,53 @@ function updatePropsFromReload(next) {
 
   // refresh UI with new values
   refreshUI();
+}
+
+function queryize(query) {
+  // https://stackoverflow.com/a/6969486
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const characters = escapedQuery.split('');
+  let hasUppercase = false;
+  characters.forEach((character) => {
+    if (character !== character.toLowerCase()) {
+      hasUppercase = true;
+    }
+  });
+
+  const subsequence = characters.join('.*');
+
+  return new RegExp(subsequence, hasUppercase ? '' : 'i');
+}
+
+export function updateSearch(query) {
+  const queryRegex = queryize(query);
+
+  const container = document.querySelector('.Manage .dg.main');
+  if (query === '') {
+    Object.values(folders).forEach((folder) => folder.close());
+    container.querySelectorAll('.filtered').forEach((node) => {
+      node.classList.remove('filtered');
+    });
+  } else {
+    Object.values(folders).forEach((folder) => {
+      folder.open();
+      folder.domElement.classList.add('filtered');
+    });
+
+    container.querySelectorAll('li[data-prop]').forEach((node) => {
+      const {prop} = node.dataset;
+      if (prop.match(queryRegex)) {
+        let folder = node;
+        while (folder) {
+          folder.classList.remove('filtered');
+          folder = folder.parentNode.closest('.filtered');
+        }
+      } else {
+        node.classList.add('filtered');
+      }
+    });
+  }
+  regenerateListenPropsCache();
 }
 
 if (module.hot) {

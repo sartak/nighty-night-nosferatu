@@ -8,12 +8,34 @@
   max-width: 600px;
 }
 
+.Manage .search {
+  box-sizing: border-box;
+  color: white;
+  background: #202020;
+  margin: 0;
+  border: 0;
+  padding: 4px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.Manage .search::placeholder {
+  color: #AAA;
+}
+
 .Manage .dg.main {
   width: 100% !important;
+  border-top-right-radius: 8px;
+  overflow: hidden;
 }
 
 .Manage .dg.main > .close-button {
   display: none;
+}
+
+.Manage .dg .filtered {
+  display: none !important;
 }
 
 .Manage .dg .property-name {
