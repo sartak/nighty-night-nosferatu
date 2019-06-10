@@ -170,8 +170,23 @@ export default function massageTweenProps(target, {...props}, options) {
 
   if (!props.animated) {
     props.duration = 0;
-    delete props.yoyo;
     delete props.loop;
+
+    // yoyo ends up where we began, so just don't animate anything
+    if (props.yoyo) {
+      delete props.x;
+      delete props.y;
+      delete props.dx;
+      delete props.dy;
+      delete props.rotation;
+      delete props.scaleX;
+      delete props.scaleY;
+
+      delete props.yoyo;
+
+      // make sure we animate "something"
+      props.alpha = target.alpha;
+    }
   }
   delete props.animated;
 
