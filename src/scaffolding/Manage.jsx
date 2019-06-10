@@ -27,8 +27,10 @@ export default class Manage extends React.Component {
           placeholder="Filter props…"
           value={search}
           onChange={(e) => {
+            // eslint-disable-next-line react/destructuring-assignment
+            const isStarted = this.state.search === '';
             this.setState({search: e.target.value});
-            updateSearch(e.target.value);
+            updateSearch(e.target.value, isStarted);
           }}
         />
         <div className={search === '' ? '' : 'searching'} ref={this.ref} />

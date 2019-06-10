@@ -370,7 +370,7 @@ function queryize(query) {
   return new RegExp(subsequence, hasUppercase ? '' : 'i');
 }
 
-export function updateSearch(query) {
+export function updateSearch(query, isStarted) {
   const queryRegex = queryize(query);
 
   const container = document.querySelector('.Manage .dg.main');
@@ -381,7 +381,10 @@ export function updateSearch(query) {
     });
   } else {
     Object.values(folders).forEach((folder) => {
-      folder.open();
+      if (isStarted) {
+        folder.open();
+      }
+
       folder.domElement.classList.add('filtered');
     });
 
