@@ -42,6 +42,10 @@
   left: calc(60% - 59px);
 }
 
+.Manage .dg .disableable .toggle input {
+  cursor: pointer;
+}
+
 .Manage .dg .cr.listen {
   color: #aaa;
 }
@@ -57,6 +61,7 @@
 }
 
 .Manage .dg .cr .reset input {
+  cursor: pointer;
 }
 
 .Manage .dg .cr.boolean .reset {
