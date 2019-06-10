@@ -40,7 +40,7 @@ const defaultTweenProps = {
   alpha_enabled: [false],
   alpha: [1.0, 0, 1, 0.01],
   rotation_enabled: [false],
-  rotation: [0.0, -10, 10, 0.1],
+  rotation: [0, -1080, 1080, 1],
   scaleX_enabled: [false],
   scaleX: [1.0, 0, 10, 0.1],
   scaleY_enabled: [false],
@@ -167,6 +167,11 @@ export default function massageTweenProps(target, {...props}, options) {
     props.y = target.y + dy;
   }
   delete props.dy;
+
+  // convert degrees to radians
+  if (props.rotation) {
+    props.rotation *= Math.PI / 180;
+  }
 
   if (!props.animated) {
     props.duration = 0;
