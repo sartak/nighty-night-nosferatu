@@ -177,6 +177,10 @@ function addController(key, spec, open) {
     });
   }
 
+  const container = controller.domElement.closest('.cr');
+  container.title = key;
+  container.dataset.prop = key;
+
   controllers[key] = controller;
 
   if (open) {
