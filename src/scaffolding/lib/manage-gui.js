@@ -98,11 +98,15 @@ function addController(key, spec, open) {
       callback = options.pop();
     }
 
+    const originalValue = manageableProps[key];
+
     if (key.match(/color/i)) {
       controller = folder.addColor(manageableProps, key, ...options);
     } else {
       controller = folder.add(manageableProps, key, ...options);
     }
+
+    const crNode = controller.domElement.closest('.cr');
 
     let enabledCheckbox;
 
@@ -121,7 +125,7 @@ function addController(key, spec, open) {
 
       container.appendChild(enabledCheckbox);
 
-      controller.domElement.closest('.cr').classList.add('disableable');
+      crNode.classList.add('disableable');
 
       const {parentNode} = controller.domElement;
       parentNode.appendChild(container);
@@ -170,6 +174,12 @@ function addController(key, spec, open) {
         const {game} = window;
         const scene = game.topScene();
         scene.propDidChange(key, value);
+        if (typeof originalValue === 'function' || value === originalValue) {
+          crNode.classList.remove('changed');
+        } else {
+          crNode.classList.add('changed');
+        }
+
         if (callback) {
           ret = callback(value, scene, game);
         }

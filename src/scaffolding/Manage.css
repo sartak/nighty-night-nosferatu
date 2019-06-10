@@ -42,6 +42,10 @@
   color: #aaa;
 }
 
+.Manage .dg .cr.changed {
+  color: #f6c456;
+}
+
 .Manage .dg .cr.listen.function,
 .Manage .dg .cr.listen.function .property-name,
 .Manage .dg .cr.listen.function *,
@@ -87,6 +91,6 @@
 
 .Manage .dg .closed li:not(.title),
 .Manage .dg .closed ul li,
-.Manage .dg .closed ul li>* {
+.Manage .dg .closed ul li > * {
   display: none; /* significant perf boost; Chrome avoids rendering */
 }
