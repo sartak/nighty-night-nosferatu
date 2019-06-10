@@ -25,6 +25,7 @@ export default class CommandManager {
 
     this.keyboard = {};
     this.gamepad = {};
+    this.pointerEvents = [];
 
     Object.keys(spec).forEach((name) => {
       if (this[name]) {
@@ -133,6 +134,16 @@ export default class CommandManager {
         this.gamepad[buttonName] = false;
       });
     }
+
+    ['pointerdown', 'pointerup'].forEach((name) => {
+      scene.input.on(name, (pointer) => {
+        this.pointerEvents.push({
+          name,
+          x: pointer.x,
+          y: pointer.y,
+        });
+      });
+    });
   }
 
   readRawGamepad(scenes) {
@@ -183,7 +194,7 @@ export default class CommandManager {
   heldCommands(onlyUnsuppressable) {
     const {gamepad} = this;
     const spec = this._spec;
-    const commandHeld = {_repeat: 0};
+    const frame = {_repeat: 0};
 
     Object.entries(spec).forEach(([name, config]) => {
       if (onlyUnsuppressable && !config.unsuppressable) {
@@ -227,12 +238,19 @@ export default class CommandManager {
         this[name].held = held;
 
         if (held) {
-          commandHeld[name] = held;
+          frame[name] = held;
         }
       }
     });
 
-    return commandHeld;
+    if (this.pointerEvents.length) {
+      if (!onlyUnsuppressable) {
+        frame._pointer = [...this.pointerEvents];
+      }
+      this.pointerEvents.length = 0;
+    }
+
+    return frame;
   }
 
   replayFrame(frame) {
@@ -251,11 +269,15 @@ export default class CommandManager {
     if (!suppressRepeatFrames && list.length) {
       const prevFrame = list[list.length - 1];
       let isSame = true;
-      Object.keys(this._spec).forEach((key) => {
-        if (prevFrame[key] !== frame[key]) {
-          isSame = false;
-        }
-      });
+      if (frame._pointer || prevFrame._pointer) {
+        isSame = false;
+      } else {
+        Object.keys(this._spec).forEach((key) => {
+          if (prevFrame[key] !== frame[key]) {
+            isSame = false;
+          }
+        });
+      }
 
       if (isSame) {
         list.pop();
@@ -289,7 +311,7 @@ export default class CommandManager {
     return ignoreAlls[type];
   }
 
-  processCommands(scene, dt) {
+  processCommands(scene, frame, dt) {
     const spec = this._spec;
 
     const ignoreAll = this.ignoreAll(scene);
@@ -340,6 +362,12 @@ export default class CommandManager {
         }
       }
     });
+
+    if (!ignoreAll && frame._pointer) {
+      frame._pointer.forEach((event) => {
+        scene.handlePointerEvent(event);
+      });
+    }
   }
 
   injectPreflightFrame(scene) {
@@ -415,8 +443,8 @@ export default class CommandManager {
     const manager = this.getManager(scene);
 
     if (manager.scene.timeSightFrozen) {
-      this.captureInputFrame(scene, onlyUnsuppressable);
-      this.processCommands(scene, dt);
+      const frame = this.captureInputFrame(scene, onlyUnsuppressable);
+      this.processCommands(scene, frame, dt);
       return;
     }
 
@@ -428,7 +456,7 @@ export default class CommandManager {
       this.addFrameToList(manager.suppressRepeatFrames, manager.speculativeRecording, frame);
     }
 
-    this.processCommands(scene, dt);
+    this.processCommands(scene, frame, dt);
   }
 
   beginRecording(scene, recording) {

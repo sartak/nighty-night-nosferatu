@@ -24,6 +24,7 @@ export function builtinPropSpecs(commands) {
   }
 
   return {
+    'engine.debug': [debug, null, () => debug],
     'engine.time': [0.01, null, 'loop.time'],
     'engine.frameTime': [0.01, null, 'loop.delta'],
     'engine.actualFps': [0.01, null, 'loop.actualFps'],

@@ -815,6 +815,19 @@ export default class SuperScene extends Phaser.Scene {
     });
   }
 
+  handlePointerEvent(event) {
+    const camelName = event.name.charAt(0).toUpperCase() + event.name.slice(1);
+    const method = `handle${camelName}`;
+    if (this[method]) {
+      this[method](event);
+    } else if (prop('engine.debug')) {
+      const debugMethod = `debugHandle${camelName}`;
+      if (this[debugMethod]) {
+        this[debugMethod](event);
+      }
+    }
+  }
+
   destroy() {
     this.command.detachScene(this);
   }
