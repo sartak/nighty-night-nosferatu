@@ -425,7 +425,7 @@ export default class SuperScene extends Phaser.Scene {
     }
 
     objects.forEach((object) => {
-      if (object.scene !== scene) {
+      if (object.scene !== this) {
         // eslint-disable-next-line no-console
         console.error(`renderTimeSightFrameInto rendered this object into the wrong scene: ${JSON.stringify(object)}`);
       }
