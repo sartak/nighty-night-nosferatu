@@ -169,7 +169,10 @@ export default function massageParticleProps({...props}) {
 
   // convert degrees to radians
   if (props.rotate) {
-    props.rotate *= Math.PI / 180;
+    if (typeof props.rotate === 'number') {
+      props.rotate *= Math.PI / 180;
+    }
+    // TODO handle other input formats
   }
 
   if (massageProps) {
