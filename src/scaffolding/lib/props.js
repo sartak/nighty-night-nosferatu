@@ -101,7 +101,6 @@ function commandProps(commands) {
 
     if (config.execute) {
       props[`command.${name}.execute`] = [(scene, game) => config.execute(scene, game)];
-      props[`command.${name}.executeRepeatedly`] = [false];
     }
   });
 

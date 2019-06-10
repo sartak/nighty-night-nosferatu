@@ -33,6 +33,11 @@ function addNestedFolder(key) {
     if (!folders[folderKey]) {
       folders[folderKey] = folder.addFolder(sentenceCase(section));
       parentOfFolder.set(folders[folderKey], folder);
+
+      const title = folders[folderKey].domElement.querySelector('li.title');
+      title.addEventListener('click', () => {
+        regenerateListenPropsCache();
+      });
     }
 
     folder = folders[folderKey];
@@ -204,37 +209,33 @@ function refreshUI() {
   Object.values(folders).forEach((folder) => folder.updateDisplay());
 }
 
-const intervals = {};
+const listenPropsCache = [];
+function regenerateListenPropsCache() {
+  listenPropsCache.length = 0;
+  document.querySelectorAll('.Manage ul:not(.closed) > li.listen').forEach((node) => {
+    const key = node.dataset.prop;
+    const spec = propSpecs[key];
+    listenPropsCache.push([key, spec]);
+  });
+}
+
 export function updatePropsFromStep() {
   const {game} = window;
   const scene = game.topScene();
 
-  Object.entries(propSpecs).forEach(([key, spec]) => {
-    if (spec[1] !== null) {
-      if (key.endsWith('.executeRepeatedly')) {
-        const executeKey = key.replace(/\.executeRepeatedly$/, '.execute');
-        const intervalKey = `${key}interval`;
-        if (manageableProps[key]) {
-          if (!intervals[intervalKey]) {
-            const effect = manageableProps[executeKey];
-            effect();
-            intervals[intervalKey] = setInterval(effect, 2000);
-          }
-        } else if (intervals[intervalKey]) {
-          clearInterval(intervals[intervalKey]);
-          delete intervals[intervalKey];
+  listenPropsCache.forEach(([key, spec]) => {
+    if (spec[1] === null) {
+      if (!spec[2]) {
+        manageableProps[key] = _.get(game, key) || _.get(scene, key);
+      } else if (typeof spec[2] === 'string') {
+        manageableProps[key] = _.get(game, spec[2]) || _.get(scene, spec[2]);
+      } else if (typeof spec[2] === 'function') {
+        try {
+          manageableProps[key] = spec[2](game.topScene(), game);
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e);
         }
-      }
-    } else if (!spec[2]) {
-      manageableProps[key] = _.get(game, key) || _.get(scene, key);
-    } else if (typeof spec[2] === 'string') {
-      manageableProps[key] = _.get(game, spec[2]) || _.get(scene, spec[2]);
-    } else if (typeof spec[2] === 'function') {
-      try {
-        manageableProps[key] = spec[2](game.topScene(), game);
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
       }
     }
   });
@@ -288,6 +289,8 @@ if (module.hot) {
 
       const {game} = window;
       game.command.updateCommandsFromReload(next.commands);
+
+      regenerateListenPropsCache();
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
