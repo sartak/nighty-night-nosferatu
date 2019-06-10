@@ -35,7 +35,9 @@ const defaultTweenProps = {
   duration: [0, 0, 10000],
   ease: ['Linear', tweenEases],
 
+  dx_enabled: [false],
   dx: [0, -1000, 1000],
+  dy_enabled: [false],
   dy: [0, -1000, 1000],
   alpha_enabled: [false],
   alpha: [1.0, 0, 1, 0.01],
@@ -121,17 +123,18 @@ export default function massageTweenProps(target, {...props}, options) {
     }
   }
 
-  const originalDx = props.dx;
-  if (props.dx) {
+  if ('dx' in props) {
     const {dx} = props;
     props.x = target.x + dx;
   }
 
-  const originalDy = props.dy;
-  if (props.dy) {
+  if ('dy' in props) {
     const {dy} = props;
     props.y = target.y + dy;
   }
+
+  const originalX = props.x;
+  const originalY = props.y;
 
   if (props.refreshPhysics) {
     delete props.refreshPhysics;
@@ -156,13 +159,13 @@ export default function massageTweenProps(target, {...props}, options) {
     massageProps(props);
   }
 
-  if ('dx' in props && props.dx !== originalDx) {
+  if ('dx' in props && (!('x' in props) || props.x === originalX)) {
     const {dx} = props;
     props.x = target.x + dx;
   }
   delete props.dx;
 
-  if ('dy' in props && props.dy !== originalDy) {
+  if ('dy' in props && (!('y' in props) || props.y === originalY)) {
     const {dy} = props;
     props.y = target.y + dy;
   }
