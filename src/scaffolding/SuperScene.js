@@ -401,6 +401,13 @@ export default class SuperScene extends Phaser.Scene {
             return;
           }
 
+          objects.forEach((object) => {
+            if (object.scene !== scene) {
+              // eslint-disable-next-line no-console
+              console.error(`renderTimeSightFrameInto rendered this object into the wrong scene: ${JSON.stringify(object)}`);
+            }
+          });
+
           updatePropsFromStep();
 
           this._timeSightFrames.push({
