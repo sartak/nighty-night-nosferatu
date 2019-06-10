@@ -199,58 +199,58 @@ function addController(key, spec, open) {
       };
     }
 
-    controller.onFinishChange((value) => {
-      let ret;
-      try {
-        const {game} = window;
-        const scene = game.topScene();
-        scene.propDidFinishChange(key, value);
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
-      }
-
-      return ret;
-    });
-
-    controller.onChange((value) => {
-      let ret;
-      try {
-        if (enabledCheckbox && !enabledCheckbox.__suppressChange) {
-          manageableProps[enabledKey] = true;
-          enabledCheckbox.setAttribute('checked', 'checked');
-          enabledCheckbox.checked = true;
+    if (typeof originalValue !== 'function') {
+      controller.onFinishChange((value) => {
+        let ret;
+        try {
+          const {game} = window;
+          const scene = game.topScene();
+          scene.propDidFinishChange(key, value);
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e);
         }
 
-        const {game} = window;
-        const scene = game.topScene();
-        scene.propDidChange(key, value);
+        return ret;
+      });
 
-        let isChanged = false;
-        if (typeof originalValue === 'function') {
-          isChanged = false;
-        } else if (enabledCheckbox && manageableProps[enabledKey] !== enabledValue) {
-          isChanged = true;
-        } else if (value !== originalValue) {
-          isChanged = true;
+      controller.onChange((value) => {
+        let ret;
+        try {
+          if (enabledCheckbox && !enabledCheckbox.__suppressChange) {
+            manageableProps[enabledKey] = true;
+            enabledCheckbox.setAttribute('checked', 'checked');
+            enabledCheckbox.checked = true;
+          }
+
+          const {game} = window;
+          const scene = game.topScene();
+          scene.propDidChange(key, value);
+
+          let isChanged = false;
+          if (enabledCheckbox && manageableProps[enabledKey] !== enabledValue) {
+            isChanged = true;
+          } else if (value !== originalValue) {
+            isChanged = true;
+          }
+
+          if (isChanged) {
+            crNode.classList.add('changed');
+          } else {
+            crNode.classList.remove('changed');
+          }
+
+          if (callback) {
+            ret = callback(value, scene, game);
+          }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e);
         }
 
-        if (isChanged) {
-          crNode.classList.add('changed');
-        } else {
-          crNode.classList.remove('changed');
-        }
-
-        if (callback) {
-          ret = callback(value, scene, game);
-        }
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
-      }
-
-      return ret;
-    });
+        return ret;
+      });
+    }
   }
 
   const container = controller.domElement.closest('.cr');
