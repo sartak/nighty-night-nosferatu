@@ -24,18 +24,22 @@
   width: 40%;
 }
 
-.Manage .dg .disableable {
+.Manage .dg {
   position: relative;
 }
 
-.Manage .dg .disableable .property-name {
+.Manage .dg .property-name {
   box-sizing: border-box;
-  padding-right: 26px;
+  padding-right: 33px;
+}
+
+.Manage .dg .disableable .property-name {
+  padding-right: 59px;
 }
 
 .Manage .dg .disableable .toggle {
   position: absolute;
-  left: calc(60% - 26px);
+  left: calc(60% - 59px);
 }
 
 .Manage .dg .cr.listen {
@@ -44,6 +48,23 @@
 
 .Manage .dg .cr.changed {
   color: #f6c456;
+}
+
+.Manage .dg .cr .reset {
+  position: absolute;
+  left: calc(60% - 33px);
+  visibility: hidden;
+}
+
+.Manage .dg .cr .reset input {
+}
+
+.Manage .dg .cr.boolean .reset {
+  display: none;
+}
+
+.Manage .dg .cr.changed .reset {
+  visibility: visible;
 }
 
 .Manage .dg .cr.listen.function,

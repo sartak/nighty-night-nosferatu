@@ -109,16 +109,17 @@ function addController(key, spec, open) {
     const crNode = controller.domElement.closest('.cr');
 
     let enabledCheckbox;
+    let enabledValue;
 
     if (enabledKey in manageableProps) {
-      const enabled = manageableProps[enabledKey];
+      enabledValue = manageableProps[enabledKey];
 
       const container = document.createElement('div');
       container.classList.add('toggle');
 
       enabledCheckbox = document.createElement('input');
       enabledCheckbox.setAttribute('type', 'checkbox');
-      if (enabled) {
+      if (enabledValue) {
         enabledCheckbox.setAttribute('checked', 'checked');
         enabledCheckbox.checked = true;
       }
@@ -148,6 +149,56 @@ function addController(key, spec, open) {
       };
     }
 
+    if (typeof originalValue !== 'function') {
+      const container = document.createElement('div');
+      container.classList.add('reset');
+
+      const resetButton = document.createElement('input');
+      resetButton.setAttribute('type', 'button');
+      resetButton.value = '⤺';
+
+      container.appendChild(resetButton);
+
+      const {parentNode} = controller.domElement;
+      parentNode.appendChild(container);
+
+      resetButton.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        manageableProps[key] = originalValue;
+
+        if (enabledCheckbox) {
+          enabledCheckbox.__suppressChange = true;
+          manageableProps[enabledKey] = enabledValue;
+          if (enabledValue) {
+            enabledCheckbox.setAttribute('checked', 'checked');
+            enabledCheckbox.checked = true;
+          } else {
+            enabledCheckbox.removeAttribute('checked');
+            enabledCheckbox.checked = false;
+          }
+        }
+
+        controller.updateDisplay();
+
+        try {
+          controller.__onChange(manageableProps[key]);
+          controller.__onFinishChange(manageableProps[key]);
+        } catch (err) {
+          if (enabledCheckbox) {
+            enabledCheckbox.__suppressChange = false;
+          }
+
+          throw err;
+        }
+
+        if (enabledCheckbox) {
+          enabledCheckbox.__suppressChange = false;
+        }
+      };
+    }
+
     controller.onFinishChange((value) => {
       let ret;
       try {
@@ -174,10 +225,20 @@ function addController(key, spec, open) {
         const {game} = window;
         const scene = game.topScene();
         scene.propDidChange(key, value);
-        if (typeof originalValue === 'function' || value === originalValue) {
-          crNode.classList.remove('changed');
-        } else {
+
+        let isChanged = false;
+        if (typeof originalValue === 'function') {
+          isChanged = false;
+        } else if (enabledCheckbox && manageableProps[enabledKey] !== enabledValue) {
+          isChanged = true;
+        } else if (value !== originalValue) {
+          isChanged = true;
+        }
+
+        if (isChanged) {
           crNode.classList.add('changed');
+        } else {
+          crNode.classList.remove('changed');
         }
 
         if (callback) {
