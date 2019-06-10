@@ -396,26 +396,11 @@ export default class SuperScene extends Phaser.Scene {
         timeSight: false,
         timeSightFrameCallback: (scene, frameTime, frameDt, preflight, isLast) => {
           objectDt += frameDt;
-          const objects = scene.renderTimeSightFrameInto(this, objectDt, frameTime, frameDt, isLast);
-          if (!objects || !objects.length) {
-            return;
+
+          const frame = this.timeSightTargetStep(scene, objectDt, frameTime, frameDt, preflight, isLast);
+          if (frame) {
+            objectDt = 0;
           }
-
-          objects.forEach((object) => {
-            if (object.scene !== scene) {
-              // eslint-disable-next-line no-console
-              console.error(`renderTimeSightFrameInto rendered this object into the wrong scene: ${JSON.stringify(object)}`);
-            }
-          });
-
-          updatePropsFromStep();
-
-          this._timeSightFrames.push({
-            objects,
-            props: {...manageableProps},
-            preflight: [...preflight],
-          });
-          objectDt = 0;
         },
       },
       {
@@ -431,6 +416,30 @@ export default class SuperScene extends Phaser.Scene {
         },
       },
     );
+  }
+
+  timeSightTargetStep(scene, objectDt, frameTime, frameDt, preflight, isLast) {
+    const objects = scene.renderTimeSightFrameInto(this, objectDt, frameTime, frameDt, isLast);
+    if (!objects || !objects.length) {
+      return;
+    }
+
+    objects.forEach((object) => {
+      if (object.scene !== scene) {
+        // eslint-disable-next-line no-console
+        console.error(`renderTimeSightFrameInto rendered this object into the wrong scene: ${JSON.stringify(object)}`);
+      }
+    });
+
+    updatePropsFromStep();
+
+    const frame = {
+      objects,
+      props: {...manageableProps},
+      preflight: [...preflight],
+    };
+    this._timeSightFrames.push(frame);
+    return frame;
   }
 
   beginTimeSightAlphaAnimation() {
