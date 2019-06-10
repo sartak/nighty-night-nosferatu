@@ -68,7 +68,7 @@ export default class SuperGame extends Phaser.Game {
         }
 
         if (!this.disableDebug && (!topScene._replay || !topScene._replay.timeSight)) {
-          updatePropsFromStep();
+          updatePropsFromStep(false);
         }
 
         if (prop('engine.throttle')) {

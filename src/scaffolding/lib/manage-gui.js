@@ -290,11 +290,11 @@ function regenerateListenPropsCache() {
   });
 }
 
-export function updatePropsFromStep() {
+export function updatePropsFromStep(skipCache) {
   const {game} = window;
   const scene = game.topScene();
 
-  listenPropsCache.forEach(([key, spec]) => {
+  const updateProp = ([key, spec]) => {
     if (spec[1] === null) {
       if (!spec[2]) {
         manageableProps[key] = _.get(game, key) || _.get(scene, key);
@@ -309,7 +309,13 @@ export function updatePropsFromStep() {
         }
       }
     }
-  });
+  };
+
+  if (skipCache) {
+    Object.entries(propSpecs).forEach(updateProp);
+  } else {
+    listenPropsCache.forEach(updateProp);
+  }
 }
 
 export function overrideProps(newProps) {

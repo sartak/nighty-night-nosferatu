@@ -431,7 +431,7 @@ export default class SuperScene extends Phaser.Scene {
       }
     });
 
-    updatePropsFromStep();
+    updatePropsFromStep(true);
 
     const frame = {
       objects,
