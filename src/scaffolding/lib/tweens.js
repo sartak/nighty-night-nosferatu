@@ -156,13 +156,13 @@ export default function massageTweenProps(target, {...props}, options) {
     massageProps(props);
   }
 
-  if (props.dx !== originalDx) {
+  if ('dx' in props && props.dx !== originalDx) {
     const {dx} = props;
     props.x = target.x + dx;
   }
   delete props.dx;
 
-  if (props.dy !== originalDy) {
+  if ('dy' in props && props.dy !== originalDy) {
     const {dy} = props;
     props.y = target.y + dy;
   }
