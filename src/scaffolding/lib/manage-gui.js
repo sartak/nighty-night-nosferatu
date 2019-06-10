@@ -291,6 +291,14 @@ if (module.hot) {
       game.command.updateCommandsFromReload(next.commands);
 
       regenerateListenPropsCache();
+
+      if (window.game._stepExceptions > 100) {
+        // eslint-disable-next-line no-console
+        console.error('Resetting after recovering from errors');
+        window.game._stepExceptions = 0;
+        window.game.loop.wake();
+        window.topScene().replaceWithSelf();
+      }
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
