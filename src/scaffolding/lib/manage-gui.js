@@ -107,6 +107,8 @@ function addController(key, spec, open) {
       controller = folder.add(manageableProps, key, ...options);
     }
 
+    controller.__ldCallback = callback;
+
     const crNode = controller.domElement.closest('.cr');
 
     let enabledCheckbox;
@@ -243,8 +245,8 @@ function addController(key, spec, open) {
             crNode.classList.remove('changed');
           }
 
-          if (callback) {
-            ret = callback(value, scene, game);
+          if (controller.__ldCallback) {
+            ret = controller.__ldCallback(value, scene, game);
           }
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -332,40 +334,66 @@ export function overrideProps(newProps) {
   });
 }
 
-function canSkipControllerRecreation(key, next) {
+function specDiffers(old, next) {
+  let differsInCallback;
+
+  if ((!next && old) || (!old && next)) {
+    return true;
+  }
+
+  if (old.length !== next.length) {
+    return true;
+  }
+
+  for (let i = next.length - 1; i >= 0; i -= 1) {
+    if (i === next.length - 1 && typeof next[i] === 'function' && typeof old[i] === 'function') {
+      differsInCallback = true;
+    } else if (i === 1 && Array.isArray(next[i]) && Array.isArray(old[i])) {
+      // compare enum values
+      const nextArray = next[i];
+      const oldArray = old[i];
+
+      if (nextArray.length !== oldArray.length) {
+        return false;
+      }
+
+      for (let j = nextArray.length - 1; j >= 0; j -= 1) {
+        if (nextArray[j] !== oldArray[j]) {
+          return false;
+        }
+      }
+    } else if (next[i] !== old[i]) {
+      return true;
+    }
+  }
+
+  if (differsInCallback) {
+    return 'callback';
+  }
+
+  return false;
+}
+
+function requiresControllerRecreation(key, next) {
   const spec = next[key];
   const controller = controllers[key];
   const oldSpec = controller.__ldSpec;
 
   // listeners don't need to regenerate
   if (oldSpec[1] === null && spec[1] === null) {
-    return true;
+    return false;
   }
 
   const nextEnabledSpec = next[`${key}_enabled`];
   if ('__ldEnabledSpec' in controller) {
-    if (!nextEnabledSpec) {
-      return false;
-    }
-
-    const oldEnabledSpec = controller.__ldEnabledSpec;
-    if (nextEnabledSpec.findIndex((v, i) => v !== oldEnabledSpec[i]) > -1) {
-      return false;
+    if (specDiffers(controller.__ldEnabledSpec, nextEnabledSpec)) {
+      return true;
     }
   } else if (nextEnabledSpec) {
-    return false;
+    return true;
   }
 
-  if (oldSpec.length !== spec.length) {
-    return false;
-  }
-
-  // spec did not change
-  if (spec.findIndex((v, i) => v !== oldSpec[i]) > -1) {
-    return false;
-  }
-
-  return true;
+  return specDiffers(oldSpec, spec);
 }
 
 function updatePropsFromReload(next) {
@@ -383,8 +411,14 @@ function updatePropsFromReload(next) {
       delete leftoverKeys[key];
       const controller = controllers[key];
 
-      if (canSkipControllerRecreation(key, next)) {
+      const requiresRecreation = requiresControllerRecreation(key, next);
+      if (!requiresRecreation || requiresRecreation === 'callback') {
         controller.object = manageableProps;
+
+        if (requiresRecreation === 'callback') {
+          controller.__ldCallback = spec[spec.length - 1];
+        }
+
         return;
       }
 
