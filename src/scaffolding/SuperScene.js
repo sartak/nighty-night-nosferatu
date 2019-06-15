@@ -709,7 +709,7 @@ export default class SuperScene extends Phaser.Scene {
 
     if (this.game._stepExceptions > 100) {
       // eslint-disable-next-line no-console
-      console.error('Resetting after recovering from errors');
+      console.info('Resetting after recovering from errors');
       this.game._stepExceptions = 0;
       this.game.loop.wake();
       this.replaceWithSelf();
