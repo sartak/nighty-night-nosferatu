@@ -379,3 +379,7 @@ handler to fire outside the game loop with a setTimeout or something?`);
     }
   }
 }
+
+if (module.hot) {
+  module.hot.accept('../props');
+}

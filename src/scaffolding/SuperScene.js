@@ -848,3 +848,7 @@ export default class SuperScene extends Phaser.Scene {
     this.command.detachScene(this);
   }
 }
+
+if (module.hot) {
+  module.hot.accept('../props');
+}
