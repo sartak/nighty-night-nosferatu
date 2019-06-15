@@ -9,6 +9,18 @@ const folders = {};
 const controllers = {};
 const parentOfFolder = new Map();
 
+let proxiedManageableProps = manageableProps;
+const manageablePropsProxy = new Proxy({}, {
+  get(target, key) {
+    return proxiedManageableProps[key];
+  },
+
+  set(target, key, value) {
+    proxiedManageableProps[key] = value;
+    return true;
+  },
+});
+
 Object.keys(propSpecs).forEach((key) => addNestedFolder(key));
 Object.keys(propSpecs).forEach((key) => addController(key, propSpecs[key]));
 
@@ -85,7 +97,7 @@ function addController(key, spec, open) {
 
   let controller;
   if (options.length >= 1 && options[0] === null) {
-    controller = folder.add(manageableProps, key).listen();
+    controller = folder.add(manageablePropsProxy, key).listen();
     controller.domElement.closest('.cr').classList.add('listen');
     controller.domElement.querySelectorAll('input, select').forEach((node) => {
       node.tabIndex = -1;
@@ -102,9 +114,9 @@ function addController(key, spec, open) {
     const originalValue = manageableProps[key];
 
     if (key.match(/color/i)) {
-      controller = folder.addColor(manageableProps, key, ...options);
+      controller = folder.addColor(manageablePropsProxy, key, ...options);
     } else {
-      controller = folder.add(manageableProps, key, ...options);
+      controller = folder.add(manageablePropsProxy, key, ...options);
     }
 
     controller.__ldCallback = callback;
@@ -396,25 +408,24 @@ function requiresControllerRecreation(key, next) {
   return specDiffers(oldSpec, spec);
 }
 
-function updatePropsFromReload(next) {
+function updatePropsFromReload(oldValues, nextSpecs) {
   const leftoverKeys = {};
   Object.keys(controllers).forEach((key) => {
     leftoverKeys[key] = true;
   });
 
-  Object.keys(next).forEach((key) => addNestedFolder(key, true));
+  Object.keys(nextSpecs).forEach((key) => addNestedFolder(key, true));
 
-  Object.entries(next).forEach(([key, spec]) => {
+  Object.entries(nextSpecs).forEach(([key, spec]) => {
     if (!(key in controllers)) {
       addController(key, spec, true);
     } else {
       delete leftoverKeys[key];
       const controller = controllers[key];
 
-      const requiresRecreation = requiresControllerRecreation(key, next);
+      const requiresRecreation = requiresControllerRecreation(key, nextSpecs);
       if (!requiresRecreation || requiresRecreation === 'callback') {
-        manageableProps[key] = controller.object[key];
-        controller.object = manageableProps;
+        manageableProps[key] = oldValues[key];
 
         if (requiresRecreation === 'callback') {
           controller.__ldCallback = spec[spec.length - 1];
@@ -512,7 +523,9 @@ if (module.hot) {
       // eslint-disable-next-line no-console
       console.info('Hot-loading props');
 
-      updatePropsFromReload(next.propSpecs);
+      const oldProps = proxiedManageableProps;
+      proxiedManageableProps = next.manageableProps;
+      updatePropsFromReload(oldProps, next.propSpecs);
 
       const {game} = window;
       game.command.updateCommandsFromReload(next.commands);
