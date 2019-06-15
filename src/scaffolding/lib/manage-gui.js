@@ -361,9 +361,21 @@ function updatePropsFromReload(next) {
       }
 
       // regenerate this controller with the new config
-      const controller = controllers[key];
+      const container = controller.domElement.closest('.cr');
+      const parent = container.parentNode;
+      const {children} = parent;
+      const index = Array.prototype.indexOf.call(children, container);
+      const nextContainer = index > -1 ? children[index + 1] : null;
+
       controller.remove();
-      addController(key, spec);
+
+      const newController = addController(key, spec);
+
+      if (nextContainer) {
+        const newContainer = newController.domElement.closest('.cr');
+        parent.removeChild(newContainer);
+        parent.insertBefore(newContainer, nextContainer);
+      }
     }
   });
 
