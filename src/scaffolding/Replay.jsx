@@ -251,13 +251,19 @@ export default class Replay extends React.Component {
                 <span className="button" title="Load snapshot (load state)" onClick={() => this.beginReplay(replay)}>🎆</span>
               )}
               {editing === replay.timestamp && (
-                <input
-                  type="text"
-                  autoFocus
-                  value={replay.name}
-                  onBlur={() => this.blurEdit()}
-                  onChange={(e) => this.editName(replay, e.target.value)}
-                />
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  this.blurEdit();
+                }}
+                >
+                  <input
+                    type="text"
+                    autoFocus
+                    value={replay.name}
+                    onBlur={() => this.blurEdit()}
+                    onChange={(e) => this.editName(replay, e.target.value)}
+                  />
+                </form>
               )}
               <span className="name" onClick={() => this.beginReplay(replay)}>{replay.name}</span>
               <span className="edit button" title="Edit replay" onClick={() => this.setState({editing: replay.timestamp})}>ℹ</span>

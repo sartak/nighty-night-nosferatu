@@ -101,6 +101,10 @@
   visibility: hidden !important;
 }
 
+.Replay form {
+  display: inline-block;
+}
+
 .Replay .replays .replay .name,
 .Replay .replays .replay input {
   margin: 0 0.5em;
