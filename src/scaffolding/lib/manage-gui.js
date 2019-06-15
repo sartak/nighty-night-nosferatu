@@ -132,6 +132,8 @@ function addController(key, spec, open) {
       const {parentNode} = controller.domElement;
       parentNode.appendChild(container);
 
+      controller.__ldEnabledSpec = propSpecs[enabledKey];
+
       enabledCheckbox.onchange = (e) => {
         e.preventDefault();
         const {checked} = e.target;
@@ -330,6 +332,42 @@ export function overrideProps(newProps) {
   });
 }
 
+function canSkipControllerRecreation(key, next) {
+  const spec = next[key];
+  const controller = controllers[key];
+  const oldSpec = controller.__ldSpec;
+
+  // listeners don't need to regenerate
+  if (oldSpec[1] === null && spec[1] === null) {
+    return true;
+  }
+
+  const nextEnabledSpec = next[`${key}_enabled`];
+  if ('__ldEnabledSpec' in controller) {
+    if (!nextEnabledSpec) {
+      return false;
+    }
+
+    const oldEnabledSpec = controller.__ldEnabledSpec;
+    if (nextEnabledSpec.findIndex((v, i) => v !== oldEnabledSpec[i]) > -1) {
+      return false;
+    }
+  } else if (nextEnabledSpec) {
+    return false;
+  }
+
+  if (oldSpec.length !== spec.length) {
+    return false;
+  }
+
+  // spec did not change
+  if (spec.findIndex((v, i) => v !== oldSpec[i]) > -1) {
+    return false;
+  }
+
+  return true;
+}
+
 function updatePropsFromReload(next) {
   const leftoverKeys = {};
   Object.keys(controllers).forEach((key) => {
@@ -344,20 +382,10 @@ function updatePropsFromReload(next) {
     } else {
       delete leftoverKeys[key];
       const controller = controllers[key];
-      const oldSpec = controller.__ldSpec;
 
-      if (oldSpec.length === spec.length) {
-        // listeners don't need to regenerate
-        if (oldSpec[1] === null && spec[1] === null) {
-          controller.object = manageableProps;
-          return;
-        }
-
-        // spec changed
-        if (spec.findIndex((v, i) => v !== oldSpec[i]) === -1) {
-          controller.object = manageableProps;
-          return;
-        }
+      if (canSkipControllerRecreation(key, next)) {
+        controller.object = manageableProps;
+        return;
       }
 
       // regenerate this controller with the new config
