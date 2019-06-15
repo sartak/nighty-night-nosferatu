@@ -355,17 +355,22 @@ function updatePropsFromReload(next) {
 }
 
 function queryize(query) {
-  // https://stackoverflow.com/a/6969486
-  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const characters = escapedQuery.split('');
+  const characters = query.split('');
   let hasUppercase = false;
-  characters.forEach((character) => {
+
+  const escapedCharacters = characters.map((character) => {
     if (character !== character.toLowerCase()) {
       hasUppercase = true;
     }
+
+    if ('.*+?^${}()|[]\\'.includes(character)) {
+      return `\\${character}`;
+    } else {
+      return character;
+    }
   });
 
-  const subsequence = characters.join('.*');
+  const subsequence = escapedCharacters.join('.*');
 
   return new RegExp(subsequence, hasUppercase ? '' : 'i');
 }
