@@ -259,6 +259,7 @@ function addController(key, spec, open) {
   container.dataset.prop = key;
 
   controllers[key] = controller;
+  controller.__ldSpec = spec;
 
   if (open) {
     let f = folder;
@@ -267,6 +268,8 @@ function addController(key, spec, open) {
       f = parentOfFolder.get(f);
     }
   }
+
+  return controller;
 }
 
 function removeProp(key) {
@@ -340,6 +343,22 @@ function updatePropsFromReload(next) {
       addController(key, spec, true);
     } else {
       delete leftoverKeys[key];
+      const controller = controllers[key];
+      const oldSpec = controller.__ldSpec;
+
+      if (oldSpec.length === spec.length) {
+        // listeners don't need to regenerate
+        if (oldSpec[1] === null && spec[1] === null) {
+          controller.object = manageableProps;
+          return;
+        }
+
+        // spec changed
+        if (spec.findIndex((v, i) => v !== oldSpec[i]) === -1) {
+          controller.object = manageableProps;
+          return;
+        }
+      }
 
       // regenerate this controller with the new config
       const controller = controllers[key];
