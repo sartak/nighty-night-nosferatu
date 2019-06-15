@@ -397,7 +397,7 @@ function updatePropsFromReload(next) {
 
       controller.remove();
 
-      const newController = addController(key, spec);
+      const newController = addController(key, spec, true);
 
       if (nextContainer) {
         const newContainer = newController.domElement.closest('.cr');
