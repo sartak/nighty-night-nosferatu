@@ -88,6 +88,7 @@ function addController(key, spec, open) {
     controller = folder.add(manageableProps, key).listen();
     controller.domElement.closest('.cr').classList.add('listen');
     controller.domElement.querySelectorAll('input, select').forEach((node) => {
+      node.tabIndex = -1;
       node.onclick = (e) => {
         e.preventDefault();
       };
