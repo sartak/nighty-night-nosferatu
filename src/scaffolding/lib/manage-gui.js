@@ -391,8 +391,12 @@ function requiresControllerRecreation(key, next) {
   const controller = controllers[key];
   const oldSpec = controller.__ldSpec;
 
-  // listeners don't need to regenerate
+  // listeners don't need to regenerate unless the type changes
   if (oldSpec[1] === null && spec[1] === null) {
+    if (typeof oldSpec[0] !== typeof spec[0]) {
+      return true;
+    }
+
     return false;
   }
 
