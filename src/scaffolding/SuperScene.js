@@ -97,9 +97,8 @@ export default class SuperScene extends Phaser.Scene {
 
             this.game._stepExceptions = (this.game._stepExceptions || 0) + 1;
             if (this.game._stepExceptions > 100) {
-              this.game.loop.sleep();
               // eslint-disable-next-line no-console
-              console.error('Too many errors; pausing game loop until hot reload');
+              console.error('Too many errors; pausing update cycle until hot reload');
             }
           }
         };
@@ -711,8 +710,6 @@ export default class SuperScene extends Phaser.Scene {
       // eslint-disable-next-line no-console
       console.info('Resetting after recovering from errors');
       this.game._stepExceptions = 0;
-      this.game.loop.wake();
-      this.replaceWithSelf();
       return;
     }
 
