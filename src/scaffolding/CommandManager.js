@@ -329,7 +329,11 @@ export default class CommandManager {
     Object.entries(spec).forEach(([name, config]) => {
       const command = this[name];
 
-      if (command.held && (!ignoreAll || config.unsuppressable)) {
+      if (ignoreAll && !config.unsuppressable) {
+        command.held = false;
+      }
+
+      if (command.held) {
         command.heldFrames += 1;
         command.heldDuration += dt;
         command.started = command.heldFrames === 1;
@@ -338,6 +342,7 @@ export default class CommandManager {
         command.releasedFrames = 0;
         command.releasedDuration = 0;
       } else {
+        command.held = false;
         command.heldFrames = 0;
         command.heldDuration = 0;
         command.started = false;
