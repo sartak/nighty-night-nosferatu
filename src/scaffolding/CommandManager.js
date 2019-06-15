@@ -135,13 +135,23 @@ export default class CommandManager {
       });
     }
 
+    const canvas = document.querySelector('#engine canvas');
+
     ['pointerdown', 'pointerup'].forEach((name) => {
       scene.input.on(name, (pointer) => {
-        this.pointerEvents.push({
-          name,
-          x: pointer.x,
-          y: pointer.y,
-        });
+        // fix issue with dat.gui not releasing focus
+        if (!document.activeElement || !document.activeElement.contains || document.activeElement.contains(canvas)) {
+          this.pointerEvents.push({
+            name,
+            x: pointer.x,
+            y: pointer.y,
+          });
+        } else {
+          // timeout to avoid 2x input events
+          setTimeout(() => {
+            document.activeElement.blur();
+          });
+        }
       });
     });
   }
