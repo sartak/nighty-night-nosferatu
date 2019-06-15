@@ -413,6 +413,7 @@ function updatePropsFromReload(next) {
 
       const requiresRecreation = requiresControllerRecreation(key, next);
       if (!requiresRecreation || requiresRecreation === 'callback') {
+        manageableProps[key] = controller.object[key];
         controller.object = manageableProps;
 
         if (requiresRecreation === 'callback') {
