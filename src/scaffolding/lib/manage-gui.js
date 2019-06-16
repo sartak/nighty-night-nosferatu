@@ -118,8 +118,12 @@ function setUnchangedProp(key) {
 }
 
 function addController(key, spec, open, saved) {
-  const [, ...options] = propSpecs[key];
+  const [originalValue, ...options] = propSpecs[key];
   const folder = addNestedFolder(key);
+
+  if (manageablePropsProxy[key] === null) {
+    throw new Error(`Prop ${key} must not be initialized to null`);
+  }
 
   if (key.endsWith('_enabled')) {
     const prefix = key.substr(0, key.length - '_enabled'.length);
@@ -146,8 +150,6 @@ function addController(key, spec, open, saved) {
     if (options.length >= 1 && typeof options[options.length - 1] === 'function') {
       callback = options.pop();
     }
-
-    const [originalValue] = propSpecs[key];
 
     if (key.match(/color/i)) {
       controller = folder.addColor(manageablePropsProxy, key, ...options);
