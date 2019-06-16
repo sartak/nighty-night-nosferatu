@@ -490,7 +490,7 @@ function updatePropsFromReload(oldValues, nextSpecs) {
       if (!requiresRecreation || requiresRecreation === 'callback') {
         if (requiresRecreation === 'callback') {
           controller.__ldCallback = spec[spec.length - 1];
-        } else if (manageableProps[key] !== oldValues[key]) {
+        } else if (spec[1] !== null && manageableProps[key] !== oldValues[key]) {
           manageableProps[key] = oldValues[key];
           setChangedProp(key);
         }
