@@ -21,7 +21,29 @@
 }
 
 .Manage .search::placeholder {
-  color: #AAA;
+  color: #aaa;
+}
+
+.Manage .copy {
+  display: none;
+  margin-left: 1em;
+  background: #202020;
+  color: white;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  padding: 4px;
+  border: none;
+}
+
+.Manage .copy:hover {
+  cursor: pointer;
+  background: #303030;
+}
+
+body.changed-props .Manage .copy {
+  display: inline-block;
 }
 
 .Manage .dg.main {

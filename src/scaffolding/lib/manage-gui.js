@@ -253,6 +253,7 @@ function addController(key, spec, open) {
 
           if (isChanged) {
             crNode.classList.add('changed');
+            document.body.classList.add('changed-props');
           } else {
             crNode.classList.remove('changed');
           }
@@ -517,6 +518,27 @@ export function updateSearch(query, isStarted) {
     });
   }
   regenerateListenPropsCache();
+}
+
+export function calculateChangedProps() {
+  const changes = [];
+  Object.entries(propSpecs).forEach(([key, spec]) => {
+    if (spec[1] === null) {
+      return;
+    }
+
+    if (typeof spec[0] === 'function') {
+      return;
+    }
+
+    const value = manageableProps[key];
+    if (spec[0] !== value) {
+      const assignment = `propSpecs['${key}'][0] = ${JSON.stringify(value)};`;
+      changes.push(assignment);
+    }
+  });
+
+  return changes.join('\n');
 }
 
 if (module.hot) {

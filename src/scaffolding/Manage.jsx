@@ -1,6 +1,6 @@
 import React from 'react';
 import './Manage.css';
-import gui, {updateSearch} from './lib/manage-gui';
+import gui, {updateSearch, calculateChangedProps} from './lib/manage-gui';
 
 export default class Manage extends React.Component {
   constructor(props) {
@@ -15,6 +15,15 @@ export default class Manage extends React.Component {
 
   componentDidMount() {
     this.ref.current.append(gui.domElement);
+  }
+
+  copyChangedProps() {
+    const tempNode = document.createElement('textarea');
+    tempNode.value = calculateChangedProps();
+    document.body.appendChild(tempNode);
+    tempNode.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempNode);
   }
 
   render() {
@@ -32,6 +41,12 @@ export default class Manage extends React.Component {
             this.setState({search: e.target.value});
             updateSearch(e.target.value, isStarted);
           }}
+        />
+        <input
+          type="button"
+          className="copy"
+          value="Copy changes"
+          onClick={() => this.copyChangedProps()}
         />
         <div className={search === '' ? '' : 'searching'} ref={this.ref} />
       </div>
