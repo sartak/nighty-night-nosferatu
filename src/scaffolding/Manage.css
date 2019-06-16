@@ -24,7 +24,8 @@
   color: #aaa;
 }
 
-.Manage .copy {
+.Manage .copy,
+.Manage .reset {
   display: none;
   margin-left: 1em;
   background: #202020;
@@ -37,12 +38,14 @@
   border: none;
 }
 
-.Manage .copy:hover {
+.Manage .copy:hover,
+.Manage .reset:hover {
   cursor: pointer;
   background: #303030;
 }
 
-body.changed-props .Manage .copy {
+body.changed-props .Manage .copy,
+body.changed-props .Manage .reset {
   display: inline-block;
 }
 

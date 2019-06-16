@@ -520,7 +520,7 @@ export function updateSearch(query, isStarted) {
   regenerateListenPropsCache();
 }
 
-export function calculateChangedProps() {
+function changedProps() {
   const changes = [];
   Object.entries(propSpecs).forEach(([key, spec]) => {
     if (spec[1] === null) {
@@ -533,12 +533,31 @@ export function calculateChangedProps() {
 
     const value = manageableProps[key];
     if (spec[0] !== value) {
-      const assignment = `propSpecs['${key}'][0] = ${JSON.stringify(value)};`;
-      changes.push(assignment);
+      changes.push(key);
     }
   });
 
-  return changes.join('\n');
+  return changes;
+}
+
+export function serializeChangedProps() {
+  return changedProps().map((key) => (
+    `propSpecs['${key}'][0] = ${JSON.stringify(manageableProps[key])};`
+  )).join('\n');
+}
+
+export function resetChangedProps() {
+  changedProps().forEach((key) => {
+    [manageableProps[key]] = propSpecs[key];
+    try {
+      controllers[key].__onChange(manageableProps[key]);
+      controllers[key].__onFinishChange(manageableProps[key]);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  });
+  document.body.classList.remove('changed-props');
 }
 
 if (module.hot) {
