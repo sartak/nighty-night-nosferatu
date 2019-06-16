@@ -553,15 +553,27 @@ export function updateSearch(query, isStarted) {
     });
 
     container.querySelectorAll('li[data-prop]').forEach((node) => {
-      const {prop} = node.dataset;
-      if (prop.match(queryRegex)) {
+      let isFiltered = true;
+
+      if (query.toLowerCase() === 'change') {
+        if (node.classList.contains('changed')) {
+          isFiltered = false;
+        }
+      } else {
+        const {prop} = node.dataset;
+        if (prop.match(queryRegex)) {
+          isFiltered = false;
+        }
+      }
+
+      if (isFiltered) {
+        node.classList.add('filtered');
+      } else {
         let folder = node;
         while (folder) {
           folder.classList.remove('filtered');
           folder = folder.parentNode.closest('.filtered');
         }
-      } else {
-        node.classList.add('filtered');
       }
     });
   }
