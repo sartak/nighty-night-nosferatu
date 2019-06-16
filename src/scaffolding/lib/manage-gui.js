@@ -4,8 +4,7 @@ import {manageableProps, propSpecs} from '../../props';
 import {saveField} from './store';
 import {savedChangedProps} from './props';
 
-const gui = new dat.GUI({autoPlace: false});
-export default gui;
+let gui;
 
 const folders = {};
 const controllers = {};
@@ -24,8 +23,21 @@ const manageablePropsProxy = new Proxy({}, {
   },
 });
 
-Object.keys(propSpecs).forEach((key) => addNestedFolder(key));
-Object.keys(propSpecs).forEach((key) => addController(key, propSpecs[key], false, key in savedChangedProps || `${key}_enabled` in savedChangedProps));
+export function initializeManage() {
+  if (!gui) {
+    gui = new dat.GUI({autoPlace: false});
+
+    Object.keys(propSpecs).forEach((key) => addNestedFolder(key));
+    Object.keys(propSpecs).forEach((key) => addController(
+      key,
+      propSpecs[key],
+      false,
+      key in savedChangedProps || `${key}_enabled` in savedChangedProps,
+    ));
+  }
+
+  return gui;
+}
 
 function upcase(word) {
   return word.charAt(0).toUpperCase() + word.slice(1);

@@ -1,6 +1,6 @@
 import React from 'react';
 import './Manage.css';
-import gui, {updateSearch, serializeChangedProps, resetChangedProps} from './lib/manage-gui';
+import {initializeManage, updateSearch, serializeChangedProps, resetChangedProps} from './lib/manage-gui';
 
 export default class Manage extends React.Component {
   constructor(props) {
@@ -14,6 +14,7 @@ export default class Manage extends React.Component {
   }
 
   componentDidMount() {
+    const gui = initializeManage();
     this.ref.current.append(gui.domElement);
   }
 
