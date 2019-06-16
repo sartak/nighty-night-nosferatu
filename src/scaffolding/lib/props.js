@@ -180,10 +180,13 @@ export function commandKeyProps(commands) {
   return props;
 }
 
-export function ManageableProps(propSpecs, particleImages) {
+export function preprocessPropSpecs(propSpecs, particleImages) {
   expandParticleProps(propSpecs, particleImages);
   expandTweenProps(propSpecs, particleImages);
 
+}
+
+export function ManageableProps(propSpecs) {
   Object.entries(propSpecs).forEach(([key, spec]) => {
     if (!Array.isArray(spec)) {
       throw new Error(`Invalid spec for prop ${key}; expected array, got ${spec}`);

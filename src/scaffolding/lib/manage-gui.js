@@ -8,6 +8,7 @@ export default gui;
 const folders = {};
 const controllers = {};
 const parentOfFolder = new Map();
+const changedProps = {};
 
 let proxiedManageableProps = manageableProps;
 const manageablePropsProxy = new Proxy({}, {
@@ -78,6 +79,18 @@ function removeEmptyFolders() {
   // recurse now that the parent of the deleted folder could now be empty
   if (deletedFolder) {
     removeEmptyFolders();
+  }
+}
+
+function setChangedProp(key) {
+  changedProps[key] = [manageableProps[key], propSpecs[key][0]];
+  document.body.classList.add('changed-props');
+}
+
+function setUnchangedProp(key) {
+  delete changedProps[key];
+  if (!Object.keys(changedProps).length) {
+    document.body.classList.remove('changed-props');
   }
 }
 
@@ -180,8 +193,10 @@ function addController(key, spec, open) {
       parentNode.appendChild(container);
 
       resetButton.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
 
         manageableProps[key] = originalValue;
 
@@ -245,15 +260,24 @@ function addController(key, spec, open) {
           scene.propDidChange(key, value);
 
           let isChanged = false;
-          if (enabledCheckbox && manageableProps[enabledKey] !== enabledValue) {
+          if (enabledCheckbox) {
+            if (manageableProps[enabledKey] !== enabledValue) {
+              isChanged = true;
+              setChangedProp(enabledKey);
+            } else {
+              setUnchangedProp(enabledKey);
+            }
+          }
+
+          if (value !== originalValue) {
             isChanged = true;
-          } else if (value !== originalValue) {
-            isChanged = true;
+            setChangedProp(key);
+          } else {
+            setUnchangedProp(key);
           }
 
           if (isChanged) {
             crNode.classList.add('changed');
-            document.body.classList.add('changed-props');
           } else {
             crNode.classList.remove('changed');
           }
@@ -430,14 +454,18 @@ function updatePropsFromReload(oldValues, nextSpecs) {
 
       const requiresRecreation = requiresControllerRecreation(key, nextSpecs);
       if (!requiresRecreation || requiresRecreation === 'callback') {
-        manageableProps[key] = oldValues[key];
-
         if (requiresRecreation === 'callback') {
           controller.__ldCallback = spec[spec.length - 1];
+        } else if (manageableProps[key] !== oldValues[key]) {
+          manageableProps[key] = oldValues[key];
+          setChangedProp(key);
         }
 
         return;
       }
+
+      setUnchangedProp(`${key}_enabled`);
+      setUnchangedProp(key);
 
       // regenerate this controller with the new config
       const container = controller.domElement.closest('.cr');
@@ -520,42 +548,16 @@ export function updateSearch(query, isStarted) {
   regenerateListenPropsCache();
 }
 
-function changedProps() {
-  const changes = [];
-  Object.entries(propSpecs).forEach(([key, spec]) => {
-    if (spec[1] === null) {
-      return;
-    }
-
-    if (typeof spec[0] === 'function') {
-      return;
-    }
-
-    const value = manageableProps[key];
-    if (spec[0] !== value) {
-      changes.push(key);
-    }
-  });
-
-  return changes;
-}
-
 export function serializeChangedProps() {
-  return changedProps().map((key) => (
-    `propSpecs['${key}'][0] = ${JSON.stringify(manageableProps[key])};`
+  console.log(changedProps);
+  return Object.entries(changedProps).map(([key, [current]]) => (
+    `propSpecs['${key}'][0] = ${JSON.stringify(current)};`
   )).join('\n');
 }
 
 export function resetChangedProps() {
-  changedProps().forEach((key) => {
-    [manageableProps[key]] = propSpecs[key];
-    try {
-      controllers[key].__onChange(manageableProps[key]);
-      controllers[key].__onFinishChange(manageableProps[key]);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
-    }
+  document.querySelectorAll('.Manage .cr.changed .reset input').forEach((button) => {
+    button.onclick();
   });
   document.body.classList.remove('changed-props');
 }

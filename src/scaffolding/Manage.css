@@ -24,8 +24,8 @@
   color: #aaa;
 }
 
-.Manage .copy,
-.Manage .reset {
+.Manage > .copy,
+.Manage > .reset {
   display: none;
   margin-left: 1em;
   background: #202020;
@@ -38,15 +38,21 @@
   border: none;
 }
 
-.Manage .copy:hover,
-.Manage .reset:hover {
+.Manage > .copy:hover,
+.Manage > .reset:hover {
   cursor: pointer;
   background: #303030;
 }
 
-body.changed-props .Manage .copy,
-body.changed-props .Manage .reset {
+body.changed-props .Manage > .copy,
+body.changed-props .Manage > .reset {
   display: inline-block;
+}
+
+.Manage .dg input,
+.Manage .dg .slider {
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .Manage .dg.main {
@@ -77,20 +83,24 @@ body.changed-props .Manage .reset {
 
 .Manage .dg .property-name {
   box-sizing: border-box;
-  padding-right: 33px;
+  padding-right: 31px;
 }
 
 .Manage .dg .disableable .property-name {
-  padding-right: 59px;
+  padding-right: 55px;
 }
 
 .Manage .dg .disableable .toggle {
   position: absolute;
-  left: calc(60% - 59px);
+  left: calc(60% - 55px);
 }
 
 .Manage .dg .disableable .toggle input {
   cursor: pointer;
+}
+
+.Manage .dg .cr {
+  position: relative;
 }
 
 .Manage .dg .cr.listen {
@@ -103,12 +113,21 @@ body.changed-props .Manage .reset {
 
 .Manage .dg .cr .reset {
   position: absolute;
-  left: calc(60% - 33px);
+  left: calc(60% - 31px);
+  top: -1px;
   visibility: hidden;
 }
 
 .Manage .dg .cr .reset input {
   cursor: pointer;
+  background: #404040;
+  color: white;
+  border: none;
+  padding: 1px 4px;
+}
+
+.Manage .dg .cr .reset input:hover {
+  background: #606060;
 }
 
 .Manage .dg .cr.boolean .reset {
