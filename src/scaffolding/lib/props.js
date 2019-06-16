@@ -1,8 +1,11 @@
 import Phaser from 'phaser';
 import {expandParticleProps} from './particles';
 import {expandTweenProps} from './tweens';
-import {freezeStorage, removeAllFields} from './store';
+import {freezeStorage, removeAllFields, loadField} from './store';
 import {preprocessTileDefinitions} from './level-parser';
+
+const savedChangedProps = loadField('changedProps', {});
+export {savedChangedProps};
 
 const rendererName = {
   [Phaser.AUTO]: 'auto',
@@ -183,7 +186,6 @@ export function commandKeyProps(commands) {
 export function preprocessPropSpecs(propSpecs, particleImages) {
   expandParticleProps(propSpecs, particleImages);
   expandTweenProps(propSpecs, particleImages);
-
 }
 
 export function ManageableProps(propSpecs) {
@@ -205,6 +207,15 @@ export function ManageableProps(propSpecs) {
           console.error(e);
         }
       };
+    }
+
+    if (savedChangedProps[key]) {
+      const [current, original] = savedChangedProps[key];
+      if (value === original) {
+        value = current;
+      } else {
+        delete savedChangedProps[key];
+      }
     }
 
     this[key] = value;

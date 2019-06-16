@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import * as dat from 'dat.gui';
 import {manageableProps, propSpecs} from '../../props';
+import {saveField} from './store';
+import {savedChangedProps} from './props';
 
 const gui = new dat.GUI({autoPlace: false});
 export default gui;
@@ -23,7 +25,7 @@ const manageablePropsProxy = new Proxy({}, {
 });
 
 Object.keys(propSpecs).forEach((key) => addNestedFolder(key));
-Object.keys(propSpecs).forEach((key) => addController(key, propSpecs[key]));
+Object.keys(propSpecs).forEach((key) => addController(key, propSpecs[key], false, key in savedChangedProps || `${key}_enabled` in savedChangedProps));
 
 function upcase(word) {
   return word.charAt(0).toUpperCase() + word.slice(1);
@@ -82,6 +84,15 @@ function removeEmptyFolders() {
   }
 }
 
+let batchSaveChangedProps = 0;
+function saveChangedProps() {
+  if (batchSaveChangedProps) {
+    return;
+  }
+
+  saveField('changedProps', changedProps);
+}
+
 function setChangedProp(key) {
   changedProps[key] = [manageableProps[key], propSpecs[key][0]];
   document.body.classList.add('changed-props');
@@ -94,7 +105,7 @@ function setUnchangedProp(key) {
   }
 }
 
-function addController(key, spec, open) {
+function addController(key, spec, open, saved) {
   const [, ...options] = propSpecs[key];
   const folder = addNestedFolder(key);
 
@@ -124,7 +135,7 @@ function addController(key, spec, open) {
       callback = options.pop();
     }
 
-    const originalValue = manageableProps[key];
+    const [originalValue] = propSpecs[key];
 
     if (key.match(/color/i)) {
       controller = folder.addColor(manageablePropsProxy, key, ...options);
@@ -138,6 +149,7 @@ function addController(key, spec, open) {
 
     let enabledCheckbox;
     let enabledValue;
+    const originalEnabled = enabledKey in propSpecs ? propSpecs[enabledKey][0] : null;
 
     if (enabledKey in manageableProps) {
       enabledValue = manageableProps[enabledKey];
@@ -202,8 +214,8 @@ function addController(key, spec, open) {
 
         if (enabledCheckbox) {
           enabledCheckbox.__suppressChange = true;
-          manageableProps[enabledKey] = enabledValue;
-          if (enabledValue) {
+          manageableProps[enabledKey] = originalEnabled;
+          if (originalEnabled) {
             enabledCheckbox.setAttribute('checked', 'checked');
             enabledCheckbox.checked = true;
           } else {
@@ -238,6 +250,7 @@ function addController(key, spec, open) {
           const {game} = window;
           const scene = game.topScene();
           scene.propDidFinishChange(key, value);
+          saveChangedProps();
         } catch (e) {
           // eslint-disable-next-line no-console
           console.error(e);
@@ -261,7 +274,7 @@ function addController(key, spec, open) {
 
           let isChanged = false;
           if (enabledCheckbox) {
-            if (manageableProps[enabledKey] !== enabledValue) {
+            if (manageableProps[enabledKey] !== originalEnabled) {
               isChanged = true;
               setChangedProp(enabledKey);
             } else {
@@ -275,6 +288,8 @@ function addController(key, spec, open) {
           } else {
             setUnchangedProp(key);
           }
+
+          saveChangedProps();
 
           if (isChanged) {
             crNode.classList.add('changed');
@@ -292,6 +307,11 @@ function addController(key, spec, open) {
 
         return ret;
       });
+
+      if (saved) {
+        setChangedProp(key);
+        crNode.classList.add('changed');
+      }
     }
   }
 
@@ -549,17 +569,18 @@ export function updateSearch(query, isStarted) {
 }
 
 export function serializeChangedProps() {
-  console.log(changedProps);
   return Object.entries(changedProps).map(([key, [current]]) => (
     `propSpecs['${key}'][0] = ${JSON.stringify(current)};`
   )).join('\n');
 }
 
 export function resetChangedProps() {
+  batchSaveChangedProps += 1;
   document.querySelectorAll('.Manage .cr.changed .reset input').forEach((button) => {
     button.onclick();
   });
-  document.body.classList.remove('changed-props');
+  batchSaveChangedProps -= 1;
+  saveChangedProps();
 }
 
 if (module.hot) {
