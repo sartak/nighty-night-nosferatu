@@ -66,6 +66,12 @@
 
 .Replay .replays .replay {
   padding: 0.12em 0;
+  display: flex;
+  align-items: center;
+}
+
+.Replay .replays .replay.editing .edit {
+  visibility: hidden !important;
 }
 
 .Replay .replays .replay .drag,
@@ -88,14 +94,6 @@
 .Replay .replays .replay:hover .drag,
 .Replay .replays .replay:hover .edit {
   visibility: visible;
-}
-
-.Replay .replays .replay.editing .play,
-.Replay .replays .replay.editing .drag,
-.Replay .replays .replay.active .drag,
-.Replay .replays .replay.editing .edit,
-.Replay .replays .replay.active .edit {
-  visibility: hidden !important;
 }
 
 .Replay form {

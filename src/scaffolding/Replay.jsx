@@ -19,8 +19,12 @@ export default class Replay extends React.Component {
         delete replay.preflight;
       }
 
-      if (!replay.tickCount) {
+      if (!('tickCount' in replay)) {
         replay.tickCount = replay.commands.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0);
+      }
+
+      if (!('originalPreflightCutoff' in replay)) {
+        replay.originalPreflightCutoff = replay.preflightCutoff;
       }
     });
 
@@ -93,7 +97,7 @@ export default class Replay extends React.Component {
 
       if (repeat && !replay.snapshot) {
         setTimeout(() => {
-          this.beginReplay(replay);
+          this.beginReplay(this.state.activeReplay);
         });
       } else {
         this.setState({activeReplay: null});
@@ -177,45 +181,87 @@ export default class Replay extends React.Component {
     });
   }
 
-  finishEdit() {
+  finishEdit(replay) {
     this.setState({editing: null});
 
     setTimeout(() => {
-      const {replays} = this.state;
+      const {replays, activeReplay} = this.state;
       saveField('replays', replays);
+
+      if (activeReplay && activeReplay.timestamp === replay.timestamp) {
+        saveField('activeReplay', activeReplay);
+      }
     });
   }
 
-  editName({timestamp}, name) {
-    this.setState(({replays}) => ({
-      replays: replays.map((replay) => (replay.timestamp === timestamp ? {...replay, name} : replay)),
-    }));
+  updateReplay({timestamp}, changes, beginReplay) {
+    this.setState(({activeReplay, replays}) => {
+      let newReplay;
+      const newState = {
+        replays: replays.map((replay) => {
+          if (replay.timestamp === timestamp) {
+            newReplay = {
+              ...replay,
+              ...changes,
+            };
+            return newReplay;
+          }
+          return replay;
+        }),
+      };
+
+      if (activeReplay && activeReplay.timestamp === timestamp) {
+        newState.activeReplay = {
+          ...activeReplay,
+          ...changes,
+        };
+      }
+
+      if (newReplay && beginReplay) {
+        setTimeout(() => {
+          this.beginReplay({
+            ...newReplay,
+            timeSight: activeReplay && activeReplay.timeSight,
+          });
+        });
+      }
+
+      return newState;
+    });
   }
 
-  editPreflightCutoff({timestamp, tickCount}, preflightCutoff) {
-    const snapshot = preflightCutoff > tickCount * 0.99;
-    this.setState(({replays}) => ({
-      replays: replays.map((replay) => (replay.timestamp === timestamp ? {...replay, preflightCutoff, snapshot} : replay)),
-    }));
+  editName(replay, name, beginReplay) {
+    this.updateReplay(replay, {name}, beginReplay);
+  }
+
+  editPreflightCutoff(replay, preflightCutoff, beginReplay) {
+    const snapshot = preflightCutoff > replay.tickCount * 0.99;
+    this.updateReplay(replay, {preflightCutoff, snapshot}, beginReplay);
   }
 
   deleteReplay({timestamp}, name) {
-    this.setState(({replays}) => {
+    this.setState(({activeReplay, replays}) => {
       const newReplays = replays.filter((replay) => replay.timestamp !== timestamp);
 
       setTimeout(() => {
         saveField('replays', newReplays);
       });
 
+      if (activeReplay && activeReplay.timestamp === timestamp) {
+        setTimeout(() => this.stopReplay());
+      }
+
       return {replays: newReplays};
     });
   }
 
   renderEditReplay(replay) {
+    const {activeReplay} = this.state;
+
     return (
       <form onSubmit={(e) => {
         e.preventDefault();
-        this.finishEdit();
+        this.finishEdit(replay);
       }}
       >
         <input
@@ -226,7 +272,27 @@ export default class Replay extends React.Component {
         />
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
         <br />
-        <input type="range" min="0" max={replay.tickCount} value={replay.preflightCutoff} onChange={(e) => this.editPreflightCutoff(replay, e.target.value)} />
+        <input
+          type="range"
+          min="0"
+          max={replay.tickCount}
+          value={replay.preflightCutoff}
+          onChange={(e) => this.editPreflightCutoff(replay, e.target.value)}
+          onMouseUp={() => this.beginReplay({
+            ...replay,
+            timeSight: activeReplay && activeReplay.timeSight,
+          })}
+        />
+        {replay.preflightCutoff !== replay.originalPreflightCutoff && (
+          <input
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              this.editPreflightCutoff(replay, replay.originalPreflightCutoff, true);
+            }}
+            value="⤺"
+          />
+        )}
       </form>
     );
   }

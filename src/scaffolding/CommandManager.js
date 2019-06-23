@@ -437,7 +437,7 @@ export default class CommandManager {
     const manager = this.getManager(scene);
     manager.recording = recording;
     recording.commands = manager.commands;
-    recording.preflightCutoff = recording.tickCount = manager.tickCount;
+    recording.originalPreflightCutoff = recording.preflightCutoff = recording.tickCount = manager.tickCount;
   }
 
   stopRecording(scene) {
