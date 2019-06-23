@@ -6,8 +6,22 @@ export default class Replay extends React.Component {
   constructor(props) {
     super(props);
 
+    const replays = loadField('replays', []);
+
+    // migrate old replays
+    replays.forEach((replay) => {
+      if (replay.preflight) {
+        replay.commands = [
+          ...replay.preflight,
+          ...(replay.commands || []),
+        ];
+        replay.preflightCutoff = replay.preflight.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0);
+        delete replay.preflight;
+      }
+    });
+
     this.state = {
-      replays: loadField('replays', []),
+      replays,
       activeRecording: null,
       activeReplay: loadField('activeReplay', null),
       editing: null,

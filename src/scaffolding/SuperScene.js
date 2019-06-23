@@ -322,9 +322,8 @@ export default class SuperScene extends Phaser.Scene {
     let time = window.performance.now();
     const dt = 1000 / this.physics.world.fps;
 
-    if (replay.preflight) {
+    if (replay.preflightCutoff) {
       this.game._replayPreflight += 1;
-      command.beginPreflight(this);
 
       loop.sleep();
       this.scene.setVisible(false);
@@ -349,11 +348,11 @@ export default class SuperScene extends Phaser.Scene {
         const manager = this.command.getManager(this);
 
         this._timeSightTargetEnded = () => {
-          replay.timeSightFrameCallback(this, time, dt, manager.speculativeRecording, true);
+          replay.timeSightFrameCallback(this, time, dt, manager.commands, true);
         };
 
         while (!this._timeSightTargetDone) {
-          replay.timeSightFrameCallback(this, time, dt, manager.speculativeRecording, false);
+          replay.timeSightFrameCallback(this, time, dt, manager.commands, false);
           time += dt;
           loop.step(time);
 
@@ -393,10 +392,10 @@ export default class SuperScene extends Phaser.Scene {
       {
         ...this._replay,
         timeSight: false,
-        timeSightFrameCallback: (scene, frameTime, frameDt, preflight, isLast) => {
+        timeSightFrameCallback: (scene, frameTime, frameDt, commands, isLast) => {
           objectDt += frameDt;
 
-          const frame = this.timeSightTargetStep(scene, objectDt, frameTime, frameDt, preflight, isLast);
+          const frame = this.timeSightTargetStep(scene, objectDt, frameTime, frameDt, commands, isLast);
           if (frame) {
             objectDt = 0;
           }
@@ -417,7 +416,7 @@ export default class SuperScene extends Phaser.Scene {
     );
   }
 
-  timeSightTargetStep(scene, objectDt, frameTime, frameDt, preflight, isLast) {
+  timeSightTargetStep(scene, objectDt, frameTime, frameDt, commands, isLast) {
     const objects = scene.renderTimeSightFrameInto(this, objectDt, frameTime, frameDt, isLast);
     if (!objects || !objects.length) {
       return;
@@ -435,8 +434,9 @@ export default class SuperScene extends Phaser.Scene {
     const frame = {
       objects,
       props: {...manageableProps},
-      preflight: [...preflight],
+      commands: [...commands],
     };
+
     this._timeSightFrames.push(frame);
     return frame;
   }
@@ -572,8 +572,8 @@ export default class SuperScene extends Phaser.Scene {
         ...replay,
         timeSight: false,
         snapshot: true,
-        preflight: activeObject._timeSightFrame.preflight,
-        commands: [],
+        commands: activeObject._timeSightFrame.commands,
+        preflightCutoff: activeObject._timeSightFrame.commands.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0),
       });
     });
   }
