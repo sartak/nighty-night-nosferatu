@@ -173,7 +173,7 @@ export default class Replay extends React.Component {
     });
   }
 
-  blurEdit() {
+  finishEdit() {
     this.setState({editing: null});
 
     setTimeout(() => {
@@ -204,14 +204,13 @@ export default class Replay extends React.Component {
     return (
       <form onSubmit={(e) => {
         e.preventDefault();
-        this.blurEdit();
+        this.finishEdit();
       }}
       >
         <input
           type="text"
           autoFocus
           value={replay.name}
-          onBlur={() => this.blurEdit()}
           onChange={(e) => this.editName(replay, e.target.value)}
         />
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
@@ -272,16 +271,16 @@ export default class Replay extends React.Component {
             >
               <span className="drag">⋮⋮</span>
               {activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && (
-                <span className="button" title="Restart timeSight" onClick={() => this.beginReplay({...replay, timeSight: true})}>⚛</span>
+                <span className="play button" title="Restart timeSight" onClick={() => this.beginReplay({...replay, timeSight: true})}>⚛</span>
               )}
               {activeReplay && !activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && (
-                <span className="button" title="Restart replay" onClick={() => this.beginReplay(replay)}>📺</span>
+                <span className="play button" title="Restart replay" onClick={() => this.beginReplay(replay)}>📺</span>
               )}
               {(!activeReplay || activeReplay.timestamp !== replay.timestamp) && !replay.snapshot && (
-                <span className="button" title="Start replay" onClick={() => this.beginReplay(replay)}>▶️</span>
+                <span className="play button" title="Start replay" onClick={() => this.beginReplay(replay)}>▶️</span>
               )}
               {(!activeReplay || activeReplay.timestamp !== replay.timestamp) && replay.snapshot && (
-                <span className="button" title="Load snapshot (load state)" onClick={() => this.beginReplay(replay)}>🎆</span>
+                <span className="play button" title="Load snapshot (load state)" onClick={() => this.beginReplay(replay)}>🎆</span>
               )}
               {editing === replay.timestamp && (
                 this.renderEditReplay(replay)

@@ -90,6 +90,7 @@
   visibility: visible;
 }
 
+.Replay .replays .replay.editing .play,
 .Replay .replays .replay.editing .drag,
 .Replay .replays .replay.active .drag,
 .Replay .replays .replay.editing .edit,
