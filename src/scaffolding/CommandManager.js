@@ -58,6 +58,7 @@ export default class CommandManager {
       scene,
       ignoreAlls: {},
       commands: scene.game.debug ? [] : null,
+      tickCount: 0,
       suppressRepeatFrames,
     });
   }
@@ -423,6 +424,11 @@ export default class CommandManager {
       || this.heldCommands(onlyUnsuppressable);
 
     this.addFrameToList(manager.suppressRepeatFrames, manager.commands, frame);
+    manager.tickCount += 1;
+
+    if (manager.recording) {
+      manager.recording.tickCount += 1;
+    }
 
     this.processCommands(scene, frame, dt);
   }
@@ -431,7 +437,7 @@ export default class CommandManager {
     const manager = this.getManager(scene);
     manager.recording = recording;
     recording.commands = manager.commands;
-    recording.preflightCutoff = manager.commands.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0);
+    recording.preflightCutoff = recording.tickCount = manager.tickCount;
   }
 
   stopRecording(scene) {

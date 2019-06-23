@@ -18,6 +18,10 @@ export default class Replay extends React.Component {
         replay.preflightCutoff = replay.preflight.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0);
         delete replay.preflight;
       }
+
+      if (!replay.tickCount) {
+        replay.tickCount = replay.commands.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0);
+      }
     });
 
     this.state = {
@@ -188,6 +192,13 @@ export default class Replay extends React.Component {
     }));
   }
 
+  editPreflightCutoff({timestamp, tickCount}, preflightCutoff) {
+    const snapshot = preflightCutoff > tickCount * 0.99;
+    this.setState(({replays}) => ({
+      replays: replays.map((replay) => (replay.timestamp === timestamp ? {...replay, preflightCutoff, snapshot} : replay)),
+    }));
+  }
+
   deleteReplay({timestamp}, name) {
     this.setState(({replays}) => {
       const newReplays = replays.filter((replay) => replay.timestamp !== timestamp);
@@ -214,6 +225,8 @@ export default class Replay extends React.Component {
           onChange={(e) => this.editName(replay, e.target.value)}
         />
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
+        <br />
+        <input type="range" min="0" max={replay.tickCount} value={replay.preflightCutoff} onChange={(e) => this.editPreflightCutoff(replay, e.target.value)} />
       </form>
     );
   }
