@@ -131,12 +131,17 @@ export default class Replay extends React.Component {
     this.beginReplay(activeReplay);
   }
 
-  beginReplay(replay) {
+  beginReplay(replay, clearOtherEditing) {
     const {activateGame} = this.props;
+    const {editing} = this.state;
     activateGame(() => {
       const {activeReplay} = this.state;
       if (activeReplay) {
         window.game.stopReplay();
+      }
+
+      if (clearOtherEditing && editing && editing.timestamp !== replay.timestamp) {
+        this.setState({editing: null});
       }
 
       window.game.beginReplay(replay);
@@ -171,7 +176,7 @@ export default class Replay extends React.Component {
 
   toggleTimeSight() {
     const {activeReplay} = this.state;
-    this.beginReplay({...activeReplay, timeSight: !activeReplay.timeSight});
+    this.beginReplay({...activeReplay, timeSight: !activeReplay.timeSight}, true);
   }
 
   toggleRepeat() {
@@ -426,21 +431,21 @@ export default class Replay extends React.Component {
             >
               <span className="drag">⋮⋮</span>
               {activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && (
-                <span className="play button" title="Restart timeSight" onClick={() => this.beginReplay({...replay, timeSight: true})}>⚛</span>
+                <span className="play button" title="Restart timeSight" onClick={() => this.beginReplay({...replay, timeSight: true}, true)}>⚛</span>
               )}
               {activeReplay && !activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && (
-                <span className="play button" title="Restart replay" onClick={() => this.beginReplay(replay)}>📺</span>
+                <span className="play button" title="Restart replay" onClick={() => this.beginReplay(replay, true)}>📺</span>
               )}
               {(!activeReplay || activeReplay.timestamp !== replay.timestamp) && !replay.snapshot && (
-                <span className="play button" title="Start replay" onClick={() => this.beginReplay(replay)}>▶️</span>
+                <span className="play button" title="Start replay" onClick={() => this.beginReplay(replay, true)}>▶️</span>
               )}
               {(!activeReplay || activeReplay.timestamp !== replay.timestamp) && replay.snapshot && (
-                <span className="play button" title="Load snapshot (load state)" onClick={() => this.beginReplay(replay)}>🎆</span>
+                <span className="play button" title="Load snapshot (load state)" onClick={() => this.beginReplay(replay, true)}>🎆</span>
               )}
               {editing === replay.timestamp && (
                 this.renderEditReplay(replay)
               )}
-              <span className="name" onClick={() => this.beginReplay(replay)}>{replay.name}</span>
+              <span className="name" onClick={() => this.beginReplay(replay, true)}>{replay.name}</span>
               <span className="edit button" title="Edit replay" onClick={() => this.setState({editing: replay.timestamp})}>ℹ</span>
             </li>
           ))}
