@@ -379,16 +379,16 @@ handler to fire outside the game loop with a setTimeout or something?`);
     }
   }
 
-  preflightCutoffTimeSightEnter() {
-    this.topScene().preflightCutoffTimeSightEnter();
+  cutoffTimeSightEnter() {
+    this.topScene().cutoffTimeSightEnter();
   }
 
-  preflightCutoffTimeSightMoved(tick) {
-    this.topScene().preflightCutoffTimeSightMoved(tick);
+  cutoffTimeSightChanged(start, end) {
+    this.topScene().cutoffTimeSightChanged(start, end);
   }
 
-  preflightCutoffTimeSightLeave() {
-    this.topScene().preflightCutoffTimeSightLeave();
+  cutoffTimeSightLeave() {
+    this.topScene().cutoffTimeSightLeave();
   }
 }
 

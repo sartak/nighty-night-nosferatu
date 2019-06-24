@@ -1,0 +1,32 @@
+.DoubleEnder {
+  position: relative;
+  display: inline-block;
+  min-width: 100px;
+  height: 16px;
+  margin: 2px 4px;
+}
+
+.DoubleEnder .track {
+  width: 100%;
+  margin-top: 8px;
+  height: 4px;
+  background: black;
+  border-radius: 4px;
+}
+
+.DoubleEnder .slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid #000000;
+  height: 16px;
+  width: 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+
+.DoubleEnder .slider.dragging {
+  background: #dddddd;
+}

@@ -386,7 +386,7 @@ export default class CommandManager {
       return null;
     }
 
-    if (manager.replayFrame >= manager.replay.commands.length) {
+    if (manager.replayFrame >= manager.replay.commands.length || manager.tickCount >= manager.replay.postflightCutoff) {
       this.endedReplay(scene);
       return null;
     }
@@ -444,6 +444,7 @@ export default class CommandManager {
     const manager = this.getManager(scene);
     const {recording} = manager;
     delete manager.recording;
+    recording.postflightCutoff = manager.tickCount;
     return recording;
   }
 
@@ -497,7 +498,15 @@ export default class CommandManager {
 
   hasPreflight(scene) {
     const manager = this.getManager(scene);
-    return manager.replay && manager.replayTicks < manager.replay.preflightCutoff;
+    if (!manager.replay) {
+      return false;
+    }
+
+    if (manager.replayTicks >= manager.replay.postflightCutoff) {
+      return false;
+    }
+
+    return manager.replayTicks < manager.replay.preflightCutoff;
   }
 
   updateCommandsFromReload(next) {

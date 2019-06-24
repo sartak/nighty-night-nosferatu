@@ -1,6 +1,7 @@
 import React from 'react';
 import './Replay.css';
 import {saveField, loadField} from './lib/store';
+import DoubleEnder from './DoubleEnder';
 
 export default class Replay extends React.Component {
   constructor(props) {
@@ -25,6 +26,10 @@ export default class Replay extends React.Component {
 
       if (!('originalPreflightCutoff' in replay)) {
         replay.originalPreflightCutoff = replay.preflightCutoff;
+      }
+
+      if (!('postflightCutoff' in replay)) {
+        replay.postflightCutoff = replay.tickCount;
       }
     });
 
@@ -181,17 +186,20 @@ export default class Replay extends React.Component {
     });
   }
 
-  finishEdit(replay) {
-    this.setState({editing: null});
-
+  saveReplays() {
     setTimeout(() => {
       const {replays, activeReplay} = this.state;
       saveField('replays', replays);
 
-      if (activeReplay && activeReplay.timestamp === replay.timestamp) {
+      if (activeReplay) {
         saveField('activeReplay', activeReplay);
       }
     });
+  }
+
+  finishEdit(replay, skipFocus) {
+    this.setState({editing: null});
+    this.saveReplays();
   }
 
   updateReplay({timestamp}, changes, beginReplay) {
@@ -235,8 +243,18 @@ export default class Replay extends React.Component {
   }
 
   editPreflightCutoff(replay, preflightCutoff, beginReplay) {
-    const snapshot = preflightCutoff > replay.tickCount * 0.99;
+    const snapshot = preflightCutoff > replay.postflightCutoff * 0.99;
     this.updateReplay(replay, {preflightCutoff, snapshot}, beginReplay);
+  }
+
+  editPostflightCutoff(replay, postflightCutoff, beginReplay) {
+    const snapshot = replay.preflightCutoff > postflightCutoff * 0.99;
+    this.updateReplay(replay, {postflightCutoff, snapshot}, beginReplay);
+  }
+
+  editCutoffs(replay, preflightCutoff, postflightCutoff, beginReplay) {
+    const snapshot = preflightCutoff > postflightCutoff * 0.99;
+    this.updateReplay(replay, {preflightCutoff, postflightCutoff, snapshot}, beginReplay);
   }
 
   deleteReplay({timestamp}, name) {
@@ -255,27 +273,16 @@ export default class Replay extends React.Component {
     });
   }
 
-  preflightCutoffTimeSightEnter() {
-    window.game.preflightCutoffTimeSightEnter();
+  cutoffTimeSightEnter() {
+    window.game.cutoffTimeSightEnter();
   }
 
-  preflightCutoffTimeSightMoved(e, tickCount) {
-    const mouseX = e.clientX;
-    const {x, width} = e.target.getBoundingClientRect();
-    const percent = Math.min(1, Math.max(0, (mouseX - x) / width));
-    const tick = Math.floor(percent * tickCount);
-
-    if (this.preflightCutoffTimeSightTick === tick) {
-      return;
-    }
-
-    this.preflightCutoffTimeSightTick = tick;
-    window.game.preflightCutoffTimeSightMoved(tick);
+  cutoffTimeSightChanged(start, end) {
+    window.game.cutoffTimeSightChanged(start, end);
   }
 
-  preflightCutoffTimeSightLeave() {
-    window.game.preflightCutoffTimeSightLeave();
-    delete this.preflightCutoffTimeSightTick;
+  cutoffTimeSightLeave() {
+    window.game.cutoffTimeSightLeave();
   }
 
   renderEditReplay(replay) {
@@ -295,26 +302,69 @@ export default class Replay extends React.Component {
         />
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
         <br />
-        <input
-          type="range"
-          min="0"
+        <DoubleEnder
+          min={0}
           max={replay.tickCount}
-          value={replay.preflightCutoff}
-          onChange={(e) => this.editPreflightCutoff(replay, e.target.value)}
-          onMouseUp={() => this.beginReplay({
-            ...replay,
-            timeSight: activeReplay && activeReplay.timeSight,
-          })}
-          onMouseEnter={(e) => activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && this.preflightCutoffTimeSightEnter()}
-          onMouseMove={(e) => activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && this.preflightCutoffTimeSightMoved(e, replay.tickCount)}
-          onMouseLeave={(e) => activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && this.preflightCutoffTimeSightLeave()}
+          value1={replay.preflightCutoff}
+          value2={replay.postflightCutoff}
+          onMouseEnter={(e) => {
+            this._inCutoffs = true;
+            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+              this.cutoffTimeSightEnter();
+            }
+          }}
+          onMouseLeave={(e) => {
+            this._inCutoffs = false;
+            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+              if (!this._changingCutoffs) {
+                this.cutoffTimeSightLeave();
+              }
+              this.saveReplays();
+            }
+          }}
+          onBeginChange={(e) => {
+            this._changingCutoffs = true;
+          }}
+          onEndChange={(e) => {
+            this._changingCutoffs = false;
+
+            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+              if (!this._inCutoffs) {
+                this.cutoffTimeSightLeave();
+              }
+              this.saveReplays();
+            } else {
+              setTimeout(() => {
+                const {replays} = this.state;
+                const newReplay = replays.find((r) => r.timestamp === replay.timestamp);
+                this.beginReplay(newReplay);
+                this.saveReplays();
+              });
+            }
+          }}
+          onChange1={(preflight) => {
+            this.editPreflightCutoff(replay, Math.floor(preflight));
+            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+              setTimeout(() => {
+                this.cutoffTimeSightChanged(Math.floor(preflight), this.state.activeReplay.postflightCutoff);
+              });
+            }
+          }}
+          onChange2={(postflight) => {
+            this.editPostflightCutoff(replay, Math.floor(postflight));
+            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+              setTimeout(() => {
+                this.cutoffTimeSightChanged(this.state.activeReplay.preflightCutoff, Math.floor(postflight));
+              });
+            }
+          }}
         />
-        {replay.preflightCutoff !== replay.originalPreflightCutoff && (
+        {(replay.preflightCutoff !== replay.originalPreflightCutoff || replay.postflightCutoff !== replay.tickCount) && (
           <input
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              this.editPreflightCutoff(replay, replay.originalPreflightCutoff, true);
+              this.editCutoffs(replay, replay.originalPreflightCutoff, replay.tickCount, true);
             }}
             value="⤺"
           />
