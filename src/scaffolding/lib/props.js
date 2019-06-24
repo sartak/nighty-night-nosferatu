@@ -106,7 +106,10 @@ function commandProps(commands) {
     props[`command.${name}.enabled`] = [true];
 
     if (config.execute) {
-      props[`command.${name}.execute`] = [(scene, game) => config.execute(scene, game)];
+      const execute = typeof config.execute === 'function'
+        ? (scene, game) => config.execute(scene, game)
+        : (scene, game) => scene[config.execute](scene, game);
+      props[`command.${name}.execute`] = [execute];
     }
   });
 
