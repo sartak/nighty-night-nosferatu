@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import {commandKeys, gamepadKeys} from './lib/props';
+import prop from '../props';
 
 const GamepadButtons = {
   LEFT: '_LCLeft',
@@ -330,7 +331,7 @@ export default class CommandManager {
     Object.entries(spec).forEach(([name, config]) => {
       const command = this[name];
 
-      if (ignoreAll && !config.unsuppressable) {
+      if (!prop(`command.${name}.enabled`) || (ignoreAll && !config.unsuppressable)) {
         command.held = false;
       }
 

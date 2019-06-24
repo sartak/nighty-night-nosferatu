@@ -103,6 +103,8 @@ function commandProps(commands) {
     props[`command.${name}.heldDuration`] = [0, null];
     props[`command.${name}.releasedDuration`] = [0, null];
 
+    props[`command.${name}.enabled`] = [true];
+
     if (config.execute) {
       props[`command.${name}.execute`] = [(scene, game) => config.execute(scene, game)];
     }
