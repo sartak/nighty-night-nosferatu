@@ -325,9 +325,15 @@ export default class SuperScene extends Phaser.Scene {
     if (replay.preflightCutoff) {
       this.game._replayPreflight += 1;
 
+      const manager = this.command.getManager(this);
+
       loop.sleep();
       this.scene.setVisible(false);
       while (command.hasPreflight(this)) {
+        if (replay.timeSightFrameCallback) {
+          replay.timeSightFrameCallback(this, time, dt, manager.commands, true, false);
+        }
+
         time += dt;
         loop.step(time);
 
@@ -345,14 +351,12 @@ export default class SuperScene extends Phaser.Scene {
         this.calculateTimeSight();
       } else if (replay.timeSightFrameCallback) {
         this.game._replayPreflight += 1;
-        const manager = this.command.getManager(this);
-
         this._timeSightTargetEnded = () => {
-          replay.timeSightFrameCallback(this, time, dt, manager.commands, true);
+          replay.timeSightFrameCallback(this, time, dt, manager.commands, false, true);
         };
 
         while (!this._timeSightTargetDone) {
-          replay.timeSightFrameCallback(this, time, dt, manager.commands, false);
+          replay.timeSightFrameCallback(this, time, dt, manager.commands, false, false);
           time += dt;
           loop.step(time);
 
@@ -392,10 +396,10 @@ export default class SuperScene extends Phaser.Scene {
       {
         ...this._replay,
         timeSight: false,
-        timeSightFrameCallback: (scene, frameTime, frameDt, commands, isLast) => {
+        timeSightFrameCallback: (scene, frameTime, frameDt, commands, isPreflight, isLast) => {
           objectDt += frameDt;
 
-          const frame = this.timeSightTargetStep(scene, objectDt, frameTime, frameDt, commands, isLast);
+          const frame = this.timeSightTargetStep(scene, objectDt, frameTime, frameDt, commands, isPreflight, isLast);
           if (frame) {
             objectDt = 0;
           }
@@ -416,18 +420,11 @@ export default class SuperScene extends Phaser.Scene {
     );
   }
 
-  timeSightTargetStep(scene, objectDt, frameTime, frameDt, commands, isLast) {
+  timeSightTargetStep(scene, objectDt, frameTime, frameDt, commands, isPreflight, isLast) {
     const objects = scene.renderTimeSightFrameInto(this, objectDt, frameTime, frameDt, isLast);
     if (!objects || !objects.length) {
       return;
     }
-
-    objects.forEach((object) => {
-      if (object.scene !== this) {
-        // eslint-disable-next-line no-console
-        console.error(`renderTimeSightFrameInto rendered this object into the wrong scene: ${JSON.stringify(object)}`);
-      }
-    });
 
     updatePropsFromStep(true);
 
@@ -435,7 +432,22 @@ export default class SuperScene extends Phaser.Scene {
       objects,
       props: {...manageableProps},
       commands: [...commands],
+      isPreflight,
     };
+
+    objects.forEach((object) => {
+      if (object.scene !== this) {
+        // eslint-disable-next-line no-console
+        console.error(`renderTimeSightFrameInto rendered this object into the wrong scene: ${JSON.stringify(object)}`);
+      }
+
+      object._timeSightAlpha = object.alpha;
+      object._timeSightFrame = frame;
+
+      if (isPreflight) {
+        object.alpha = 0;
+      }
+    });
 
     this._timeSightFrames.push(frame);
     return frame;
@@ -443,12 +455,13 @@ export default class SuperScene extends Phaser.Scene {
 
   beginTimeSightAlphaAnimation() {
     const frames = this._timeSightFrames;
+    const activeFrames = frames.filter((frame) => !frame.isPreflight);
 
-    if (!frames.length) {
+    if (!activeFrames.length) {
       return;
     }
 
-    overrideProps(frames[0].props);
+    overrideProps(activeFrames[0].props);
 
     let loopAlpha;
     // eslint-disable-next-line prefer-const
@@ -470,7 +483,7 @@ export default class SuperScene extends Phaser.Scene {
               onComplete: () => {
                 if (i === 0) {
                   frame.timer = this.time.addEvent({
-                    delay: 100 * frames.length + 1000,
+                    delay: 100 * activeFrames.length + 1000,
                     callback: () => loopAlpha(frame, n),
                   });
                 }
@@ -481,7 +494,7 @@ export default class SuperScene extends Phaser.Scene {
       });
     };
 
-    frames.forEach((frame, n) => {
+    activeFrames.forEach((frame, n) => {
       frame.timer = this.time.addEvent({
         delay: 100 * n + 1000,
         callback: () => {
@@ -491,7 +504,7 @@ export default class SuperScene extends Phaser.Scene {
     });
 
     if (this._timeSightMouseInput) {
-      frames.forEach((frame) => {
+      activeFrames.forEach((frame) => {
         frame.objects.forEach((object) => {
           object.alpha = object._timeSightAlpha;
         });
@@ -504,11 +517,9 @@ export default class SuperScene extends Phaser.Scene {
 
     this.input.topOnly = true;
 
-    frames.forEach((frame) => {
+    activeFrames.forEach((frame) => {
       frame.objects.forEach((object) => {
         object.setInteractive();
-        object._timeSightAlpha = object.alpha;
-        object._timeSightFrame = frame;
       });
     });
 
@@ -520,7 +531,7 @@ export default class SuperScene extends Phaser.Scene {
       this.game.canvas.style.cursor = 'pointer';
 
       let matchedFrame;
-      frames.forEach((frame) => {
+      activeFrames.forEach((frame) => {
         if (frame.timer) {
           frame.timer.destroy();
         }
