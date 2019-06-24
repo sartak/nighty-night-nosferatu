@@ -31,10 +31,19 @@ export default class DoubleEnder extends React.Component {
     const trackDimensions = this.trackRef.current && this.trackRef.current.getBoundingClientRect();
     const trackLeft = trackDimensions ? trackDimensions.left : 0;
     const trackWidth = trackDimensions ? trackDimensions.width : 100;
+    const percent1 = Math.max(0, Math.min(1, (value1 - min) / (max - min)));
+    const percent2 = Math.max(0, Math.min(1, (value2 - min) / (max - min)));
 
     return (
       <div className="DoubleEnder" onMouseUp={onMouseUp} onMouseEnter={onMouseEnter} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
         <div className="track" ref={this.trackRef} />
+        <div
+          style={{
+            left: `${sliderWidth + percent1 * (trackWidth - sliderWidth)}px`,
+            right: `${trackWidth - percent2 * (trackWidth - sliderWidth)}px`,
+          }}
+          className="track selected"
+        />
         {[1, 2].map((index) => {
           let i = index;
           const value = i === 1 ? value1 : value2;
@@ -47,7 +56,7 @@ export default class DoubleEnder extends React.Component {
               key={i}
               style={{
                 left: `${percent * (trackWidth - sliderWidth)}px`,
-                zIndex: i === lastDrag ? 1 : 0,
+                zIndex: i === lastDrag ? 3 : 2,
               }}
               className={`slider slider${i} ${dragging === i ? 'dragging' : ''}`}
               onMouseDown={(e) => {

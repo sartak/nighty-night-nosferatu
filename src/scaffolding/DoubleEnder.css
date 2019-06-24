@@ -14,6 +14,15 @@
   border-radius: 4px;
 }
 
+.DoubleEnder .track.selected {
+  position: absolute;
+  margin-top: 0;
+  top: 8px;
+  z-index: 1;
+  width: auto;
+  background: #4397F7;
+}
+
 .DoubleEnder .slider {
   position: absolute;
   top: 0;
