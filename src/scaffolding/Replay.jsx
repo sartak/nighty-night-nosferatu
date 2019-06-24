@@ -255,6 +255,29 @@ export default class Replay extends React.Component {
     });
   }
 
+  preflightCutoffTimeSightEnter() {
+    window.game.preflightCutoffTimeSightEnter();
+  }
+
+  preflightCutoffTimeSightMoved(e, tickCount) {
+    const mouseX = e.clientX;
+    const {x, width} = e.target.getBoundingClientRect();
+    const percent = Math.min(1, Math.max(0, (mouseX - x) / width));
+    const tick = Math.floor(percent * tickCount);
+
+    if (this.preflightCutoffTimeSightTick === tick) {
+      return;
+    }
+
+    this.preflightCutoffTimeSightTick = tick;
+    window.game.preflightCutoffTimeSightMoved(tick);
+  }
+
+  preflightCutoffTimeSightLeave() {
+    window.game.preflightCutoffTimeSightLeave();
+    delete this.preflightCutoffTimeSightTick;
+  }
+
   renderEditReplay(replay) {
     const {activeReplay} = this.state;
 
@@ -282,6 +305,9 @@ export default class Replay extends React.Component {
             ...replay,
             timeSight: activeReplay && activeReplay.timeSight,
           })}
+          onMouseEnter={(e) => activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && this.preflightCutoffTimeSightEnter()}
+          onMouseMove={(e) => activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && this.preflightCutoffTimeSightMoved(e, replay.tickCount)}
+          onMouseLeave={(e) => activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && this.preflightCutoffTimeSightLeave()}
         />
         {replay.preflightCutoff !== replay.originalPreflightCutoff && (
           <input

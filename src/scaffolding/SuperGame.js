@@ -378,6 +378,18 @@ handler to fire outside the game loop with a setTimeout or something?`);
       this.command.readRawGamepad(scenes);
     }
   }
+
+  preflightCutoffTimeSightEnter() {
+    this.topScene().preflightCutoffTimeSightEnter();
+  }
+
+  preflightCutoffTimeSightMoved(tick) {
+    this.topScene().preflightCutoffTimeSightMoved(tick);
+  }
+
+  preflightCutoffTimeSightLeave() {
+    this.topScene().preflightCutoffTimeSightLeave();
+  }
 }
 
 if (module.hot) {

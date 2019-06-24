@@ -331,7 +331,7 @@ export default class SuperScene extends Phaser.Scene {
       this.scene.setVisible(false);
       while (command.hasPreflight(this)) {
         if (replay.timeSightFrameCallback) {
-          replay.timeSightFrameCallback(this, time, dt, manager.commands, true, false);
+          replay.timeSightFrameCallback(this, time, dt, manager, true, false);
         }
 
         time += dt;
@@ -352,11 +352,11 @@ export default class SuperScene extends Phaser.Scene {
       } else if (replay.timeSightFrameCallback) {
         this.game._replayPreflight += 1;
         this._timeSightTargetEnded = () => {
-          replay.timeSightFrameCallback(this, time, dt, manager.commands, false, true);
+          replay.timeSightFrameCallback(this, time, dt, manager, false, true);
         };
 
         while (!this._timeSightTargetDone) {
-          replay.timeSightFrameCallback(this, time, dt, manager.commands, false, false);
+          replay.timeSightFrameCallback(this, time, dt, manager, false, false);
           time += dt;
           loop.step(time);
 
@@ -396,10 +396,10 @@ export default class SuperScene extends Phaser.Scene {
       {
         ...this._replay,
         timeSight: false,
-        timeSightFrameCallback: (scene, frameTime, frameDt, commands, isPreflight, isLast) => {
+        timeSightFrameCallback: (scene, frameTime, frameDt, manager, isPreflight, isLast) => {
           objectDt += frameDt;
 
-          const frame = this.timeSightTargetStep(scene, objectDt, frameTime, frameDt, commands, isPreflight, isLast);
+          const frame = this.timeSightTargetStep(scene, objectDt, frameTime, frameDt, manager, isPreflight, isLast);
           if (frame) {
             objectDt = 0;
           }
@@ -420,7 +420,7 @@ export default class SuperScene extends Phaser.Scene {
     );
   }
 
-  timeSightTargetStep(scene, objectDt, frameTime, frameDt, commands, isPreflight, isLast) {
+  timeSightTargetStep(scene, objectDt, frameTime, frameDt, manager, isPreflight, isLast) {
     const objects = scene.renderTimeSightFrameInto(this, objectDt, frameTime, frameDt, isLast);
     if (!objects || !objects.length) {
       return;
@@ -431,7 +431,8 @@ export default class SuperScene extends Phaser.Scene {
     const frame = {
       objects,
       props: {...manageableProps},
-      commands: [...commands],
+      commands: [...manager.commands],
+      tickCount: manager.tickCount,
       isPreflight,
     };
 
@@ -658,6 +659,56 @@ export default class SuperScene extends Phaser.Scene {
         });
       },
     });
+  }
+
+  preflightCutoffTimeSightEnter() {
+    const frames = this._timeSightFrames;
+
+    if (this._timeSightRemoveFocusTimer) {
+      this._timeSightRemoveFocusTimer.destroy();
+    }
+
+    frames.forEach((frame) => {
+      if (frame.timer) {
+        frame.timer.destroy();
+      }
+
+      frame.objects.forEach((object) => {
+        if (object._timeSightAlphaTween) {
+          object._timeSightAlphaTween.stop();
+        }
+
+        object.alpha = object._timeSightAlpha;
+      });
+    });
+  }
+
+  preflightCutoffTimeSightMoved(tick) {
+    const frames = this._timeSightFrames;
+    let foundTick = false;
+    frames.forEach((frame) => {
+      if (!foundTick && frame.tickCount >= tick) {
+        foundTick = true;
+        frame.objects.forEach((object) => {
+          object.alpha = 1;
+        });
+      } else {
+        frame.objects.forEach((object) => {
+          object.alpha = object._timeSightAlpha;
+        });
+      }
+    });
+  }
+
+  preflightCutoffTimeSightLeave() {
+    const frames = this._timeSightFrames;
+    frames.forEach((frame) => {
+      frame.objects.forEach((object) => {
+        object.alpha = frame.isPreflight ? 0 : object._timeSightAlpha;
+      });
+    });
+
+    this.beginTimeSightAlphaAnimation();
   }
 
   propDidChange(key, value) {
