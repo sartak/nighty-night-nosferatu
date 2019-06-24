@@ -214,7 +214,7 @@ export function ManageableProps(propSpecs) {
       };
     }
 
-    if (savedChangedProps[key]) {
+    if (key in savedChangedProps) {
       const [current, original] = savedChangedProps[key];
       if (value === original) {
         value = current;
