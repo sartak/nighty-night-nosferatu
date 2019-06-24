@@ -692,6 +692,11 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   cutoffTimeSightChanged(start, end) {
+    // ordinarily to be avoided, but we don't want to start a new replay
+    // to take the update from Replay.jsx
+    this._replay.preflightCutoff = start;
+    this._replay.postflightCutoff = end;
+
     this._timeSightFrames.forEach((frame, f) => {
       frame.isPreflight = frame.tickCount < start;
       frame.isPostflight = frame.tickCount > end;
