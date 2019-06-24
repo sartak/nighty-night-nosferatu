@@ -28,8 +28,8 @@
 .Manage > .reset {
   display: none;
   margin-left: 1em;
-  background: #202020;
-  color: white;
+  background: #f6c456;
+  color: black;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
   border-bottom-left-radius: 0;
@@ -41,7 +41,7 @@
 .Manage > .copy:hover,
 .Manage > .reset:hover {
   cursor: pointer;
-  background: #303030;
+  background: #f9d486;
 }
 
 body.changed-props .Manage > .copy,
