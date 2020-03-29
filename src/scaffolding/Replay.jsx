@@ -190,12 +190,9 @@ export default class Replay extends React.Component {
 
   saveReplays() {
     setTimeout(() => {
-      const {replays, activeReplay} = this.state;
+      const {replays, activeReplay, editing} = this.state;
       saveField('replays', replays);
-
-      if (activeReplay) {
-        saveField('activeReplay', activeReplay);
-      }
+      saveField('activeReplay', activeReplay);
     });
   }
 
