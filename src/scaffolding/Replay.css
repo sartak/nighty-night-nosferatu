@@ -97,7 +97,12 @@
 }
 
 .Replay form {
-  display: inline-block;
+  display: block;
+  width: 100%;
+}
+
+.Replay form .DoubleEnder {
+  width: calc(100% - 50px);
 }
 
 .Replay .replays .replay .name,
