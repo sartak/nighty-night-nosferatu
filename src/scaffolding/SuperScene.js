@@ -924,10 +924,25 @@ export default class SuperScene extends Phaser.Scene {
     if (this.performanceProps.length) {
       const change = this.performanceProps.shift();
 
+      const applyPropChanges = (keys) => {
+        if (keys.length) {
+          refreshUI();
+
+          keys.filter((p) => isParticleProp(p)).forEach((p) => {
+            this.replayParticleSystems(p);
+          });
+        }
+      };
+
+      let batch = true;
       const changedProps = [];
       const setProp = (key, value) => {
         changedProps.push(key);
         manageableProps[key] = value;
+
+        if (!batch) {
+          applyPropChanges([key]);
+        }
       };
 
       if (typeof change === 'string') {
@@ -936,16 +951,12 @@ export default class SuperScene extends Phaser.Scene {
         change(setProp);
       }
 
+      batch = false;
+
       // eslint-disable-next-line no-console
       console.log(`Performance seems iffy; applying ${change}`);
 
-      if (changedProps.length) {
-        refreshUI();
-
-        changedProps.filter((p) => isParticleProp(p)).forEach((p) => {
-          this.replayParticleSystems(p);
-        });
-      }
+      applyPropChanges(changedProps);
     }
   }
 
