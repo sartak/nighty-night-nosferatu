@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import prop, {propsWithPrefix, manageableProps} from '../props';
-import {updatePropsFromStep, overrideProps} from './lib/manage-gui';
-import massageParticleProps, {injectEmitterOpSeededRandom} from './lib/particles';
+import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
+import massageParticleProps, {injectEmitterOpSeededRandom, isParticleProp} from './lib/particles';
 import massageTweenProps from './lib/tweens';
 import {saveField, loadField} from './lib/store';
 
@@ -18,6 +18,8 @@ export default class SuperScene extends Phaser.Scene {
 
     this.sounds = [];
     this.timers = [];
+    this.performanceFrames = 0;
+    this.performanceAcceptable = true;
   }
 
   init(config) {
@@ -88,6 +90,11 @@ export default class SuperScene extends Phaser.Scene {
             this.command.processInput(this, time, dt);
             this.fixedUpdate(time, dt);
             this.updateTimers(time, dt);
+
+            if (this.performanceProps && this.performanceProps.length) {
+              this.recoverPerformance();
+            }
+
             tweens.update(time, dt);
 
             this.game._stepExceptions = 0;
@@ -894,6 +901,52 @@ export default class SuperScene extends Phaser.Scene {
 
       timer.callback();
     });
+  }
+
+  recoverPerformance() {
+    this.performanceFrames += 1;
+
+    if (!this.performanceAcceptable) {
+      this.performanceAcceptable = this.game.loop.actualFps > 50;
+    }
+
+    if (this.performanceFrames < 300) {
+      return;
+    }
+
+    this.performanceFrames = 0;
+
+    if (this.performanceAcceptable) {
+      this.performanceAcceptable = false;
+      return;
+    }
+
+    if (this.performanceProps.length) {
+      const change = this.performanceProps.shift();
+
+      const changedProps = [];
+      const setProp = (key, value) => {
+        changedProps.push(key);
+        manageableProps[key] = value;
+      };
+
+      if (typeof change === 'string') {
+        setProp(change, true);
+      } else if (typeof change === 'function') {
+        change(setProp);
+      }
+
+      // eslint-disable-next-line no-console
+      console.log(`Performance seems iffy; applying ${change}`);
+
+      if (changedProps.length) {
+        refreshUI();
+
+        changedProps.filter((p) => isParticleProp(p)).forEach((p) => {
+          this.replayParticleSystems(p);
+        });
+      }
+    }
   }
 
   handlePointerEvent(event) {

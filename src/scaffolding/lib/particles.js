@@ -1,5 +1,10 @@
 import Phaser from 'phaser';
 
+const ParticleProps = [];
+export function isParticleProp(prop) {
+  return ParticleProps.filter((p) => prop.startsWith(p)).length > 0;
+}
+
 let injected = false;
 export function injectEmitterOpSeededRandom(emitter, seed) {
   emitter.seed = seed;
@@ -119,6 +124,8 @@ export function expandParticleProps(props, particleImages = ['set props/particle
     }
 
     delete props[name];
+
+    ParticleProps.push(prefix);
 
     const [config] = spec;
 

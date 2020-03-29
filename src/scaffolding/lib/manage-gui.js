@@ -354,7 +354,7 @@ function removeProp(key) {
   delete controllers[key];
 }
 
-function refreshUI() {
+export function refreshUI() {
   gui.updateDisplay();
   Object.values(folders).forEach((folder) => folder.updateDisplay());
 }
