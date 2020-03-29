@@ -37,7 +37,7 @@ export default class Replay extends React.Component {
       replays,
       activeRecording: null,
       activeReplay: loadField('activeReplay', null),
-      editing: null,
+      editing: loadField('editing', null),
       repeat: loadField('repeat', true),
     };
   }
@@ -192,6 +192,7 @@ export default class Replay extends React.Component {
     setTimeout(() => {
       const {replays, activeReplay, editing} = this.state;
       saveField('replays', replays);
+      saveField('editing', editing);
       saveField('activeReplay', activeReplay);
     });
   }
@@ -203,6 +204,7 @@ export default class Replay extends React.Component {
 
   setEditing(editing) {
     this.setState({editing});
+    saveField('editing', editing);
   }
 
   setActiveReplay(activeReplay) {
