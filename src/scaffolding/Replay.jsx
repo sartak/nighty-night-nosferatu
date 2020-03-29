@@ -92,8 +92,7 @@ export default class Replay extends React.Component {
 
     game.onReplayBegin = (replay) => {
       if (!replay.snapshot) {
-        this.setState({activeReplay: replay});
-        saveField('activeReplay', replay);
+        this.setActiveReplay(replay);
       }
     };
 
@@ -105,14 +104,12 @@ export default class Replay extends React.Component {
           this.beginReplay(this.state.activeReplay);
         });
       } else {
-        this.setState({activeReplay: null});
-        saveField('activeReplay', null);
+        this.setActiveReplay(null);
       }
     };
 
     game.onReplayStop = (replay) => {
-      this.setState({activeReplay: null});
-      saveField('activeReplay', null);
+      this.setActiveReplay(null);
     };
   }
 
@@ -141,7 +138,7 @@ export default class Replay extends React.Component {
       }
 
       if (clearOtherEditing && editing !== replay.timestamp) {
-        this.setState({editing: null});
+        this.setEditing(null);
       }
 
       window.game.beginReplay(replay);
@@ -203,8 +200,17 @@ export default class Replay extends React.Component {
   }
 
   finishEdit(replay, skipFocus) {
-    this.setState({editing: null});
+    this.setEditing(null);
     this.saveReplays();
+  }
+
+  setEditing(editing) {
+    this.setState({editing});
+  }
+
+  setActiveReplay(activeReplay) {
+    this.setState({activeReplay});
+    saveField('activeReplay', activeReplay);
   }
 
   updateReplay({timestamp}, changes, beginReplay) {
@@ -446,7 +452,7 @@ export default class Replay extends React.Component {
                 this.renderEditReplay(replay)
               )}
               <span className="name" onClick={() => this.beginReplay(replay, true)}>{replay.name}</span>
-              <span className="edit button" title="Edit replay" onClick={() => this.setState({editing: replay.timestamp})}>ℹ</span>
+              <span className="edit button" title="Edit replay" onClick={() => this.setEditing(replay.timestamp)}>ℹ</span>
             </li>
           ))}
         </ul>
