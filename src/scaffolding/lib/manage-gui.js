@@ -545,6 +545,10 @@ function queryize(query) {
 
   const subsequence = escapedCharacters.join('.*');
 
+  if (query.startsWith('/')) {
+    return new RegExp(query.substring(1), hasUppercase ? '' : 'i');
+  }
+
   return new RegExp(subsequence, hasUppercase ? '' : 'i');
 }
 
