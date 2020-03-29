@@ -13,6 +13,7 @@ export default class Engine extends React.Component {
     this.state = {
       activating: false,
       activated: false,
+      focused: true,
       volume: loadField('volume', 0.66),
       scale: null,
     };
@@ -21,6 +22,12 @@ export default class Engine extends React.Component {
   componentDidMount() {
     const {loadedGame, debug} = this.props;
     const {volume} = this.state;
+
+    window.addEventListener('visibilitychange', this.didVisibilityChange);
+    window.addEventListener('blur', this.didBlur);
+    document.addEventListener('blur', this.didBlur);
+    window.addEventListener('focus', this.didFocus);
+    document.addEventListener('focus', this.didFocus);
 
     const body = document.querySelector('body');
     body.classList.add('natural');
@@ -31,6 +38,14 @@ export default class Engine extends React.Component {
     if (loadedGame) {
       loadedGame(this.game, (callback) => this.activateGame(callback));
     }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('visibilitychange', this.didVisibilityChange);
+    window.removeEventListener('blur', this.didBlur);
+    document.removeEventListener('blur', this.didBlur);
+    window.removeEventListener('focus', this.didFocus);
+    document.removeEventListener('focus', this.didFocus);
   }
 
   onMouseMove() {
@@ -52,6 +67,22 @@ export default class Engine extends React.Component {
 
     saveField('volume', volume);
   }
+
+  didVisibilityChange = () => {
+    const hidden = document.visibilityState === 'hidden';
+    this.setState({focused: !hidden});
+    this.game.setFocused(!hidden);
+  };
+
+  didBlur = () => {
+    this.setState({focused: false});
+    this.game.setFocused(false);
+  };
+
+  didFocus = () => {
+    this.setState({focused: true});
+    this.game.setFocused(true);
+  };
 
   activateGame(callback) {
     const {activated} = this.state;
@@ -176,10 +207,16 @@ export default class Engine extends React.Component {
   }
 
   render() {
-    const {activating, scale, volume} = this.state;
+    const {
+      activating, scale, volume, focused,
+    } = this.state;
+
+    const classes = [];
+    classes.push(activating ? 'activated' : 'activate');
+    classes.push(focused ? 'focused' : 'blurred');
 
     return (
-      <div className={activating ? 'activated' : 'activate'} id="engine-container">
+      <div className={classes.join(' ')} id="engine-container">
         <div
           id="engine"
           onMouseMove={() => this.onMouseMove()}

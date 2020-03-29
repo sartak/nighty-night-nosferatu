@@ -59,6 +59,14 @@ body.natural #engine-container canvas {
   animation: 1s linear 0s 1 delaySpinner;
 }
 
+#engine-container {
+  transition: filter 0.25s;
+}
+
+#engine-container.blurred {
+  /* filter: brightness(50%); */
+}
+
 @keyframes delaySpinner {
   0% {
     opacity: 0;

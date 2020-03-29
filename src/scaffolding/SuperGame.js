@@ -40,6 +40,8 @@ export default class SuperGame extends Phaser.Game {
 
     this.command = new CommandManager(commands);
 
+    this.focused = true;
+
     this._sceneConstructors = {};
     [
       BootScene,
@@ -91,6 +93,14 @@ export default class SuperGame extends Phaser.Game {
     this.scene.scenes.forEach((scene) => {
       scene.changeVolume(newVolume);
     });
+  }
+
+  setFocused(isFocused) {
+    if (this.focused === isFocused) {
+      return;
+    }
+
+    this.focused = isFocused;
   }
 
   topScene() {
