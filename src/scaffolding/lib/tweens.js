@@ -176,7 +176,7 @@ export default function massageTweenProps(target, {...props}, options) {
     props.rotation *= Math.PI / 180;
   }
 
-  if (!props.animated) {
+  if ('animated' in props && !props.animated) {
     props.duration = 0;
     delete props.loop;
 
