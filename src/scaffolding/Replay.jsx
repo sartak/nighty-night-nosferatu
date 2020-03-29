@@ -140,7 +140,7 @@ export default class Replay extends React.Component {
         window.game.stopReplay();
       }
 
-      if (clearOtherEditing && editing && editing.timestamp !== replay.timestamp) {
+      if (clearOtherEditing && editing !== replay.timestamp) {
         this.setState({editing: null});
       }
 
