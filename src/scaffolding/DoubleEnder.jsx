@@ -17,7 +17,17 @@ export default class DoubleEnder extends React.Component {
     // force track ref to have getBoundingClientRect
     // eslint-disable-next-line react/no-unused-state
     this.setState({refreshDimensions: true});
+
+    window.addEventListener('resize', this.didResize);
   }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.didResize);
+  }
+
+  didResize = () => {
+    this.forceUpdate();
+  };
 
   render() {
     const {
