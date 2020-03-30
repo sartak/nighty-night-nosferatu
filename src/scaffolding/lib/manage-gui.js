@@ -145,6 +145,10 @@ function addController(key, spec, open, saved) {
         e.preventDefault();
       };
     });
+
+    if (options.length > 1 && typeof options[options.length - 1] === 'function') {
+      controller.__ldListenCallback = options[options.length - 1];
+    }
   } else {
     let callback;
     if (options.length >= 1 && typeof options[options.length - 1] === 'function') {
@@ -157,7 +161,13 @@ function addController(key, spec, open, saved) {
       controller = folder.add(manageablePropsProxy, key, ...options);
     }
 
-    controller.__ldCallback = callback;
+    if (callback) {
+      controller.__ldChangeCallback = callback;
+    }
+
+    if (typeof originalValue === 'function') {
+      controller.__ldActionCallback = originalValue;
+    }
 
     const crNode = controller.domElement.closest('.cr');
 
@@ -311,8 +321,8 @@ function addController(key, spec, open, saved) {
             crNode.classList.remove('changed');
           }
 
-          if (controller.__ldCallback) {
-            ret = controller.__ldCallback(value, scene, game);
+          if (controller.__ldChangeCallback) {
+            ret = controller.__ldChangeCallback(value, scene, game);
           }
         } catch (e) {
           // eslint-disable-next-line no-console
