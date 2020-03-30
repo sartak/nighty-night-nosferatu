@@ -554,6 +554,14 @@ function updatePropsFromReload(oldValues, nextSpecs) {
     }
   });
 
+  changes.forEach((key) => {
+    let f = addNestedFolder(key);
+    while (f) {
+      f.open();
+      f = parentOfFolder.get(f);
+    }
+  });
+
   if (leftoverKeys.length) {
     changes.push(...leftoverKeys);
   }
