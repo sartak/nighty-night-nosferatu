@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import {expandParticleProps} from './particles';
 import {expandTweenProps} from './tweens';
 import {freezeStorage, removeAllFields, loadField} from './store';
-import {preprocessTileDefinitions} from './level-parser';
 
 const savedChangedProps = loadField('changedProps', {});
 export {savedChangedProps};
@@ -14,8 +13,6 @@ const rendererName = {
 };
 
 const debug = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
-
-export {preprocessTileDefinitions};
 
 export function builtinPropSpecs(commands) {
   if (!debug) {

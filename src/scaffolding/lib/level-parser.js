@@ -1,3 +1,45 @@
+import deepEqual from 'deep-equal';
+import {tileDefinitions} from '../../props';
+
+let tileSpecs;
+export function updateTileDefinitions(newDefinitions) {
+  const previousTileSpecs = tileSpecs;
+  tileSpecs = preprocessTileDefinitions(newDefinitions);
+
+  if (!previousTileSpecs) {
+    return null;
+  }
+
+  const changes = [];
+
+  const leftoverKeys = {};
+  Object.keys(previousTileSpecs).forEach((key) => {
+    leftoverKeys[key] = true;
+  });
+
+  Object.keys(tileSpecs).forEach((key) => {
+    const oldValue = previousTileSpecs[key];
+    const newValue = tileSpecs[key];
+
+    if (key in previousTileSpecs) {
+      delete leftoverKeys[key];
+    }
+
+    if (!deepEqual(oldValue, newValue)) {
+      changes.push(key);
+    }
+  });
+
+  changes.push(...Object.keys(leftoverKeys));
+  return changes;
+}
+
+updateTileDefinitions(tileDefinitions);
+
+export function tileSpec(glyph) {
+  return tileSpecs[glyph];
+}
+
 function flattenInheritance(specs) {
   Object.entries(specs).forEach(([key, config]) => {
     if (!config || !config._inherit) {
@@ -32,7 +74,7 @@ export function preprocessTileDefinitions(specs) {
   return flattenInheritance(specs);
 }
 
-export default function parseLevel(content, tileSpecs, isRectangular) {
+export default function parseLevel(content, isRectangular) {
   const allLines = content.split('\n');
 
   // trailing empty lines
@@ -94,4 +136,32 @@ export default function parseLevel(content, tileSpecs, isRectangular) {
   const config = JSON.parse(allLines.slice(i).join('\n'));
 
   return {map, config, lookups};
+}
+
+if (module.hot) {
+  module.hot.accept('../../props', () => {
+    try {
+      const next = require('../../props');
+
+      const changes = updateTileDefinitions(next.tileDefinitions);
+      if (changes.length === 0) {
+        return;
+      }
+
+      // eslint-disable-next-line no-console
+      console.info(`Hot-loading tile definitions: ${changes}`);
+
+      const {game} = window;
+      const scene = game.topScene();
+      if (scene._builtinHot) {
+        scene._builtinHot();
+      }
+      if (scene._hot) {
+        scene._hot();
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  });
 }
