@@ -416,7 +416,7 @@ export function overrideProps(newProps) {
 }
 
 function specDiffers(old, next) {
-  let differsInCallback;
+  let differsInFunction;
 
   if ((!next && old) || (!old && next)) {
     return true;
@@ -428,7 +428,7 @@ function specDiffers(old, next) {
 
   for (let i = next.length - 1; i >= 0; i -= 1) {
     if (i === next.length - 1 && typeof next[i] === 'function' && typeof old[i] === 'function') {
-      differsInCallback = true;
+      differsInFunction = true;
     } else if (i === 1 && Array.isArray(next[i]) && Array.isArray(old[i])) {
       // compare enum values
       const nextArray = next[i];
@@ -448,8 +448,8 @@ function specDiffers(old, next) {
     }
   }
 
-  if (differsInCallback) {
-    return 'callback';
+  if (differsInFunction) {
+    return 'function';
   }
 
   return false;
@@ -497,8 +497,8 @@ function updatePropsFromReload(oldValues, nextSpecs) {
       const controller = controllers[key];
 
       const requiresRecreation = requiresControllerRecreation(key, nextSpecs);
-      if (!requiresRecreation || requiresRecreation === 'callback') {
-        if (requiresRecreation === 'callback') {
+      if (!requiresRecreation || requiresRecreation === 'function') {
+        if (requiresRecreation === 'function') {
           controller.__ldCallback = spec[spec.length - 1];
         } else if (spec[1] !== null && manageableProps[key] !== oldValues[key]) {
           manageableProps[key] = oldValues[key];
