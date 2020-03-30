@@ -482,6 +482,8 @@ function requiresControllerRecreation(key, next) {
 }
 
 function updatePropsFromReload(oldValues, nextSpecs) {
+  const changes = [];
+
   const leftoverKeys = {};
   Object.keys(controllers).forEach((key) => {
     leftoverKeys[key] = true;
@@ -492,21 +494,43 @@ function updatePropsFromReload(oldValues, nextSpecs) {
   Object.entries(nextSpecs).forEach(([key, spec]) => {
     if (!(key in controllers)) {
       addController(key, spec, true);
+
+      if (!key.endsWith('_enabled')) {
+        changes.push(key);
+      }
     } else {
       delete leftoverKeys[key];
       const controller = controllers[key];
 
       const requiresRecreation = requiresControllerRecreation(key, nextSpecs);
       if (!requiresRecreation || requiresRecreation === 'function') {
-        if (requiresRecreation === 'function') {
-          controller.__ldCallback = spec[spec.length - 1];
+        if (!requiresRecreation && spec.length > 1 && spec[1] === null && typeof spec[spec.length - 1] === 'function') {
+          if (String(spec[spec.length - 1]) !== String(controller.__ldListenCallback)) {
+            changes.push(key);
+          }
+          controller.__ldListenCallback = spec[spec.length - 1];
+        } else if (requiresRecreation === 'function') {
+          if (controller.__ldChangeCallback) {
+            if (String(spec[spec.length - 1]) !== String(controller.__ldChangeCallback)) {
+              changes.push(key);
+            }
+            controller.__ldChangeCallback = spec[spec.length - 1];
+          } else {
+            if (String(spec[spec.length - 1]) !== String(controller.__ldActionCallback)) {
+              changes.push(key);
+            }
+            controller.__ldActionCallback = spec[spec.length - 1];
+          }
         } else if (spec[1] !== null && manageableProps[key] !== oldValues[key]) {
           manageableProps[key] = oldValues[key];
           setChangedProp(key);
+          changes.push(key);
         }
 
         return;
       }
+
+      changes.push(key);
 
       setUnchangedProp(`${key}_enabled`);
       setUnchangedProp(key);
@@ -530,11 +554,17 @@ function updatePropsFromReload(oldValues, nextSpecs) {
     }
   });
 
+  if (leftoverKeys.length) {
+    changes.push(...leftoverKeys);
+  }
+
   Object.keys(leftoverKeys).forEach(removeProp);
   removeEmptyFolders();
 
   // refresh UI with new values
   refreshUI();
+
+  return changes;
 }
 
 function queryize(query) {
@@ -628,12 +658,14 @@ if (module.hot) {
     try {
       const next = require('../../props');
 
-      // eslint-disable-next-line no-console
-      console.info('Hot-loading props');
-
       const oldProps = proxiedManageableProps;
       proxiedManageableProps = next.manageableProps;
-      updatePropsFromReload(oldProps, next.propSpecs);
+      const changes = updatePropsFromReload(oldProps, next.propSpecs);
+
+      if (changes.length) {
+        // eslint-disable-next-line no-console
+        console.info(`Hot-loading props: ${changes.join(', ')}`);
+      }
 
       const {game} = window;
       game.command.updateCommandsFromReload(next.commands);
