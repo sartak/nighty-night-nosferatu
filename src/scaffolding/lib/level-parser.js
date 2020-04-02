@@ -74,29 +74,59 @@ export function preprocessTileDefinitions(specs) {
   return flattenInheritance(specs);
 }
 
-export default function parseLevel(content, isRectangular) {
+export function parseMaps(content) {
+  const maps = [];
+
   const allLines = content.split('\n');
-
-  // trailing empty lines
-  while (allLines[allLines.length - 1].length === 0) {
-    allLines.pop();
+  if (allLines.length === 0) {
+    return maps;
   }
 
-  // find last empty line
-  let i;
-  for (i = allLines.length - 1; i >= 0; i -= 1) {
-    if (allLines[i].length === 0) {
-      break;
+  // simplify end checking
+  allLines.push('');
+
+  let mapLines = [];
+  let configLines = [];
+  let prevLineIsEmpty = true;
+  let parsingConfig = false;
+
+  allLines.forEach((line, i) => {
+    if (line === '') {
+      if (prevLineIsEmpty) {
+        return;
+      }
+      prevLineIsEmpty = true;
+
+      if (mapLines.length && configLines.length) {
+        const config = JSON.parse(configLines.join('\n'));
+        if (!config.id) {
+          console.warn(`Config line ${i}: level is missing an 'id'`);
+        }
+        maps.push([[...mapLines], config]);
+        mapLines = [];
+        configLines = [];
+        parsingConfig = false;
+      } else if (mapLines.length) {
+        parsingConfig = true;
+      }
+    } else {
+      prevLineIsEmpty = false;
+
+      if (parsingConfig) {
+        configLines.push(line);
+      } else {
+        mapLines.push(line);
+      }
     }
-  }
+  });
 
-  if (i < 0) {
-    throw new Error('No empty line for parseLevel');
-  }
+  return maps;
+}
 
+export function parseLevelLines(lines, isRectangular) {
   const lookups = {};
   const map = [];
-  allLines.slice(0, i).forEach((line, y) => {
+  lines.forEach((line, y) => {
     const row = [];
     line.split('').forEach((glyph, x) => {
       if (!(glyph in tileSpecs)) {
@@ -133,6 +163,32 @@ export default function parseLevel(content, isRectangular) {
     });
   }
 
+  const mapText = lines.join("\n");
+
+  return {map, mapText, lookups};
+}
+
+export default function parseLevel(content, isRectangular) {
+  const allLines = content.split('\n');
+
+  // trailing empty lines
+  while (allLines[allLines.length - 1].length === 0) {
+    allLines.pop();
+  }
+
+  // find last empty line
+  let i;
+  for (i = allLines.length - 1; i >= 0; i -= 1) {
+    if (allLines[i].length === 0) {
+      break;
+    }
+  }
+
+  if (i < 0) {
+    throw new Error('No empty line for parseLevel');
+  }
+
+  const {lookups, map} = parseLevelLines(allLines.slice(0, i), isRectangular);
   const config = JSON.parse(allLines.slice(i).join('\n'));
 
   return {map, config, lookups};
