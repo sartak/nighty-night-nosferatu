@@ -278,6 +278,8 @@ export default class SuperScene extends Phaser.Scene {
       return;
     }
 
+    const oldScene = this.scene;
+
     const newScene = this.game.scene.add(
       target,
       this.game._sceneConstructors[name],
@@ -289,7 +291,7 @@ export default class SuperScene extends Phaser.Scene {
       },
     );
 
-    this.scene.remove();
+    oldScene.remove();
 
     return newScene;
   }
