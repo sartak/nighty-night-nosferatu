@@ -5,8 +5,13 @@ import massageParticleProps, {injectEmitterOpSeededRandom, isParticleProp} from 
 import massageTweenProps from './lib/tweens';
 import {saveField, loadField} from './lib/store';
 
+import {parseMaps, parseLevelLines} from './lib/level-parser';
+import mapsFile from '../assets/maps.txt';
+
 const baseConfig = {
 };
+
+let MapFiles = null;
 
 export default class SuperScene extends Phaser.Scene {
   constructor(subconfig) {
@@ -230,6 +235,47 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.text('_mapsFile', mapsFile);
+  }
+
+  levelIds() {
+    if (!MapFiles) {
+      MapFiles = parseMaps(this.cache.text.get('_mapsFile'));
+    }
+
+    return MapFiles.map(([, config]) => config.id);
+  }
+
+  loadLevel(id) {
+    if (!MapFiles) {
+      MapFiles = parseMaps(this.cache.text.get('_mapsFile'));
+    }
+
+    let index;
+    let spec = MapFiles[id];
+    if (spec) {
+      index = id;
+    } else {
+      index = MapFiles.findIndex((m) => m[1].id === id);
+      spec = MapFiles[index];
+    }
+
+    if (!spec) {
+      throw new Error(`Cannot find level with id ${id}`);
+    }
+
+    const [lines, config] = spec;
+    const {map, mapText, lookups} = parseLevelLines(lines, this.mapsAreRectangular);
+
+    const level = {
+      ...config,
+      map,
+      mapText,
+      mapLookups: lookups,
+      index,
+    };
+
+    return level;
   }
 
   firstUpdate(time, dt) {
