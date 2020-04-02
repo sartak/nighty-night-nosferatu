@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import deepEqual from 'deep-equal';
 import prop, {propsWithPrefix, manageableProps} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, isParticleProp} from './lib/particles';
@@ -1027,5 +1028,92 @@ export default class SuperScene extends Phaser.Scene {
 }
 
 if (module.hot) {
-  module.hot.accept('../props');
+  module.hot.accept('../assets/maps.txt', () => {
+    try {
+      const next = require('../assets/maps.txt');
+
+      fetch(next).then((res) => {
+        res.text().then((text) => {
+          try {
+            const previous = MapFiles;
+            const nextMaps = parseMaps(text);
+
+            if (!previous || !nextMaps) {
+              return;
+            }
+
+            MapFiles = nextMaps;
+
+            let reloadCurrent = true;
+
+            const {scene} = window;
+            const activeId = scene.level && scene.level.id;
+
+            const prevById = {};
+            previous.forEach((spec) => { prevById[spec[1].id] = spec; });
+            const nextById = {};
+            MapFiles.forEach((spec) => { nextById[spec[1].id] = spec; });
+
+            const changes = [];
+
+            const leftover = {...prevById};
+
+            Object.entries(nextById).forEach(([id, nextSpec]) => {
+              if (!prevById[id]) {
+                if (id !== activeId) {
+                  changes.push(`+${id}`);
+                }
+              } else {
+                const previousSpec = prevById[id];
+                delete leftover[id];
+
+                if (!deepEqual(previousSpec, nextSpec)) {
+                  if (id !== activeId) {
+                    changes.push(`Δ${id}`);
+                  }
+                }
+              }
+            });
+
+            changes.push(...Object.keys(leftover).filter((id) => id !== activeId).map((id) => `-${id}`));
+
+            if (!deepEqual(previous.map((spec) => spec[1].id), MapFiles.map((spec) => spec[1].id))) {
+              changes.push('(order)');
+            }
+
+            if (activeId) {
+              const p = prevById[activeId];
+              const n = nextById[activeId];
+
+              if (deepEqual(p, n)) {
+                reloadCurrent = false;
+              } else {
+                changes.unshift(`active level ${activeId}`);
+              }
+            }
+
+            // eslint-disable-next-line no-console
+            console.info(`Hot-loading levels: ${changes.join(', ')}`);
+
+            if (!reloadCurrent) {
+              return;
+            }
+
+            if (scene._builtinHot) {
+              scene._builtinHot();
+            }
+            if (scene._hot) {
+              scene._hot();
+            }
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error(e);
+          }
+        });
+      });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  });
 }
