@@ -1041,18 +1041,20 @@ if (module.hot) {
       fetch(next).then((res) => {
         res.text().then((text) => {
           try {
-            const previous = window.game._ldMapFiles;
+            const {game} = window;
+
+            const previous = game._ldMapFiles;
             const nextMaps = parseMaps(text);
 
             if (!previous || !nextMaps) {
               return;
             }
 
-            window.game._ldMapFiles = nextMaps;
+            game._ldMapFiles = nextMaps;
 
             let reloadCurrent = true;
 
-            const {scene} = window;
+            const scene = game.topScene();
             const activeId = scene.level && scene.level.id;
 
             const prevById = {};
