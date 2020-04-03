@@ -283,6 +283,24 @@ export default class Replay extends React.Component {
     });
   }
 
+  copyReplay(replay) {
+    const newReplay = {
+      ...replay,
+      timestamp: Date.now(),
+      name: `Copy of ${replay.name}`,
+    };
+
+    this.setState(({replays}) => {
+      const newReplays = [newReplay, ...replays];
+
+      setTimeout(() => {
+        saveField('replays', newReplays);
+      });
+
+      return {replays: newReplays};
+    });
+  }
+
   cutoffTimeSightEnter() {
     window.game.cutoffTimeSightEnter();
   }
@@ -310,6 +328,7 @@ export default class Replay extends React.Component {
           value={replay.name}
           onChange={(e) => this.editName(replay, e.target.value)}
         />
+        <span className="copy button" title="Copy replay" onClick={() => this.copyReplay(replay)}>🔃</span>
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
         <br />
         <DoubleEnder
