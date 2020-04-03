@@ -1,5 +1,6 @@
 import React from 'react';
 import './Manage.css';
+import {saveField, loadField} from './lib/store';
 import {initializeManage, updateSearch, serializeChangedProps, resetChangedProps} from './lib/manage-gui';
 
 export default class Manage extends React.Component {
@@ -7,15 +8,21 @@ export default class Manage extends React.Component {
     super(props);
 
     this.state = {
-      search: '',
+      search: loadField('search', ''),
     };
 
     this.ref = React.createRef();
   }
 
   componentDidMount() {
+    const {search} = this.state;
+
     const gui = initializeManage();
     this.ref.current.append(gui.domElement);
+
+    if (search !== '') {
+      updateSearch(search, true);
+    }
   }
 
   copyChangedProps() {
@@ -41,6 +48,7 @@ export default class Manage extends React.Component {
             const isStarted = this.state.search === '';
             this.setState({search: e.target.value});
             updateSearch(e.target.value, isStarted);
+            saveField('search', e.target.value);
           }}
         />
         <input
