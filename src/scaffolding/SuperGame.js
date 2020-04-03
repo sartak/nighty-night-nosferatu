@@ -401,7 +401,3 @@ handler to fire outside the game loop with a setTimeout or something?`);
     this.topScene().cutoffTimeSightLeave();
   }
 }
-
-if (module.hot) {
-  module.hot.accept('../props');
-}
