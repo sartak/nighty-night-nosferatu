@@ -12,8 +12,6 @@ import mapsFile from '../assets/maps.txt';
 const baseConfig = {
 };
 
-let MapFiles = null;
-
 export default class SuperScene extends Phaser.Scene {
   constructor(subconfig) {
     const config = {
@@ -240,25 +238,26 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   levelIds() {
-    if (!MapFiles) {
-      MapFiles = parseMaps(this.cache.text.get('_mapsFile'));
+    if (!this.game._ldMapFiles) {
+      this.game._ldMapFiles = parseMaps(this.cache.text.get('_mapsFile'));
     }
 
-    return MapFiles.map(([, config]) => config.id);
+    return this.game._ldMapFiles.map(([, config]) => config.id);
   }
 
   loadLevel(id) {
-    if (!MapFiles) {
-      MapFiles = parseMaps(this.cache.text.get('_mapsFile'));
+    if (!this.game._ldMapFiles) {
+      this.game._ldMapFiles = parseMaps(this.cache.text.get('_mapsFile'));
     }
+    const mapFiles = this.game._ldMapFiles;
 
     let index;
-    let spec = MapFiles[id];
+    let spec = mapFiles[id];
     if (spec) {
       index = id;
     } else {
-      index = MapFiles.findIndex((m) => m[1].id === id);
-      spec = MapFiles[index];
+      index = mapFiles.findIndex((m) => m[1].id === id);
+      spec = mapFiles[index];
     }
 
     if (!spec) {
@@ -1035,14 +1034,14 @@ if (module.hot) {
       fetch(next).then((res) => {
         res.text().then((text) => {
           try {
-            const previous = MapFiles;
+            const previous = window.game._ldMapFiles;
             const nextMaps = parseMaps(text);
 
             if (!previous || !nextMaps) {
               return;
             }
 
-            MapFiles = nextMaps;
+            window.game._ldMapFiles = nextMaps;
 
             let reloadCurrent = true;
 
@@ -1052,7 +1051,7 @@ if (module.hot) {
             const prevById = {};
             previous.forEach((spec) => { prevById[spec[1].id] = spec; });
             const nextById = {};
-            MapFiles.forEach((spec) => { nextById[spec[1].id] = spec; });
+            nextMaps.forEach((spec) => { nextById[spec[1].id] = spec; });
 
             const changes = [];
 
@@ -1077,7 +1076,7 @@ if (module.hot) {
 
             changes.push(...Object.keys(leftover).filter((id) => id !== activeId).map((id) => `-${id}`));
 
-            if (!deepEqual(previous.map((spec) => spec[1].id), MapFiles.map((spec) => spec[1].id))) {
+            if (!deepEqual(previous.map((spec) => spec[1].id), nextMaps.map((spec) => spec[1].id))) {
               changes.push('(order)');
             }
 
