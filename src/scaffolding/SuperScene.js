@@ -300,6 +300,13 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   replaceWithSceneNamed(name, reseed, config = {}) {
+    if (!this.scene.settings) {
+      // this can happen when HMR happens during timeSight; SuperScene's
+      // builtinHot causes the top scene to get replaced out of the scene
+      // graph, but proxy.js still calls _hot on it
+      return;
+    }
+
     let {seed} = this.scene.settings.data;
     if (reseed === true) {
       seed = Math.random() * Date.now();
