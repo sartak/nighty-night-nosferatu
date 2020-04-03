@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import * as dat from 'dat.gui';
-import {manageableProps, propSpecs} from '../../props';
+import prop, {manageableProps, propSpecs} from '../../props';
 import {saveField} from './store';
 import {savedChangedProps} from './props';
 
@@ -11,6 +11,7 @@ const controllers = {};
 const parentOfFolder = new Map();
 const changedProps = {};
 
+const originalProp = prop;
 let proxiedManageableProps = manageableProps;
 const manageablePropsProxy = new Proxy({}, {
   get(target, key) {
@@ -669,6 +670,8 @@ if (module.hot) {
       const oldProps = proxiedManageableProps;
       proxiedManageableProps = next.manageableProps;
       const changes = updatePropsFromReload(oldProps, next.propSpecs);
+
+      originalProp(null, next.manageableProps);
 
       if (changes.length) {
         // eslint-disable-next-line no-console

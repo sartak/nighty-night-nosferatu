@@ -258,12 +258,18 @@ export function makePropsWithPrefix(propSpecs, manageableProps) {
 
 export function PropLoader(propSpecs, manageableProps) {
   if (debug) {
-    return (name) => {
+    let p = manageableProps;
+    return (name, update) => {
+      if (update) {
+        p = update;
+        return;
+      }
+
       if (!(name in propSpecs)) {
         throw new Error(`Invalid prop named ${name}`);
       }
 
-      return manageableProps[name];
+      return p[name];
     };
   }
 
