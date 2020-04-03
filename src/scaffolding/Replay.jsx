@@ -267,7 +267,7 @@ export default class Replay extends React.Component {
     this.updateReplay(replay, {preflightCutoff, postflightCutoff, snapshot}, beginReplay);
   }
 
-  deleteReplay({timestamp}, name) {
+  deleteReplay({timestamp}) {
     this.setState(({activeReplay, replays}) => {
       const newReplays = replays.filter((replay) => replay.timestamp !== timestamp);
 
