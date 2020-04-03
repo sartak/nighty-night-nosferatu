@@ -607,7 +607,10 @@ function queryize(query) {
   return new RegExp(subsequence, hasUppercase ? '' : 'i');
 }
 
+let previousQuery = '';
 export function updateSearch(query, isStarted) {
+  previousQuery = query;
+
   const queryRegex = queryize(query);
 
   const container = document.querySelector('.Manage .dg.main');
@@ -688,6 +691,8 @@ if (module.hot) {
       game.command.updateCommandsFromReload(next.commands);
 
       regenerateListenPropsCache();
+
+      updateSearch(previousQuery, true);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
