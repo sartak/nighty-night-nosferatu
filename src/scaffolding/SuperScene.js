@@ -269,8 +269,17 @@ export default class SuperScene extends Phaser.Scene {
     const [lines, config] = spec;
     const {map, mapText, lookups} = parseLevelLines(lines, this.mapsAreRectangular);
 
+    const tileHeight = map.length;
+    const height = prop('config.tile_height') * tileHeight;
+    const tileWidth = Math.max(...map.map((a) => a.length));
+    const width = prop('config.tile_height') * tileWidth;
+
     const level = {
       ...config,
+      tileHeight,
+      tileWidth,
+      height,
+      width,
       map,
       mapText,
       mapLookups: lookups,
