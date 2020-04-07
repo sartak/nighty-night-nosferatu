@@ -69,8 +69,8 @@ export function builtinPropSpecs(commands) {
 
     'scene.camera.width': [0, null, 'cameras.main.width'],
     'scene.camera.height': [0, null, 'cameras.main.height'],
-    'scene.camera.zoom': [0, null, 'cameras.main.zoom'],
-    'scene.camera.rotation': [0, null, 'cameras.main.rotation'],
+    'scene.camera.zoom': [0.1, null, 'cameras.main.zoom'],
+    'scene.camera.rotation': [0.1, null, 'cameras.main.rotation'],
     'scene.camera.x': [0, null, 'cameras.main.x'],
     'scene.camera.y': [0, null, 'cameras.main.y'],
     'scene.camera.scrollX': [0, null, 'cameras.main.scrollX'],
