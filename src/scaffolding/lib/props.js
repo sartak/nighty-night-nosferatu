@@ -81,6 +81,10 @@ export function builtinPropSpecs(commands) {
     'scene.camera.boundsY': [0, null, 'cameras.main._bounds.y'],
     'scene.camera.boundsWidth': [0, null, 'cameras.main._bounds.width'],
     'scene.camera.boundsHeight': [0, null, 'cameras.main._bounds.height'],
+    'scene.camera.useBounds': [true, null, 'cameras.main.useBounds'],
+    'scene.camera.hasBounds': [true, (value, scene) => {
+      scene.setCameraBounds();
+    }],
     'scene.camera.follow': ['', null, (scene) => {
       if (!scene.cameras.main._follow) {
         return undefined;

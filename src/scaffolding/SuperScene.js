@@ -291,6 +291,12 @@ export default class SuperScene extends Phaser.Scene {
 
   setCameraBounds() {
     const {level} = this;
+
+    if (!prop('scene.camera.hasBounds')) {
+      this.cameras.main.removeBounds();
+      return;
+    }
+
     if (level && level.width && level.height) {
       const boundsX = 0;
       const boundsY = 0;
