@@ -67,6 +67,22 @@ export function builtinPropSpecs(commands) {
     }],
     'scene.replaceWithSelf': [(scene) => scene.replaceWithSelf(false)],
 
+    'scene.camera.width': [0, null, 'cameras.main.width'],
+    'scene.camera.height': [0, null, 'cameras.main.height'],
+    'scene.camera.zoom': [0, null, 'cameras.main.zoom'],
+    'scene.camera.rotation': [0, null, 'cameras.main.rotation'],
+    'scene.camera.x': [0, null, 'cameras.main.x'],
+    'scene.camera.y': [0, null, 'cameras.main.y'],
+    'scene.camera.scrollX': [0, null, 'cameras.main.scrollX'],
+    'scene.camera.scrollY': [0, null, 'cameras.main.scrollY'],
+    'scene.camera.follow': ['', null, (scene) => {
+      if (!scene.cameras.main._follow) {
+        return undefined;
+      }
+
+      return scene.cameras.main._follow.name || scene.cameras.main._follow.texture.key;
+    }],
+
     'scene.camera.lerp': [1, 0, 1, (value, scene) => {
       scene.cameras.main.setLerp(value);
     }],
