@@ -75,6 +75,12 @@ export function builtinPropSpecs(commands) {
     'scene.camera.y': [0, null, 'cameras.main.y'],
     'scene.camera.scrollX': [0, null, 'cameras.main.scrollX'],
     'scene.camera.scrollY': [0, null, 'cameras.main.scrollY'],
+    'scene.camera.centerX': [0, null, 'cameras.main.centerX'],
+    'scene.camera.centerY': [0, null, 'cameras.main.centerY'],
+    'scene.camera.boundsX': [0, null, 'cameras.main._bounds.x'],
+    'scene.camera.boundsY': [0, null, 'cameras.main._bounds.y'],
+    'scene.camera.boundsWidth': [0, null, 'cameras.main._bounds.width'],
+    'scene.camera.boundsHeight': [0, null, 'cameras.main._bounds.height'],
     'scene.camera.follow': ['', null, (scene) => {
       if (!scene.cameras.main._follow) {
         return undefined;
@@ -82,6 +88,8 @@ export function builtinPropSpecs(commands) {
 
       return scene.cameras.main._follow.name || scene.cameras.main._follow.texture.key;
     }],
+    'scene.camera.followOffsetX': [0, null, 'cameras.main.followOffset.x'],
+    'scene.camera.followOffsetY': [0, null, 'cameras.main.followOffset.y'],
 
     'scene.camera.lerp': [1, 0, 1, (value, scene) => {
       scene.cameras.main.setLerp(value);
