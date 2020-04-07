@@ -82,9 +82,7 @@ export function builtinPropSpecs(commands) {
     'scene.camera.boundsWidth': [0, null, 'cameras.main._bounds.width'],
     'scene.camera.boundsHeight': [0, null, 'cameras.main._bounds.height'],
     'scene.camera.useBounds': [true, null, 'cameras.main.useBounds'],
-    'scene.camera.hasBounds': [true, (value, scene) => {
-      scene.setCameraBounds();
-    }],
+
     'scene.camera.follow': ['', null, (scene) => {
       if (!scene.cameras.main._follow) {
         return undefined;
@@ -105,6 +103,9 @@ export function builtinPropSpecs(commands) {
     'scene.camera.deadzoneY': [0, 0, 1000, (value, scene) => {
       const dz = scene.cameras.main.deadzone;
       scene.cameras.main.setDeadzone(dz ? dz.width : 0, value);
+    }],
+    'scene.camera.hasBounds': [true, (value, scene) => {
+      scene.setCameraBounds();
     }],
 
     ...commandKeyProps(commands),
