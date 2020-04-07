@@ -57,6 +57,7 @@ export default class SuperGame extends Phaser.Game {
           return game.topScene()[key];
         },
       });
+      window.prop = prop;
     }
 
     this.events.on('step', () => {
