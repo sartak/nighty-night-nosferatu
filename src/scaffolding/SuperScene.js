@@ -202,6 +202,7 @@ export default class SuperScene extends Phaser.Scene {
             uniform vec2      resolution;
             uniform sampler2D u_texture;
             varying vec2      outTexCoord;
+            uniform vec2      cameraScroll;
 
             ${source}
             `,
@@ -348,8 +349,11 @@ export default class SuperScene extends Phaser.Scene {
     if (this.renderUpdate) {
       this.renderUpdate(time, dt);
     }
-    if (this.shader && this.shaderUpdate) {
-      this.shaderUpdate(time, dt);
+    if (this.shader) {
+      this.shader.setFloat2('cameraScroll', this.cameras.main.scrollX / this.game.config.width, this.cameras.main.scrollY / this.game.config.height);
+      if (this.shaderUpdate) {
+        this.shaderUpdate(time, dt);
+      }
     }
   }
 
