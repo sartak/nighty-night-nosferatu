@@ -54,6 +54,12 @@ export default function(originalFrom, originalTo = originalFrom, proxy = {}) {
     }
   });
 
+  // hack to update shaderSource
+  // https://stackoverflow.com/a/35581512
+  Object.getOwnPropertyNames(from.constructor).filter((prop) => typeof from.constructor[prop] === 'function').forEach((name) => {
+    to.constructor[name] = from.constructor[name];
+  });
+
   // give the hotloaded object(s) a chance to run code, maybe injected code
   // that would have ran as part of initialization, or a one-off fixup
   if (current) {

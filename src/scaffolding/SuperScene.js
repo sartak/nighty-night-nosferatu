@@ -219,7 +219,8 @@ export default class SuperScene extends Phaser.Scene {
       const shaderName = this.constructor.name;
 
       if (!this.game.renderer.hasPipeline(shaderName)) {
-        const shaderClass = this.shaderInstantiation(this.constructor.shaderSource());
+        const source = this.game._shaderSource[shaderName] = this.constructor.shaderSource();
+        const shaderClass = this.shaderInstantiation(source);
         this.game.renderer.addPipeline(shaderName, new shaderClass(this));
       }
 
@@ -898,6 +899,35 @@ export default class SuperScene extends Phaser.Scene {
       this.game.beginReplay(replay);
     } else {
       this.replayParticleSystems();
+    }
+
+    if (this.game.renderer.type === Phaser.WEBGL) {
+      const shaderName = this.constructor.name;
+      const oldSource = this.game._shaderSource[shaderName];
+      const newSource = this.constructor.shaderSource ? this.constructor.shaderSource() : undefined;
+
+      if (oldSource !== newSource) {
+        // eslint-disable-next-line no-console
+        console.info(`Hot-loading shader ${shaderName}`);
+
+        this.game._shaderSource[shaderName] = newSource;
+
+        if (newSource) {
+          const shaderClass = this.shaderInstantiation(newSource);
+          this.game.renderer.removePipeline(shaderName);
+          this.game.renderer.addPipeline(shaderName, new shaderClass(this));
+          this.shader = this.game.renderer.getPipeline(shaderName);
+          if (this.shaderInitialization) {
+            this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
+            this.shaderInitialization();
+          }
+        } else {
+          this.game.renderer.removePipeline(shaderName);
+          delete this.shader;
+        }
+
+        this.cameras.main.setRenderToTexture(this.shader);
+      }
     }
   }
 

@@ -38,6 +38,8 @@ export default class SuperGame extends Phaser.Game {
 
     this._onDisableDebugUI = [];
 
+    this._shaderSource = {};
+
     this.command = new CommandManager(commands);
 
     this.focused = true;
