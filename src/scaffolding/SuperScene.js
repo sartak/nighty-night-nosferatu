@@ -914,7 +914,7 @@ export default class SuperScene extends Phaser.Scene {
 
     sound.requestedVolume = volume;
 
-    sound.setVolume(volume * this.game.volume);
+    sound.setVolume(volume * this.game.volume * prop('scene.soundVolume'));
 
     this.sounds.push(sound);
 
@@ -928,7 +928,9 @@ export default class SuperScene extends Phaser.Scene {
   changeVolume(newVolume) {
     const {sounds} = this;
 
-    sounds.forEach((sound) => sound.setVolume(sound.requestedVolume * newVolume));
+    const multiplier = newVolume * prop('scene.soundVolume');
+
+    sounds.forEach((sound) => sound.setVolume(sound.requestedVolume * multiplier));
   }
 
   playMusic(name, forceRestart) {

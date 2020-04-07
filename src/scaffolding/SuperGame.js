@@ -87,7 +87,7 @@ export default class SuperGame extends Phaser.Game {
     this.volume = newVolume;
 
     if (this.currentMusicPlayer) {
-      this.currentMusicPlayer.setVolume(newVolume);
+      this.currentMusicPlayer.setVolume(newVolume * prop('scene.musicVolume'));
     }
 
     this.scene.scenes.forEach((scene) => {
@@ -377,7 +377,7 @@ handler to fire outside the game loop with a setTimeout or something?`);
 
       const music = this.sound.add(name);
       music.play('', {loop: true});
-      music.setVolume(this.volume);
+      music.setVolume(this.volume * prop('scene.musicVolume'));
       this.currentMusicPlayer = music;
     }
   }

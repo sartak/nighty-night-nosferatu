@@ -52,6 +52,12 @@ export function builtinPropSpecs(commands) {
     'scene.sounds': [0, null, 'sounds.length'],
     'scene.timers': [0, null, 'timers.length'],
     'scene.physicsColliders_length': [0, null, 'physics.world.colliders._active.length'],
+    'scene.musicVolume': [1, 0, 1, (value, scene, game) => {
+      game.changeVolume(game.volume);
+    }],
+    'scene.soundVolume': [1, 0, 1, (value, scene, game) => {
+      game.changeVolume(game.volume);
+    }],
     'scene.debugDraw': [false, (value, scene) => {
       if (value) {
         scene.physics.world.createDebugGraphic();
