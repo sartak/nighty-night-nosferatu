@@ -94,15 +94,13 @@ export function builtinPropSpecs(commands) {
     'scene.camera.followOffsetY': [0, null, 'cameras.main.followOffset.y'],
 
     'scene.camera.lerp': [1, 0, 1, (value, scene) => {
-      scene.cameras.main.setLerp(value);
+      scene.setCameraLerp();
     }],
     'scene.camera.deadzoneX': [0, 0, 1000, (value, scene) => {
-      const dz = scene.cameras.main.deadzone;
-      scene.cameras.main.setDeadzone(value, dz ? dz.height : 0);
+      scene.setCameraDeadzone();
     }],
     'scene.camera.deadzoneY': [0, 0, 1000, (value, scene) => {
-      const dz = scene.cameras.main.deadzone;
-      scene.cameras.main.setDeadzone(dz ? dz.width : 0, value);
+      scene.setCameraDeadzone();
     }],
     'scene.camera.hasBounds': [true, (value, scene) => {
       scene.setCameraBounds();

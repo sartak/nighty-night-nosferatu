@@ -231,8 +231,6 @@ export default class SuperScene extends Phaser.Scene {
       }
       this.cameras.main.setRenderToTexture(this.shader);
     }
-
-    this.cameras.main.setLerp(prop('scene.camera.lerp'));
   }
 
   preload() {
@@ -315,8 +313,21 @@ export default class SuperScene extends Phaser.Scene {
     }
   }
 
+  setCameraDeadzone() {
+    this.cameras.main.setDeadzone(
+      prop('scene.camera.deadzoneX'),
+      prop('scene.camera.deadzoneY'),
+    );
+  }
+
+  setCameraLerp() {
+    this.cameras.main.setLerp(prop('scene.camera.lerp'));
+  }
+
   firstUpdate(time, dt) {
     this.setCameraBounds();
+    this.setCameraDeadzone();
+    this.setCameraLerp();
   }
 
   update(time, dt) {
