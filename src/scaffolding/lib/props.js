@@ -83,13 +83,10 @@ export function builtinPropSpecs(commands) {
     'scene.camera.boundsHeight': [0, null, 'cameras.main._bounds.height'],
     'scene.camera.useBounds': [true, null, 'cameras.main.useBounds'],
 
-    'scene.camera.follow': ['', null, (scene) => {
-      if (!scene.cameras.main._follow) {
-        return undefined;
-      }
-
-      return scene.cameras.main._follow.name || scene.cameras.main._follow.texture.key;
-    }],
+    'scene.camera.follow': ['', null, objectIdentifier(
+      (scene) => scene.level,
+      (scene) => scene.cameras.main._follow,
+    )],
     'scene.camera.followOffsetX': [0, null, 'cameras.main.followOffset.x'],
     'scene.camera.followOffsetY': [0, null, 'cameras.main.followOffset.y'],
 
@@ -319,4 +316,48 @@ export function PropLoader(propSpecs, manageableProps) {
   }
 
   return (name) => propSpecs[name][0];
+}
+
+export function objectIdentifier(getContainer, getObject) {
+  let cacheInput;
+  let cacheOutput;
+  return (...args) => {
+    const object = getObject(...args);
+    if (object === cacheInput) {
+      return cacheOutput;
+    }
+
+    cacheInput = object;
+
+    if (!object) {
+      cacheOutput = object;
+      return cacheOutput;
+    }
+
+    if (typeof object === 'object' && object.name) {
+      cacheOutput = object.name;
+      return cacheOutput;
+    }
+
+    const container = getContainer(...args);
+    if (container && typeof container === 'object') {
+      // eslint-disable-next-line guard-for-in, no-restricted-syntax
+      for (const key in container) {
+        const value = container[key];
+
+        if (value === object) {
+          cacheOutput = key;
+          return cacheOutput;
+        }
+      }
+    }
+
+    if (typeof object === 'object' && object.texture && object.texture.key) {
+      cacheOutput = object.texture.key;
+      return cacheOutput;
+    }
+
+    cacheOutput = undefined;
+    return cacheOutput;
+  };
 }
