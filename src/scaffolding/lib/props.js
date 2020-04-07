@@ -67,6 +67,10 @@ export function builtinPropSpecs(commands) {
     }],
     'scene.replaceWithSelf': [(scene) => scene.replaceWithSelf(false)],
 
+    'scene.camera.lerp': [1, 0, 1, (value, scene) => {
+      scene.cameras.main.setLerp(value);
+    }],
+
     ...commandKeyProps(commands),
 
     'command.gamepad.total': [0, null],

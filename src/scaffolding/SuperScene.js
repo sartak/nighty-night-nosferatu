@@ -231,6 +231,8 @@ export default class SuperScene extends Phaser.Scene {
       }
       this.cameras.main.setRenderToTexture(this.shader);
     }
+
+    this.cameras.main.setLerp(prop('scene.camera.lerp'));
   }
 
   preload() {
@@ -1027,6 +1029,16 @@ export default class SuperScene extends Phaser.Scene {
       if (this[debugMethod]) {
         this[debugMethod](event);
       }
+    }
+  }
+
+  cameraFollow(object, offsetX = 0, offsetY = 0) {
+    if (object) {
+      const lerp = prop('scene.camera.lerp');
+      // true is roundPixels to avoid subpixel rendering
+      this.cameras.main.startFollow(object, true, lerp, lerp, offsetX, offsetY);
+    } else {
+      this.cameras.main.stopFollow();
     }
   }
 
