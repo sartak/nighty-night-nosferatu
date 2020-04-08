@@ -240,23 +240,17 @@ export default class SuperScene extends Phaser.Scene {
       if (this.shader) {
         this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
 
-        Object.entries(shaderUniforms).forEach(([name, [type, value]]) => {
-          if (value === undefined) {
-            return;
-          }
-
-          if (!shaderTypeMeta[type]) {
-            // eslint-disable-next-line no-console
-            console.error(`Unknown type ${type} for shader ${name}`);
+        Object.entries(shaderUniforms).forEach(([name, [type, initialValue, listenerIfNull]]) => {
+          if (listenerIfNull === null) {
+            this[name] = initialValue;
           } else {
             const [, , setter] = shaderTypeMeta[type];
-            this.shader[setter](name, value);
+            this.shader[setter](name, initialValue);
           }
         });
 
-        if (this.shaderInitialization) {
-          this.shaderInitialization();
-        }
+        this._shaderUpdate();
+
         this.cameras.main.setRenderToTexture(this.shader);
       }
     }
@@ -373,11 +367,22 @@ export default class SuperScene extends Phaser.Scene {
       this.renderUpdate(time, dt);
     }
     if (this.shader) {
-      this.shader.setFloat2('cameraScroll', this.cameras.main.scrollX / this.game.config.width, this.cameras.main.scrollY / this.game.config.height);
-      if (this.shaderUpdate) {
-        this.shaderUpdate(time, dt);
-      }
+      this._shaderUpdate();
     }
+  }
+
+  _shaderUpdate() {
+    this.shader.setFloat2('cameraScroll', this.cameras.main.scrollX / this.game.config.width, this.cameras.main.scrollY / this.game.config.height);
+
+    Object.entries(shaderUniforms).forEach(([name, [type, , listenerIfNull]]) => {
+      if (listenerIfNull !== null) {
+        return;
+      }
+
+      const value = this[name];
+      const [, , setter] = shaderTypeMeta[type];
+      this.shader[setter](name, value);
+    });
   }
 
   replaceWithSceneNamed(name, reseed, config = {}) {
@@ -948,10 +953,7 @@ export default class SuperScene extends Phaser.Scene {
           this.game.renderer.removePipeline(shaderName);
           this.game.renderer.addPipeline(shaderName, new shaderClass(this));
           this.shader = this.game.renderer.getPipeline(shaderName);
-          if (this.shaderInitialization) {
-            this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
-            this.shaderInitialization();
-          }
+          this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
         } else {
           this.game.renderer.removePipeline(shaderName);
           delete this.shader;
