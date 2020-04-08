@@ -138,7 +138,11 @@ function addController(key, spec, open, saved) {
 
   let controller;
   if (options.length >= 1 && options[0] === null) {
-    controller = folder.add(manageablePropsProxy, key).listen();
+    if (key.match(/color$/i)) {
+      controller = folder.addColor(manageablePropsProxy, key).listen();
+    } else {
+      controller = folder.add(manageablePropsProxy, key).listen();
+    }
     controller.domElement.closest('.cr').classList.add('listen');
     controller.domElement.querySelectorAll('input, select').forEach((node) => {
       node.tabIndex = -1;
