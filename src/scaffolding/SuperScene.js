@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import deepEqual from 'deep-equal';
-import prop, {propsWithPrefix, manageableProps} from '../props';
+import prop, {propsWithPrefix, manageableProps, shaderUniforms} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, isParticleProp} from './lib/particles';
 import massageTweenProps from './lib/tweens';
+import {shaderTypeMeta} from './lib/props';
 import {saveField, loadField} from './lib/store';
 
 import {parseMaps, parseLevelLines} from './lib/level-parser';
@@ -190,6 +191,13 @@ export default class SuperScene extends Phaser.Scene {
     return list[Math.floor(this.randBetween(name, 0, list.length))];
   }
 
+  shaderDeclareUniforms() {
+    return Object.entries(shaderUniforms).map(([name, [type]]) => {
+      const [, uniformType] = shaderTypeMeta[type];
+      return `uniform ${uniformType} ${name};\n`;
+    }).join('');
+  }
+
   shaderInstantiation(source) {
     return new Phaser.Class({
       Extends: Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline,
@@ -220,7 +228,7 @@ export default class SuperScene extends Phaser.Scene {
       const shaderName = this.constructor.name;
 
       if (!this.game.renderer.hasPipeline(shaderName)) {
-        const source = this.game._shaderSource[shaderName] = this.constructor.shaderSource();
+        const source = this.game._shaderSource[shaderName] = this.shaderDeclareUniforms() + this.constructor.shaderSource();
         if (source) {
           const shaderClass = this.shaderInstantiation(source);
           this.game.renderer.addPipeline(shaderName, new shaderClass(this));
@@ -912,7 +920,7 @@ export default class SuperScene extends Phaser.Scene {
     if (this.game.renderer.type === Phaser.WEBGL) {
       const shaderName = this.constructor.name;
       const oldSource = this.game._shaderSource[shaderName];
-      const newSource = this.constructor.shaderSource ? this.constructor.shaderSource() : undefined;
+      const newSource = this.constructor.shaderSource ? (this.shaderDeclareUniforms() + this.constructor.shaderSource()) : undefined;
 
       if (oldSource !== newSource) {
         // eslint-disable-next-line no-console
