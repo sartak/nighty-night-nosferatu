@@ -14,7 +14,7 @@ const rendererName = {
 
 const debug = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
 
-export function builtinPropSpecs(commands) {
+export function builtinPropSpecs(commands, shaderUniforms) {
   if (!debug) {
     Object.keys(commands).forEach((key) => {
       if (commands[key].debug) {
@@ -126,6 +126,7 @@ export function builtinPropSpecs(commands) {
     'command.ignore_all.any': [false, null, (scene) => scene.command.ignoreAll(scene)],
 
     ...commandProps(commands),
+    ...shaderProps(shaderUniforms),
   };
 }
 
@@ -183,6 +184,49 @@ const knownInputs = [
   a[b] = true;
   return a;
 }, {});
+
+export const shaderTypeMeta = {
+  float: [1, 'float', 'setFloat1'],
+  vec2: [2, 'vec2', 'setFloat2', 'x', 'y'],
+  vec3: [3, 'vec3', 'setFloat3', 'x', 'y', 'z'],
+  vec4: [4, 'vec4', 'setFloat4', 'x', 'y', 'z', 'w'],
+  rgb: [3, 'vec3', 'setFloat3', 'r', 'g', 'b'],
+  rgba: [4, 'vec4', 'setFloat4', 'r', 'g', 'b', 'a'],
+};
+
+function shaderProps(uniforms) {
+  const props = {};
+
+  Object.entries(uniforms).forEach(([name, spec]) => {
+    // eslint-disable-next-line prefer-const
+    let [type, ...config] = spec;
+
+    if (!type) {
+      type = 'float';
+    }
+
+    if (type === 'float' && config.length === 0) {
+      config.push(0.1);
+      config.push(null);
+    }
+
+    if (config[1] === null) {
+      config.push((scene) => scene[name]);
+    } else if (typeof config[config.length - 1] !== 'function') {
+      if (!shaderTypeMeta[type]) {
+        // eslint-disable-next-line no-console
+        console.error(`Unknown type ${type} for shader ${name}`);
+      } else {
+        const [, , setter] = shaderTypeMeta[type];
+        config.push((value, scene) => scene.shader && scene.shader[setter](name, value));
+      }
+    }
+
+    props[`shader.${name}`] = config;
+  });
+
+  return props;
+}
 
 export function keysWithPrefix(commands, prefix, skipWarning) {
   const keys = [];
