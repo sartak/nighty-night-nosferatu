@@ -376,7 +376,7 @@ export function ManageableProps(propSpecs) {
 
     if (key in savedChangedProps) {
       const [current, original] = savedChangedProps[key];
-      if (value === original) {
+      if (JSON.stringify(value) === JSON.stringify(original)) {
         value = current;
       } else {
         delete savedChangedProps[key];
