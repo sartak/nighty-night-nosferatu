@@ -293,32 +293,33 @@ export default class SuperScene extends Phaser.Scene {
         this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
 
         Object.entries(shaderUniforms).forEach(([name, spec]) => {
-          const [type, , listenerIfNull] = spec;
-          const propNames = propNamesForUniform(name, spec);
-          let initialValue;
-
-          if (propNames.length === 1) {
-            initialValue = prop(propNames[0]);
-          } else {
-            initialValue = [];
-            propNames.forEach((n) => {
-              const v = prop(n);
-              if (Array.isArray(v)) {
-                initialValue.push(...v);
-              } else {
-                initialValue.push(v);
-              }
-            });
-          }
-
-          if (type === 'rgb' || type === 'rgba') {
-            initialValue = initialValue.map((c, i) => (i < 3 ? c / 255.0 : c));
-          }
-
+          const [type, listenerInitial, listenerIfNull] = spec;
           if (listenerIfNull === null) {
-            this[name] = initialValue;
+            this[name] = listenerInitial;
           } else {
             const [, , setter] = shaderTypeMeta[type];
+
+            const propNames = propNamesForUniform(name, spec);
+            let initialValue;
+
+            if (propNames.length === 1) {
+              initialValue = prop(propNames[0]);
+            } else {
+              initialValue = [];
+              propNames.forEach((n) => {
+                const v = prop(n);
+                if (Array.isArray(v)) {
+                  initialValue.push(...v);
+                } else {
+                  initialValue.push(v);
+                }
+              });
+            }
+
+            if (type === 'rgb' || type === 'rgba') {
+              initialValue = initialValue.map((c, i) => (i < 3 ? c / 255.0 : c));
+            }
+
             this.shader[setter](name, initialValue);
           }
         });
