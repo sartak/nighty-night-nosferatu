@@ -194,6 +194,33 @@ export const shaderTypeMeta = {
   rgba: [4, 'vec4', 'setFloat4v', 'r', 'g', 'b', 'a'],
 };
 
+export function propNamesForUniform(name, spec) {
+  let [type] = spec;
+
+  if (!type) {
+    type = 'float';
+  }
+
+  const [count, , , ...subvariables] = shaderTypeMeta[type];
+
+  if (type === 'rgb') {
+    let sub = '';
+    if (!name.match(/color$/i)) {
+      sub = '_color';
+    }
+
+    return [`shader.${name}${sub}`];
+  } else if (type === 'rgba') {
+    return [`shader.${name}_color`, `shader.${name}_alpha`];
+  } else if (count === 1) {
+    return [`shader.${name}`];
+  } else {
+    return subvariables.map((sub, i) => {
+      return `shader.${name}_${sub}`;
+    });
+  }
+}
+
 function shaderProps(uniforms) {
   const props = {};
 

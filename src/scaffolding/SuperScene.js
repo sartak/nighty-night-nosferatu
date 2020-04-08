@@ -4,7 +4,7 @@ import prop, {propsWithPrefix, manageableProps, shaderUniforms} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, isParticleProp} from './lib/particles';
 import massageTweenProps from './lib/tweens';
-import {shaderTypeMeta} from './lib/props';
+import {shaderTypeMeta, propNamesForUniform} from './lib/props';
 import {saveField, loadField} from './lib/store';
 
 import {parseMaps, parseLevelLines} from './lib/level-parser';
@@ -292,7 +292,29 @@ export default class SuperScene extends Phaser.Scene {
       if (this.shader) {
         this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
 
-        Object.entries(shaderUniforms).forEach(([name, [type, initialValue, listenerIfNull]]) => {
+        Object.entries(shaderUniforms).forEach(([name, spec]) => {
+          const [type, , listenerIfNull] = spec;
+          const propNames = propNamesForUniform(name, spec);
+          let initialValue;
+
+          if (propNames.length === 1) {
+            initialValue = prop(propNames[0]);
+          } else {
+            initialValue = [];
+            propNames.forEach((n) => {
+              const v = prop(n);
+              if (Array.isArray(v)) {
+                initialValue.push(...v);
+              } else {
+                initialValue.push(v);
+              }
+            });
+          }
+
+          if (type === 'rgb' || type === 'rgba') {
+            initialValue = initialValue.map((c, i) => (i < 3 ? c / 255.0 : c));
+          }
+
           if (listenerIfNull === null) {
             this[name] = initialValue;
           } else {
