@@ -259,7 +259,7 @@ function shaderProps(uniforms) {
       if (config[1] === null) {
         config.push((scene) => (scene[name] ? scene[name].map((c) => c * 255.0) : undefined));
       } else {
-        config.push((value, scene) => scene.shader && scene.shader[setter](name, window.prop(`shader.${name}${sub}`).map((c) => c / 255.0)));
+        config.push((value, scene, game) => scene.shader && scene.shader[setter](name, game.prop(`shader.${name}${sub}`).map((c) => c / 255.0)));
       }
 
       config[0] = config[0].map((c) => c * 255.0);
@@ -285,9 +285,9 @@ function shaderProps(uniforms) {
       } else {
         alphaConfig.push(0, 1); // min and max
 
-        const cb = (value, scene) => scene.shader && scene.shader[setter](name, [
-          ...window.prop(`shader.${name}_color`).map((c) => c / 255.0),
-          window.prop(`shader.${name}_alpha`),
+        const cb = (value, scene, game) => scene.shader && scene.shader[setter](name, [
+          ...game.prop(`shader.${name}_color`).map((c) => c / 255.0),
+          game.prop(`shader.${name}_alpha`),
         ])
         colorConfig.push(cb);
         alphaConfig.push(cb);
@@ -316,7 +316,7 @@ function shaderProps(uniforms) {
         if (c[1] === null) {
           c.push((scene) => (scene[name] ? scene[name][i] : undefined));
         } else if (typeof c[c.length - 1] !== 'function') {
-          c.push((value, scene) => scene.shader && scene.shader[setter](name, subvariables.map((s) => window.prop(`shader.${name}_${s}`))));
+          c.push((value, scene, game) => scene.shader && scene.shader[setter](name, subvariables.map((s) => game.prop(`shader.${name}_${s}`))));
         }
 
         if (c[0] === 0) {
