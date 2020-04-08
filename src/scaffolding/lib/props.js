@@ -211,7 +211,65 @@ function shaderProps(uniforms) {
 
     const [count, , setter, ...subvariables] = shaderTypeMeta[type];
 
-    if (count === 1) {
+    if (name.match(/color$/i) && type !== 'rgb' && type !== 'rgba') {
+      throw new Error(`Shader uniform ${name} ends with /color$/i but it isn't using type rgb or rgba`);
+    }
+
+    if (type === 'rgb') {
+      if (config.length > 2
+          || config.length === 0
+          || !Array.isArray(config[0])
+          || config[0].length !== 3
+          || (config.length === 2 && config[1] !== null)) {
+        throw new Error(`Expected rgb shader uniform ${name} to have shape ['rgb', [0.95, 0.25, 0.5]] or ['rgb', [0.95, 0.25, 0.5], null]`);
+      }
+
+      let sub = '';
+      if (!name.match(/color$/i)) {
+        sub = '_color';
+      }
+
+      if (config[1] === null) {
+        config.push((scene) => (scene[name] ? scene[name].map((c) => c * 255.0) : undefined));
+      } else {
+        config.push((value, scene) => scene.shader && scene.shader[setter](name, window.prop(`shader.${name}${sub}`).map((c) => c / 255.0)));
+      }
+
+      config[0] = config[0].map((c) => c * 255.0);
+      props[`shader.${name}${sub}`] = config;
+    } else if (type === 'rgba') {
+      if (config.length > 2
+          || config.length === 0
+          || !Array.isArray(config[0])
+          || config[0].length !== 4
+          || (config.length === 2 && config[1] !== null)) {
+        throw new Error(`Expected rgbs shader uniform ${name} to have shape ['rgba', [0.95, 0.25, 0.5, 1]] or ['rgb', [0.95, 0.25, 0.5, 1], null]`);
+      }
+
+      const colorConfig = [config[0].filter((_, i) => i < 3)];
+      const alphaConfig = [config[0][3]];
+
+      if (config[1] === null) {
+        colorConfig.push(null);
+        alphaConfig.push(null);
+
+        colorConfig.push((scene) => (scene[name] ? scene[name].filter((_, i) => i < 3).map((c) => c * 255.0) : undefined));
+        alphaConfig.push((scene) => (scene[name] ? scene[name][3] : undefined));
+      } else {
+        alphaConfig.push(0, 1); // min and max
+
+        const cb = (value, scene) => scene.shader && scene.shader[setter](name, [
+          ...window.prop(`shader.${name}_color`).map((c) => c / 255.0),
+          window.prop(`shader.${name}_alpha`),
+        ])
+        colorConfig.push(cb);
+        alphaConfig.push(cb);
+      }
+
+      colorConfig[0] = colorConfig[0].map((c) => c * 255.0);
+      props[`shader.${name}_color`] = colorConfig;
+      props[`shader.${name}_alpha`] = alphaConfig;
+    } else if (count === 1) {
       if (config[1] === null) {
         config.push((scene) => scene[name]);
       } else if (typeof config[config.length - 1] !== 'function') {
