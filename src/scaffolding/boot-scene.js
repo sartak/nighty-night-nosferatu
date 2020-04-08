@@ -33,4 +33,8 @@ export default class BootScene extends SuperScene {
   saveStateFieldName() {
     return null;
   }
+
+  static shaderMainFull() {
+    return null;
+  }
 }

@@ -252,16 +252,14 @@ export default class SuperScene extends Phaser.Scene {
       return userShaderMain;
     }
 
-    if (this.name !== 'BootScene') {
-      uniformNames.forEach((name) => {
-        const regex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+    uniformNames.forEach((name) => {
+      const regex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
 
-        if (!userShaderMain.match(regex)) {
-          // eslint-disable-next-line no-console
-          console.error(`Shader program doesn't appear use uniform '${name}'. (If this is a false positive, try adding this to your program: // ${name}`);
-        }
-      });
-    }
+      if (!userShaderMain.match(regex)) {
+        // eslint-disable-next-line no-console
+        console.error(`Shader program doesn't appear use uniform '${name}'. (If this is a false positive, try adding this to your program: // ${name}`);
+      }
+    });
 
     return `
       ${builtinDeclarations}
