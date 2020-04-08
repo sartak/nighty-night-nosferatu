@@ -220,6 +220,10 @@ function shaderProps(uniforms) {
         config.push((value, scene) => scene.shader && scene.shader[setter](name, value));
       }
 
+      if (config[0] === 0) {
+        config[0] = 0.1;
+      }
+
       props[`shader.${name}`] = config;
     } else {
       subvariables.forEach((sub, i) => {
@@ -230,6 +234,10 @@ function shaderProps(uniforms) {
           c.push((scene) => scene[name] ? scene[name][i] : undefined);
         } else if (typeof c[c.length - 1] !== 'function') {
           // c.push((value, scene) => scene.shader && scene.shader[setter](name, value));
+        }
+
+        if (c[0] === 0) {
+          c[0] = 0.1;
         }
 
         props[`shader.${name}_${sub}`] = c;
