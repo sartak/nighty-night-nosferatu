@@ -231,9 +231,9 @@ function shaderProps(uniforms) {
         c[0] = c[0][i];
 
         if (c[1] === null) {
-          c.push((scene) => scene[name] ? scene[name][i] : undefined);
+          c.push((scene) => (scene[name] ? scene[name][i] : undefined));
         } else if (typeof c[c.length - 1] !== 'function') {
-          // c.push((value, scene) => scene.shader && scene.shader[setter](name, value));
+          c.push((value, scene) => scene.shader && scene.shader[setter](name, subvariables.map((s) => window.prop(`shader.${name}_${s}`))));
         }
 
         if (c[0] === 0) {
