@@ -1,25 +1,26 @@
 import {
   builtinPropSpecs, ManageableProps, PropLoader, makePropsWithPrefix,
-  preprocessPropSpecs, preprocessTileDefinitions,
+  preprocessPropSpecs,
 } from './scaffolding/lib/props';
 
 const particleImages = [
   '',
 ];
 
-const commands = {
+export const commands = {
 };
 
-export {commands};
+export const shaderUniforms = {
+};
 
 export const propSpecs = {
-  ...builtinPropSpecs(commands),
+  ...builtinPropSpecs(commands, shaderUniforms),
 
 };
 
-export const tileDefinitions = preprocessTileDefinitions({
+export const tileDefinitions = {
   '.': null, // background
-});
+};
 
 preprocessPropSpecs(propSpecs, particleImages);
 
