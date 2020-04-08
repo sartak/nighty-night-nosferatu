@@ -156,7 +156,7 @@ function addController(key, spec, open, saved) {
       callback = options.pop();
     }
 
-    if (key.match(/color/i)) {
+    if (key.match(/color$/i)) {
       controller = folder.addColor(manageablePropsProxy, key, ...options);
     } else {
       controller = folder.add(manageablePropsProxy, key, ...options);
