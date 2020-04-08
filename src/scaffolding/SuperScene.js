@@ -240,7 +240,9 @@ export default class SuperScene extends Phaser.Scene {
       uniform vec2 cameraScroll;
     `;
 
+    const uniformNames = [];
     const uniformDeclarations = Object.entries(shaderUniforms).map(([name, [type]]) => {
+      uniformNames.push(name);
       const [, uniformType] = shaderTypeMeta[type];
       return `uniform ${uniformType} ${name};\n`;
     }).join('');
@@ -248,6 +250,17 @@ export default class SuperScene extends Phaser.Scene {
     const userShaderMain = this.shaderMainFull();
     if (!userShaderMain) {
       return userShaderMain;
+    }
+
+    if (this.name !== 'BootScene') {
+      uniformNames.forEach((name) => {
+        const regex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+
+        if (!userShaderMain.match(regex)) {
+          // eslint-disable-next-line no-console
+          console.error(`Shader program doesn't appear use uniform '${name}'. (If this is a false positive, try adding this to your program: // ${name}`);
+        }
+      });
     }
 
     return `
