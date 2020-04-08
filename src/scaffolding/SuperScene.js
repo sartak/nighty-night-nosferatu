@@ -238,8 +238,23 @@ export default class SuperScene extends Phaser.Scene {
       this.shader = this.game.renderer.getPipeline(shaderName);
 
       if (this.shader) {
+        this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
+
+        Object.entries(shaderUniforms).forEach(([name, [type, value]]) => {
+          if (value === undefined) {
+            return;
+          }
+
+          if (!shaderTypeMeta[type]) {
+            // eslint-disable-next-line no-console
+            console.error(`Unknown type ${type} for shader ${name}`);
+          } else {
+            const [, , setter] = shaderTypeMeta[type];
+            this.shader[setter](name, value);
+          }
+        });
+
         if (this.shaderInitialization) {
-          this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
           this.shaderInitialization();
         }
         this.cameras.main.setRenderToTexture(this.shader);
