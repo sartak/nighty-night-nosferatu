@@ -206,9 +206,7 @@ function shaderProps(uniforms) {
     }
 
     if (!shaderTypeMeta[type]) {
-      // eslint-disable-next-line no-console
-      console.error(`Unknown type ${type} for shader ${name}`);
-      return;
+      throw new Error(`Unknown type ${type} for shader ${name}`);
     }
 
     const [count, , setter, ...subvariables] = shaderTypeMeta[type];
