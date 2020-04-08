@@ -957,25 +957,7 @@ export default class SuperScene extends Phaser.Scene {
     });
   }
 
-  _builtinHot() {
-    // eslint-disable-next-line no-console
-    console.info(`Hot-loading ${this.constructor.name}`);
-
-    if (this.game._stepExceptions > 100) {
-      // eslint-disable-next-line no-console
-      console.info('Resetting after recovering from errors');
-      this.game._stepExceptions = 0;
-      return;
-    }
-
-    if (this._replay && this._replay.timeSight) {
-      const replay = this._replay;
-      this.game.stopReplay();
-      this.game.beginReplay(replay);
-    } else {
-      this.replayParticleSystems();
-    }
-
+  _recompileShader() {
     if (this.game.renderer.type === Phaser.WEBGL) {
       const shaderName = this.constructor.name;
       const oldSource = this.game._shaderSource[shaderName];
@@ -1003,6 +985,28 @@ export default class SuperScene extends Phaser.Scene {
         this._shaderUpdate();
       }
     }
+  }
+
+  _builtinHot() {
+    // eslint-disable-next-line no-console
+    console.info(`Hot-loading ${this.constructor.name}`);
+
+    if (this.game._stepExceptions > 100) {
+      // eslint-disable-next-line no-console
+      console.info('Resetting after recovering from errors');
+      this.game._stepExceptions = 0;
+      return;
+    }
+
+    if (this._replay && this._replay.timeSight) {
+      const replay = this._replay;
+      this.game.stopReplay();
+      this.game.beginReplay(replay);
+    } else {
+      this.replayParticleSystems();
+    }
+
+    this._recompileShader();
   }
 
   particleSystem(name, options = {}, reloadSeed) {
