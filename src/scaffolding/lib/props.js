@@ -187,11 +187,11 @@ const knownInputs = [
 
 export const shaderTypeMeta = {
   float: [1, 'float', 'setFloat1'],
-  vec2: [2, 'vec2', 'setFloat2', 'x', 'y'],
-  vec3: [3, 'vec3', 'setFloat3', 'x', 'y', 'z'],
-  vec4: [4, 'vec4', 'setFloat4', 'x', 'y', 'z', 'w'],
-  rgb: [3, 'vec3', 'setFloat3', 'r', 'g', 'b'],
-  rgba: [4, 'vec4', 'setFloat4', 'r', 'g', 'b', 'a'],
+  vec2: [2, 'vec2', 'setFloat2v', 'x', 'y'],
+  vec3: [3, 'vec3', 'setFloat3v', 'x', 'y', 'z'],
+  vec4: [4, 'vec4', 'setFloat4v', 'x', 'y', 'z', 'w'],
+  rgb: [3, 'vec3', 'setFloat3v', 'r', 'g', 'b'],
+  rgba: [4, 'vec4', 'setFloat4v', 'r', 'g', 'b', 'a'],
 };
 
 function shaderProps(uniforms) {
@@ -205,24 +205,36 @@ function shaderProps(uniforms) {
       type = 'float';
     }
 
-    if (type === 'float' && config.length === 0) {
-      config.push(0.1);
-      config.push(null);
+    if (!shaderTypeMeta[type]) {
+      // eslint-disable-next-line no-console
+      console.error(`Unknown type ${type} for shader ${name}`);
+      return;
     }
 
-    if (config[1] === null) {
-      config.push((scene) => scene[name]);
-    } else if (typeof config[config.length - 1] !== 'function') {
-      if (!shaderTypeMeta[type]) {
-        // eslint-disable-next-line no-console
-        console.error(`Unknown type ${type} for shader ${name}`);
-      } else {
-        const [, , setter] = shaderTypeMeta[type];
+    const [count, , setter, ...subvariables] = shaderTypeMeta[type];
+
+    if (count === 1) {
+      if (config[1] === null) {
+        config.push((scene) => scene[name]);
+      } else if (typeof config[config.length - 1] !== 'function') {
         config.push((value, scene) => scene.shader && scene.shader[setter](name, value));
       }
-    }
 
-    props[`shader.${name}`] = config;
+      props[`shader.${name}`] = config;
+    } else {
+      subvariables.forEach((sub, i) => {
+        const c = [...config];
+        c[0] = c[0][i];
+
+        if (c[1] === null) {
+          c.push((scene) => scene[name] ? scene[name][i] : undefined);
+        } else if (typeof c[c.length - 1] !== 'function') {
+          // c.push((value, scene) => scene.shader && scene.shader[setter](name, value));
+        }
+
+        props[`shader.${name}_${sub}`] = c;
+      });
+    }
   });
 
   return props;
