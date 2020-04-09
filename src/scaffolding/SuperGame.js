@@ -562,9 +562,9 @@ handler to fire outside the game loop with a setTimeout or something?`);
     this.scene.scenes.forEach((scene) => {
       scene.shader = shader;
       if (shader) {
-        scene.cameras.main.setPipeline(shader);
         scene._shaderInitialize();
         scene._shaderUpdate();
+        scene.cameras.main.setPipeline(shader);
       } else {
         scene.cameras.main.clearRenderToTexture();
       }
