@@ -12,10 +12,6 @@ export default class BootScene extends SuperScene {
   preload() {
     super.preload();
 
-    this.load.on('complete', () => {
-      this.game.preloadComplete();
-    });
-
     this.game.preloadScenes.forEach((sceneClass) => {
       if (sceneClass.name === this.name) {
         return;
@@ -24,10 +20,13 @@ export default class BootScene extends SuperScene {
       const scene = new sceneClass();
       scene.preload.call(this);
     });
+  }
 
-    if (!this.load.list.size) {
+  create() {
+
+    setTimeout(() => {
       this.game.preloadComplete();
-    }
+    });
   }
 
   saveStateFieldName() {
