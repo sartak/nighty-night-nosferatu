@@ -457,8 +457,12 @@ handler to fire outside the game loop with a setTimeout or something?`);
   }
 
   shaderMainFull() {
-    const shaderCoordSource = this._shaderCoordFragments.map(([, , source]) => source).join('\n');
-    const shaderColorSource = this._shaderColorFragments.map(([, , source]) => source).join('\n');
+    const shaderCoordSource = this._shaderCoordFragments.filter(([name]) => prop(`shader.${name}.enabled`)).map(([, , source]) => source).join('\n');
+    const shaderColorSource = this._shaderColorFragments.filter(([name]) => prop(`shader.${name}.enabled`)).map(([, , source]) => source).join('\n');
+
+    if (!shaderCoordSource && !shaderColorSource) {
+      return;
+    }
 
     return `
       void main( void ) {
@@ -496,6 +500,10 @@ handler to fire outside the game loop with a setTimeout or something?`);
     const uniformDeclarations = [];
 
     this.shaderFragments.forEach(([fragmentName, uniforms]) => {
+      if (!prop(`shader.${fragmentName}.enabled`)) {
+        return;
+      }
+
       Object.entries(uniforms).forEach(([uniformName, [type]]) => {
         const name = `${fragmentName}_${uniformName}`;
         uniformNames.push(name);

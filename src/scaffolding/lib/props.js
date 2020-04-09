@@ -228,6 +228,8 @@ function shaderProps(coordFragments, colorFragments) {
   const props = {};
 
   [...coordFragments, ...colorFragments].forEach(([fragmentName, uniforms]) => {
+    props[`shader.${fragmentName}.enabled`] = [true, (value, scene, game) => game.recompileShader()];
+
     Object.entries(uniforms).forEach(([uniformName, spec]) => {
       // eslint-disable-next-line prefer-const
       let [type, ...config] = spec;

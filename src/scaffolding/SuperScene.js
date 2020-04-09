@@ -357,23 +357,45 @@ export default class SuperScene extends Phaser.Scene {
         }
       });
     });
-  }
 
-  _shaderUpdate() {
-    this.shader.setFloat2('camera_scroll', this.cameras.main.scrollX / this.game.config.width, this.cameras.main.scrollY / this.game.config.height);
+    // generate this._shaderUpdate based on what's being used
+
+    // eslint-disable-next-line no-unused-vars
+    const {shader} = this;
+
+    if (!shader) {
+      this._shaderUpdate = function () {};
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    const camera = this.cameras.main;
+
+    const shaderUpdate = [
+      '(function () {',
+      `  shader.setFloat2('camera_scroll', camera.scrollX / ${this.game.config.width}, camera.scrollY / ${this.game.config.height});`,
+    ];
 
     this.game.shaderFragments.forEach(([fragmentName, uniforms]) => {
+      if (!prop(`shader.${fragmentName}.enabled`)) {
+        return;
+      }
+
       Object.entries(uniforms).forEach(([uniformName, [type, , listenerIfNull]]) => {
-        const name = `${fragmentName}_${uniformName}`
+        const name = `${fragmentName}_${uniformName}`;
         if (listenerIfNull !== null) {
           return;
         }
 
-        const value = this[name];
         const [, , setter] = shaderTypeMeta[type];
-        this.shader[setter](name, value);
+
+        shaderUpdate.push(`  shader.${setter}('${name}', this['${name}']);`);
       });
     });
+
+    shaderUpdate.push('})');
+
+    // eslint-disable-next-line no-eval
+    this._shaderUpdate = eval(shaderUpdate.join('\n'));
   }
 
   replaceWithSceneNamed(name, reseed, config = {}) {
