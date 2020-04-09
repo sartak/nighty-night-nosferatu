@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import BootScene from './boot-scene';
-import prop, {commands} from '../props';
+import prop, {commands, shaderCoordFragments, shaderColorFragments} from '../props';
 import {updatePropsFromStep} from './lib/manage-gui';
+import {shaderTypeMeta} from './lib/props';
 import {name as project} from '../../package.json';
 import analytics from './lib/analytics';
 import CommandManager from './CommandManager';
@@ -38,9 +39,12 @@ export default class SuperGame extends Phaser.Game {
 
     this._onDisableDebugUI = [];
 
-    this._shaderSource = {};
-
     this.command = new CommandManager(commands);
+
+    this._shaderSource = {};
+    this._shaderCoordFragments = shaderCoordFragments;
+    this._shaderColorFragments = shaderColorFragments;
+    this.shaderFragments = [...shaderCoordFragments, ...shaderColorFragments];
 
     this.focused = true;
 
@@ -402,5 +406,183 @@ handler to fire outside the game loop with a setTimeout or something?`);
 
   cutoffTimeSightLeave() {
     this.topScene().cutoffTimeSightLeave();
+  }
+
+  shaderInstance(shaderName = 'main') {
+    if (this.renderer.type !== Phaser.WEBGL) {
+      return null;
+    }
+
+    return this.renderer.getPipeline(shaderName);
+  }
+
+  initializeShader(shaderName = 'main') {
+    if (this.renderer.type !== Phaser.WEBGL) {
+      return;
+    }
+
+    if (this.renderer.hasPipeline(shaderName)) {
+      return;
+    }
+
+    if (!this._shaderSource[shaderName]) {
+      this._shaderSource[shaderName] = this.fullShaderSource();
+    }
+
+    const source = this._shaderSource[shaderName];
+    if (!source) {
+      return;
+    }
+
+    const shaderClass = this.shaderInstantiation(source);
+    const shader = new shaderClass(this);
+
+    // undefined `active` indicates the shader didn:t completely load,
+    // probably due to a compile error
+    if (!shader || shader.active === undefined) {
+      return;
+    }
+
+    this.renderer.addPipeline(shaderName, shader);
+
+    shader.setFloat2('resolution', this.config.width, this.config.height);
+  }
+
+  updateShaderFragments(nextCoord, nextColor) {
+    this._shaderCoordFragments = nextCoord;
+    this._shaderColorFragments = nextColor;
+    this.shaderFragments = [...nextCoord, ...nextColor];
+
+    this.recompileShader();
+  }
+
+  shaderMainFull() {
+    const shaderCoordSource = this._shaderCoordFragments.map(([, , source]) => source).join('\n');
+    const shaderColorSource = this._shaderColorFragments.map(([, , source]) => source).join('\n');
+
+    return `
+      void main( void ) {
+        vec2 uv = outTexCoord;
+
+        ${shaderCoordSource}
+
+        vec4 c = texture2D(u_texture, uv);
+
+        ${shaderColorSource}
+
+        c.r *= c.a;
+        c.g *= c.a;
+        c.b *= c.a;
+
+        gl_FragColor = vec4(c.r, c.g, c.b, 1.0);
+      }
+    `;
+  }
+
+  fullShaderSource() {
+    const builtinDeclarations = `
+      precision mediump float;
+    `;
+
+    const builtinUniforms = `
+      uniform sampler2D u_texture;
+      varying vec2      outTexCoord;
+
+      uniform vec2 resolution;
+      uniform vec2 camera_scroll;
+    `;
+
+    const uniformNames = [];
+    const uniformDeclarations = [];
+
+    this.shaderFragments.forEach(([fragmentName, uniforms]) => {
+      Object.entries(uniforms).forEach(([uniformName, [type]]) => {
+        const name = `${fragmentName}_${uniformName}`;
+        uniformNames.push(name);
+        const [, uniformType] = shaderTypeMeta[type];
+        uniformDeclarations.push(`uniform ${uniformType} ${name};\n`);
+      });
+    });
+
+    const userShaderMain = this.shaderMainFull();
+    if (!userShaderMain) {
+      return userShaderMain;
+    }
+
+    uniformNames.forEach((name) => {
+      const regex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+
+      if (!userShaderMain.match(regex)) {
+        // eslint-disable-next-line no-console
+        console.error(`Shader program doesn't appear use uniform '${name}'. (If this is a false positive, try adding this to your program: // ${name}`);
+      }
+    });
+
+    return `
+      ${builtinDeclarations}
+      ${builtinUniforms}
+      ${uniformDeclarations.join('')}
+      ${userShaderMain}
+    `;
+  }
+
+  recompileShader(shaderName = 'main') {
+    if (this.renderer.type !== Phaser.WEBGL) {
+      return;
+    }
+
+    const oldSource = this._shaderSource[shaderName];
+    const newSource = this.fullShaderSource();
+
+    if (oldSource === newSource) {
+      return;
+    }
+
+    // eslint-disable-next-line no-console
+    console.info(`Hot-loading shader ${shaderName}`);
+
+    this._shaderSource[shaderName] = newSource;
+
+    this.renderer.removePipeline(shaderName);
+
+    if (newSource) {
+      this.initializeShader(shaderName);
+    }
+
+    const shader = this.shaderInstance();
+
+    this.scene.scenes.forEach((scene) => {
+      scene.shader = shader;
+      if (shader) {
+        scene.cameras.main.setPipeline(shader);
+        scene._shaderInitialize();
+        scene._shaderUpdate();
+      } else {
+        scene.cameras.main.clearRenderToTexture();
+      }
+    });
+  }
+
+  shaderInstantiation(fragShader) {
+    try {
+      return new Phaser.Class({
+        Extends: Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline,
+        initialize: function Shader(game) {
+          try {
+            Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline.call(this, {
+              game,
+              renderer: game.renderer,
+              fragShader,
+            });
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error(e);
+          }
+        },
+      });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
   }
 }

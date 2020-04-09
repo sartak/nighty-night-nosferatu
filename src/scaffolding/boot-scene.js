@@ -23,6 +23,7 @@ export default class BootScene extends SuperScene {
   }
 
   create() {
+    this.game.initializeShader();
 
     setTimeout(() => {
       this.game.preloadComplete();
@@ -30,10 +31,6 @@ export default class BootScene extends SuperScene {
   }
 
   saveStateFieldName() {
-    return null;
-  }
-
-  static shaderMainFull() {
     return null;
   }
 }

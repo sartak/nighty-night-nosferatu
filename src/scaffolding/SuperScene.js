@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import deepEqual from 'deep-equal';
-import prop, {propsWithPrefix, manageableProps, shaderUniforms} from '../props';
+import prop, {propsWithPrefix, manageableProps} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, isParticleProp} from './lib/particles';
 import massageTweenProps from './lib/tweens';
@@ -191,141 +191,17 @@ export default class SuperScene extends Phaser.Scene {
     return list[Math.floor(this.randBetween(name, 0, list.length))];
   }
 
-  shaderInstantiation(fragShader) {
-    return new Phaser.Class({
-      Extends: Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline,
-      initialize: function Shader(scene) {
-        Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline.call(this, {
-          game: scene.game,
-          renderer: scene.game.renderer,
-          fragShader,
-        });
-      },
-    });
-  }
-
-  static shaderMainFull() {
-    const userShaderMainCoord = this.shaderMainCoord ? this.shaderMainCoord() : '';
-    const userShaderMainColor = this.shaderMainColor ? this.shaderMainColor() : '';
-
-    return `
-      void main( void ) {
-        vec2 uv = outTexCoord;
-
-        ${userShaderMainCoord}
-
-        vec4 c = texture2D(u_texture, uv);
-
-        ${userShaderMainColor}
-
-        c.r *= c.a;
-        c.g *= c.a;
-        c.b *= c.a;
-
-        gl_FragColor = vec4(c.r, c.g, c.b, 1.0);
-      }
-    `;
-  }
-
-  static _fullShaderSource() {
-    const builtinDeclarations = `
-      precision mediump float;
-    `;
-
-    const builtinUniforms = `
-      uniform sampler2D u_texture;
-      varying vec2      outTexCoord;
-
-      uniform vec2 resolution;
-      uniform vec2 cameraScroll;
-    `;
-
-    const uniformNames = [];
-    const uniformDeclarations = Object.entries(shaderUniforms).map(([name, [type]]) => {
-      uniformNames.push(name);
-      const [, uniformType] = shaderTypeMeta[type];
-      return `uniform ${uniformType} ${name};\n`;
-    }).join('');
-
-    const userShaderMain = this.shaderMainFull();
-    if (!userShaderMain) {
-      return userShaderMain;
-    }
-
-    uniformNames.forEach((name) => {
-      const regex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
-
-      if (!userShaderMain.match(regex)) {
-        // eslint-disable-next-line no-console
-        console.error(`Shader program doesn't appear use uniform '${name}'. (If this is a false positive, try adding this to your program: // ${name}`);
-      }
-    });
-
-    return `
-      ${builtinDeclarations}
-      ${builtinUniforms}
-      ${uniformDeclarations}
-      ${userShaderMain}
-    `;
-  }
-
   create() {
     this.command.attachInputs(this);
 
     this.startedAt = new Date();
 
-    if (this.game.renderer.type === Phaser.WEBGL) {
-      const shaderName = this.constructor.name;
+    this.shader = this.game.shaderInstance();
 
-      if (!this.game.renderer.hasPipeline(shaderName)) {
-        const source = this.game._shaderSource[shaderName] = this.constructor._fullShaderSource();
-        if (source) {
-          const shaderClass = this.shaderInstantiation(source);
-          this.game.renderer.addPipeline(shaderName, new shaderClass(this));
-        }
-      }
-
-      this.shader = this.game.renderer.getPipeline(shaderName);
-
-      if (this.shader) {
-        this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
-
-        Object.entries(shaderUniforms).forEach(([name, spec]) => {
-          const [type, listenerInitial, listenerIfNull] = spec;
-          if (listenerIfNull === null) {
-            this[name] = listenerInitial;
-          } else {
-            const [, , setter] = shaderTypeMeta[type];
-
-            const propNames = propNamesForUniform(name, spec);
-            let initialValue;
-
-            if (propNames.length === 1) {
-              initialValue = prop(propNames[0]);
-            } else {
-              initialValue = [];
-              propNames.forEach((n) => {
-                const v = prop(n);
-                if (Array.isArray(v)) {
-                  initialValue.push(...v);
-                } else {
-                  initialValue.push(v);
-                }
-              });
-            }
-
-            if (type === 'rgb' || type === 'rgba') {
-              initialValue = initialValue.map((c, i) => (i < 3 ? c / 255.0 : c));
-            }
-
-            this.shader[setter](name, initialValue);
-          }
-        });
-
-        this._shaderUpdate();
-
-        this.cameras.main.setRenderToTexture(this.shader);
-      }
+    if (this.shader) {
+      this._shaderInitialize(true);
+      this._shaderUpdate();
+      this.cameras.main.setRenderToTexture(this.shader);
     }
   }
 
@@ -444,17 +320,59 @@ export default class SuperScene extends Phaser.Scene {
     }
   }
 
+  _shaderInitialize(initializeListeners) {
+    this.game.shaderFragments.forEach(([fragmentName, uniforms]) => {
+      Object.entries(uniforms).forEach(([uniformName, spec]) => {
+        const name = `${fragmentName}_${uniformName}`;
+        const [type, listenerInitial, listenerIfNull] = spec;
+        if (listenerIfNull === null) {
+          if (initializeListeners) {
+            this[name] = listenerInitial;
+          }
+        } else {
+          const [, , setter] = shaderTypeMeta[type];
+
+          const propNames = propNamesForUniform(fragmentName, uniformName, spec);
+          let initialValue;
+
+          if (propNames.length === 1) {
+            initialValue = prop(propNames[0]);
+          } else {
+            initialValue = [];
+            propNames.forEach((n) => {
+              const v = prop(n);
+              if (Array.isArray(v)) {
+                initialValue.push(...v);
+              } else {
+                initialValue.push(v);
+              }
+            });
+          }
+
+          if (type === 'rgb' || type === 'rgba') {
+            initialValue = initialValue.map((c, i) => (i < 3 ? c / 255.0 : c));
+          }
+
+          this.shader[setter](name, initialValue);
+        }
+      });
+    });
+  }
+
   _shaderUpdate() {
-    this.shader.setFloat2('cameraScroll', this.cameras.main.scrollX / this.game.config.width, this.cameras.main.scrollY / this.game.config.height);
+    this.shader.setFloat2('camera_scroll', this.cameras.main.scrollX / this.game.config.width, this.cameras.main.scrollY / this.game.config.height);
 
-    Object.entries(shaderUniforms).forEach(([name, [type, , listenerIfNull]]) => {
-      if (listenerIfNull !== null) {
-        return;
-      }
+    this.game.shaderFragments.forEach(([fragmentName, uniforms]) => {
+      Object.entries(uniforms).forEach(([uniformName, [type, , listenerIfNull]]) => {
+        const name = `${fragmentName}_${uniformName}`
+        if (listenerIfNull !== null) {
+          return;
+        }
 
-      const value = this[name];
-      const [, , setter] = shaderTypeMeta[type];
-      this.shader[setter](name, value);
+        const value = this[name];
+        const [, , setter] = shaderTypeMeta[type];
+        this.shader[setter](name, value);
+      });
     });
   }
 
@@ -989,36 +907,6 @@ export default class SuperScene extends Phaser.Scene {
 
       this.particleSystem(name, options, seed);
     });
-  }
-
-  _recompileShader() {
-    if (this.game.renderer.type === Phaser.WEBGL) {
-      const shaderName = this.constructor.name;
-      const oldSource = this.game._shaderSource[shaderName];
-      const newSource = this.constructor._fullShaderSource();
-
-      if (oldSource !== newSource) {
-        // eslint-disable-next-line no-console
-        console.info(`Hot-loading shader ${shaderName}`);
-
-        this.game._shaderSource[shaderName] = newSource;
-
-        if (newSource) {
-          const shaderClass = this.shaderInstantiation(newSource);
-          this.game.renderer.removePipeline(shaderName);
-          this.game.renderer.addPipeline(shaderName, new shaderClass(this));
-          this.shader = this.game.renderer.getPipeline(shaderName);
-          this.shader.setFloat2('resolution', this.game.config.width, this.game.config.height);
-        } else {
-          this.game.renderer.removePipeline(shaderName);
-          delete this.shader;
-        }
-
-        this.cameras.main.setRenderToTexture(this.shader);
-
-        this._shaderUpdate();
-      }
-    }
   }
 
   _builtinHot() {

@@ -694,6 +694,8 @@ if (module.hot) {
       const {game} = window;
       game.command.updateCommandsFromReload(next.commands);
 
+      game.updateShaderFragments(next.shaderCoordFragments, next.shaderColorFragments);
+
       regenerateListenPropsCache();
 
       updateSearch(previousQuery, true);

@@ -10,11 +10,11 @@ const particleImages = [
 export const commands = {
 };
 
-export const shaderUniforms = {
-};
+export const shaderCoordFragments = null;
+export const shaderColorFragments = null;
 
 export const propSpecs = {
-  ...builtinPropSpecs(commands, shaderUniforms),
+  ...builtinPropSpecs(commands, shaderCoordFragments, shaderColorFragments),
 
 };
 
