@@ -482,7 +482,7 @@ export function PropLoader(propSpecs, manageableProps) {
         return;
       }
 
-      if (!(name in propSpecs)) {
+      if (!(name in p)) {
         throw new Error(`Invalid prop named ${name}`);
       }
 
