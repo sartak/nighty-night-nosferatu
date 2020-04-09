@@ -185,6 +185,58 @@ const knownInputs = [
   return a;
 }, {});
 
+const builtinCoordFragments = [
+  ['shockwave', {
+    time: ['float', 1000000.0, null],
+    center: ['vec2', [0.5, 0.5], null],
+    scale: ['float', 10.0, 0, 500],
+    range: ['float', 0.8, 0, 10],
+    thickness: ['float', 0.1, 0, 10],
+    speed: ['float', 3.0, 0, 50],
+    inner: ['float', 0.09, 0, 1],
+    dropoff: ['float', 40.0, 0, 500],
+  }, `
+      if (shockwave_time < 10.0) {
+        float dist = distance(uv, shockwave_center - camera_scroll);
+        float t = shockwave_time * shockwave_speed;
+        if (dist <= t + shockwave_thickness && dist >= t - shockwave_thickness && dist >= shockwave_inner) {
+          float diff = dist - t;
+          float scaleDiff = 1.0 - pow(abs(diff * shockwave_scale), shockwave_range);
+          float diffTime = diff * scaleDiff;
+          vec2 diffTexCoord = normalize(uv - (shockwave_center - camera_scroll));
+          uv += (diffTexCoord * diffTime) / (t * dist * shockwave_dropoff);
+        }
+      }
+  `],
+];
+
+const builtinColorFragments = [
+  ['blur', {
+    amount: ['float', 0, null],
+  }, `
+      if (blur_amount > 0.0) {
+        float b = blur_amount / resolution.x;
+        c *= 0.2270270270;
+        c += texture2D(u_texture, vec2(uv.x - 4.0*b, uv.y - 4.0*b)) * 0.0162162162;
+        c += texture2D(u_texture, vec2(uv.x - 3.0*b, uv.y - 3.0*b)) * 0.0540540541;
+        c += texture2D(u_texture, vec2(uv.x - 2.0*b, uv.y - 2.0*b)) * 0.1216216216;
+        c += texture2D(u_texture, vec2(uv.x - 1.0*b, uv.y - 1.0*b)) * 0.1945945946;
+        c += texture2D(u_texture, vec2(uv.x + 1.0*b, uv.y + 1.0*b)) * 0.1945945946;
+        c += texture2D(u_texture, vec2(uv.x + 2.0*b, uv.y + 2.0*b)) * 0.1216216216;
+        c += texture2D(u_texture, vec2(uv.x + 3.0*b, uv.y + 3.0*b)) * 0.0540540541;
+        c += texture2D(u_texture, vec2(uv.x + 4.0*b, uv.y + 4.0*b)) * 0.0162162162;
+      }
+  `],
+
+  ['tint', {
+    color: ['rgba', [1, 1, 1, 1]],
+  }, `
+      c.r *= tint_color.r * tint_color.a;
+      c.g *= tint_color.g * tint_color.a;
+      c.b *= tint_color.b * tint_color.a;
+  `],
+];
+
 export const shaderTypeMeta = {
   float: [1, 'float', 'setFloat1'],
   vec2: [2, 'vec2', 'setFloat2v', 'x', 'y'],
@@ -224,10 +276,56 @@ export function propNamesForUniform(fragmentName, uniformName, spec) {
   }
 }
 
+function injectBuiltinFragment(fragments, isCoord) {
+  let primary = builtinColorFragments;
+  let secondary = builtinCoordFragments;
+  let primaryName = 'shaderColorFragments';
+  let secondaryName = 'shaderCoordFragments';
+
+  if (!fragments) {
+    return [];
+  }
+
+  if (isCoord) {
+    [primary, secondary] = [secondary, primary];
+    [primaryName, secondaryName] = [secondaryName, primaryName];
+  }
+
+  if (fragments.length === 0) {
+    fragments.push(...primary);
+    return;
+  }
+
+  for (let i = 0; i < fragments.length; i += 1) {
+    if (typeof fragments[i] === 'string') {
+      const name = fragments[i];
+      const replacement = primary.find(([p]) => name === p);
+      if (replacement) {
+        fragments[i] = replacement;
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to find builtin ${primaryName} '${name}'; available are: ${primary.map(([p]) => p).join(', ')}`);
+
+        const suggestion = secondary.find(([p]) => name === p);
+        if (suggestion) {
+          // eslint-disable-next-line no-console
+          console.error(`Perhaps you meant the builtin ${secondaryName} '${name}'?`);
+        }
+
+        fragments.splice(i, 1);
+        i -= 1;
+      }
+    }
+  }
+}
+
 function shaderProps(coordFragments, colorFragments) {
   const props = {};
 
-  [...coordFragments, ...colorFragments].forEach(([fragmentName, uniforms]) => {
+  injectBuiltinFragment(coordFragments, true);
+  injectBuiltinFragment(colorFragments, false);
+
+  [...(coordFragments || []), ...(colorFragments || [])].forEach(([fragmentName, uniforms]) => {
     props[`shader.${fragmentName}.enabled`] = [true, (value, scene, game) => game.recompileShader()];
 
     Object.entries(uniforms).forEach(([uniformName, spec]) => {

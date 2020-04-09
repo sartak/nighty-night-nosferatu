@@ -44,7 +44,7 @@ export default class SuperGame extends Phaser.Game {
     this._shaderSource = {};
     this._shaderCoordFragments = shaderCoordFragments;
     this._shaderColorFragments = shaderColorFragments;
-    this.shaderFragments = [...shaderCoordFragments, ...shaderColorFragments];
+    this.shaderFragments = [...(shaderCoordFragments || []), ...(shaderColorFragments || [])];
 
     this.focused = true;
 
@@ -451,14 +451,19 @@ handler to fire outside the game loop with a setTimeout or something?`);
   updateShaderFragments(nextCoord, nextColor) {
     this._shaderCoordFragments = nextCoord;
     this._shaderColorFragments = nextColor;
-    this.shaderFragments = [...nextCoord, ...nextColor];
+    this.shaderFragments = [...(nextCoord || []), ...(nextColor || [])];
 
     this.recompileShader();
   }
 
   shaderMainFull() {
-    const shaderCoordSource = this._shaderCoordFragments.filter(([name]) => prop(`shader.${name}.enabled`)).map(([, , source]) => source).join('\n');
-    const shaderColorSource = this._shaderColorFragments.filter(([name]) => prop(`shader.${name}.enabled`)).map(([, , source]) => source).join('\n');
+    const [shaderCoordSource, shaderColorSource] = [this._shaderCoordFragments, this._shaderColorFragments].map((fragments) => {
+      if (!fragments) {
+        return '';
+      }
+
+      return fragments.filter(([name]) => prop(`shader.${name}.enabled`)).map(([, , source]) => source).join('\n');
+    });
 
     if (!shaderCoordSource && !shaderColorSource) {
       return;
