@@ -434,18 +434,18 @@ function specDiffers(old, next) {
   for (let i = next.length - 1; i >= 0; i -= 1) {
     if (i === next.length - 1 && typeof next[i] === 'function' && typeof old[i] === 'function') {
       differsInFunction = true;
-    } else if (i === 1 && Array.isArray(next[i]) && Array.isArray(old[i])) {
+    } else if ((i === 0 || i === 1) && Array.isArray(next[i]) && Array.isArray(old[i])) {
       // compare enum values
       const nextArray = next[i];
       const oldArray = old[i];
 
       if (nextArray.length !== oldArray.length) {
-        return false;
+        return true;
       }
 
       for (let j = nextArray.length - 1; j >= 0; j -= 1) {
         if (nextArray[j] !== oldArray[j]) {
-          return false;
+          return true;
         }
       }
     } else if (next[i] !== old[i]) {
