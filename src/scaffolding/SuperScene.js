@@ -326,7 +326,7 @@ export default class SuperScene extends Phaser.Scene {
         const name = `${fragmentName}_${uniformName}`;
         const [type, listenerInitial, listenerIfNull] = spec;
         if (listenerIfNull === null) {
-          if (initializeListeners) {
+          if (initializeListeners || !(name in this)) {
             this[name] = listenerInitial;
           }
         } else {
