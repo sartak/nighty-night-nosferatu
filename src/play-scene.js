@@ -44,6 +44,9 @@ export default class PlayScene extends SuperScene {
     super.create(config);
   }
 
+  setupAnimations() {
+  }
+
   fixedUpdate(time, dt) {
   }
 

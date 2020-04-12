@@ -214,8 +214,11 @@ export default class SuperScene extends Phaser.Scene {
 
     this.startedAt = new Date();
 
-    this.shader = this.game.shaderInstance();
+    if (this.setupAnimations) {
+      this.setupAnimations();
+    }
 
+    this.shader = this.game.shaderInstance();
     if (this.shader) {
       this._shaderInitialize(true);
       this._shaderUpdate();
@@ -970,7 +973,43 @@ export default class SuperScene extends Phaser.Scene {
       this.replayParticleSystems();
     }
 
+    if (this.setupAnimations) {
+      this.reloadAnimations();
+    } else {
+      this.removeAnimations();
+    }
+
     this.game.recompileShader();
+  }
+
+  removeAnimations() {
+    this.physics.world.bodies.entries.forEach((body) => {
+      if (body.gameObject && body.gameObject.anims) {
+        // none of these seem to work
+        body.gameObject.anims.pause();
+        body.gameObject.anims.stop();
+        body.gameObject.anims.remove();
+      }
+    });
+
+    Object.keys(this.anims.anims.entries).forEach((key) => {
+      this.anims.remove(key);
+    });
+  }
+
+  reloadAnimations() {
+    Object.keys(this.anims.anims.entries).forEach((key) => {
+      this.anims.remove(key);
+    });
+
+    this.setupAnimations();
+
+    this.physics.world.bodies.entries.forEach((body) => {
+      if (body.gameObject && body.gameObject.anims) {
+        const {key} = body.gameObject.anims.currentAnim;
+        body.gameObject.anims.play(key, false);
+      }
+    });
   }
 
   particleSystem(name, options = {}, reloadSeed) {
