@@ -478,7 +478,7 @@ export function ManageableProps(propSpecs) {
         try {
           const {game} = window;
           const scene = game.topScene();
-          scene.command.recordPropExecution(scene, key);
+          scene.command.recordPropExecution(key);
           original(scene, game);
         } catch (e) {
           // eslint-disable-next-line no-console

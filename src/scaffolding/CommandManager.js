@@ -461,7 +461,7 @@ export default class CommandManager {
     this.processCommands(manager, frame, dt);
   }
 
-  recordPropExecution(scene, propName) {
+  recordPropExecution(propName) {
     this.executedProps.push(propName);
   }
 
