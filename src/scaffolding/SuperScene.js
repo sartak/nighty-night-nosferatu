@@ -431,7 +431,7 @@ export default class SuperScene extends Phaser.Scene {
 
     let {seed} = this.scene.settings.data;
     if (reseed === true) {
-      seed = Math.random() * Date.now();
+      seed = this.randFloat('replaceWithSceneNamed');
     } else if (reseed) {
       seed = reseed;
     }
