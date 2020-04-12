@@ -443,16 +443,6 @@ export default class SuperScene extends Phaser.Scene {
       return;
     }
 
-    if (this._recording) {
-      this.game.stopRecording();
-      return;
-    }
-
-    if (this._replay) {
-      this.endedReplay();
-      return;
-    }
-
     const oldScene = this.scene;
 
     const newScene = this.game.scene.add(
