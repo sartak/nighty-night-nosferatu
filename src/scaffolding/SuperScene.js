@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import deepEqual from 'deep-equal';
-import prop, {propsWithPrefix, manageableProps} from '../props';
+import prop, {propsWithPrefix, manageableProps, propSpecs} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, isParticleProp} from './lib/particles';
 import massageTweenProps from './lib/tweens';
@@ -1132,6 +1132,14 @@ export default class SuperScene extends Phaser.Scene {
       const setProp = (key, value) => {
         changedProps.push(key);
         manageableProps[key] = value;
+
+        const spec = propSpecs[key];
+        if (spec.length > 1 && spec[1] !== null) {
+          if (typeof spec[spec.length - 1] === 'function') {
+            const changeCallback = spec[spec.length - 1];
+            changeCallback(value, this, this.game);
+          }
+        }
 
         if (!batch) {
           applyPropChanges([key]);
