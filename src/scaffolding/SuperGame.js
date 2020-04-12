@@ -224,7 +224,7 @@ export default class SuperGame extends Phaser.Game {
     this.stopRecording();
     this.stopReplay();
 
-    this.destroy();
+    this.destroy(true, true);
 
     const engine = document.querySelector('#engine-container');
     if (engine) {
