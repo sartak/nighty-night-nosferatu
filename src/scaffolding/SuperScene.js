@@ -556,8 +556,8 @@ export default class SuperScene extends Phaser.Scene {
       topScene.calculateTimeSight();
     } else if (replay.timeSightFrameCallback) {
       game._replayPreflight += 1;
-      this._timeSightTargetEnded = () => {
-        replay.timeSightFrameCallback(this, time, dt, manager, false, true, true);
+      topScene._timeSightTargetEnded = () => {
+        replay.timeSightFrameCallback(topScene, time, dt, manager, false, true, true);
       };
 
       let postflightCutoff;
@@ -566,9 +566,9 @@ export default class SuperScene extends Phaser.Scene {
         delete replay.postflightCutoff;
       }
 
-      while (!this._timeSightTargetDone) {
+      while (!topScene._timeSightTargetDone) {
         const isPostflight = postflightCutoff !== undefined && manager.tickCount >= postflightCutoff;
-        replay.timeSightFrameCallback(this, time, dt, manager, false, isPostflight, false);
+        replay.timeSightFrameCallback(topScene, time, dt, manager, false, isPostflight, false);
         time += dt;
         loop.step(time);
 
@@ -578,7 +578,7 @@ export default class SuperScene extends Phaser.Scene {
           return;
         }
       }
-      this.scene.remove();
+      topScene.scene.remove();
       game._replayPreflight -= 1;
     } else {
       topScene.scene.setVisible(true);
