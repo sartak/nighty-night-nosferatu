@@ -448,11 +448,14 @@ export default class CommandManager {
     if (manager.commands) {
       this.addFrameToList(manager.suppressRepeatFrames, manager.commands, frame);
     }
+    if (this.recording) {
+      this.addFrameToList(manager.suppressRepeatFrames, this.recording.commands, frame);
+    }
 
     manager.tickCount += 1;
 
-    if (manager.recording) {
-      manager.recording.tickCount += 1;
+    if (this.recording) {
+      this.recording.tickCount += 1;
     }
 
     this.processCommands(manager, frame, dt);
@@ -464,16 +467,15 @@ export default class CommandManager {
 
   beginRecording(scene, recording) {
     const manager = this.getManager(scene);
-    manager.recording = recording;
-    recording.commands = manager.commands;
+    this.recording = recording;
+    recording.commands = [...manager.commands];
     recording.originalPreflightCutoff = recording.preflightCutoff = recording.tickCount = manager.tickCount;
   }
 
   stopRecording(scene) {
-    const manager = this.getManager(scene);
-    const {recording} = manager;
-    delete manager.recording;
-    recording.postflightCutoff = manager.tickCount;
+    const {recording} = this;
+    delete this.recording;
+    recording.postflightCutoff = recording.tickCount;
     return recording;
   }
 
