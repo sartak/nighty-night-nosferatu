@@ -132,6 +132,12 @@ export default class SuperScene extends Phaser.Scene {
     this.particleSystems = [];
 
     this.sys.events.on('destroy', this.destroy, this);
+
+    const mapWidth = Math.floor(this.game.config.width / (prop('config.tile_width') + 2));
+    const mapHeight = Math.floor(this.game.config.height / (prop('config.tile_height') + 3));
+
+    this.xBorder = (this.game.config.width - (mapWidth * prop('config.tile_width'))) / 2;
+    this.yBorder = (this.game.config.height - (mapHeight * prop('config.tile_height'))) / 2;
   }
 
   saveStateFieldName() {
@@ -1277,6 +1283,12 @@ export default class SuperScene extends Phaser.Scene {
   shockwave(x, y) {
     this.shockwave_time = this.scene_time;
     this.shockwave_center = [x / this.game.config.width, y / this.game.config.height];
+  }
+
+  positionToScreenCoordinate(x, y) {
+    const tileWidth = prop('config.tile_width');
+    const tileHeight = prop('config.tile_height');
+    return [x * tileWidth + this.xBorder, y * tileHeight + this.yBorder];
   }
 
   destroy() {
