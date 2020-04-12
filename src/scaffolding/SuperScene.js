@@ -1012,11 +1012,11 @@ export default class SuperScene extends Phaser.Scene {
     return tween;
   }
 
-  tweenInOut(inDuration, outDuration, update, onMidpoint, onComplete) {
+  tweenInOut(inDuration, outDuration, update, onMidpoint, onComplete, startPoint = 0) {
     let tween;
 
     tween = this.tweens.addCounter({
-      from: 0,
+      from: startPoint,
       to: 100,
       duration: inDuration,
       onUpdate: () => {
@@ -1042,6 +1042,36 @@ export default class SuperScene extends Phaser.Scene {
     });
 
     return tween;
+  }
+
+  tweenInOutExclusive(fieldName, inDuration, outDuration, update, onMidpoint, onComplete) {
+    let startPoint = 0;
+    if (this[fieldName]) {
+      startPoint = this[fieldName].getValue();
+      this[fieldName].stop();
+    }
+
+    this[fieldName] = this.tweenInOut(
+      inDuration * (1 - startPoint / 100.0),
+      outDuration,
+      update,
+      (tween, ...args) => {
+        if (onMidpoint) {
+          onMidpoint(tween, ...args);
+        }
+
+        this[fieldName] = tween;
+      },
+      (...args) => {
+        if (onComplete) {
+          onComplete(...args);
+        }
+        delete this[fieldName];
+      },
+      startPoint,
+    );
+
+    return this[fieldName];
   }
 
   playSound(baseName, variants, volume = 1.0) {
