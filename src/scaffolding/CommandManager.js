@@ -409,7 +409,7 @@ export default class CommandManager {
     }
 
     if (this.replayFrameIndex >= this.replay.commands.length || this.replayTicks >= this.replay.postflightCutoff) {
-      this.endedReplay(scene);
+      this.endedReplay();
       return null;
     }
 
@@ -487,7 +487,7 @@ export default class CommandManager {
     this.replayOptions = replayOptions;
   }
 
-  endedReplay(scene) {
+  endedReplay() {
     if (!this.replay) {
       return;
     }
