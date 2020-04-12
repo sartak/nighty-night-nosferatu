@@ -576,6 +576,23 @@ handler to fire outside the game loop with a setTimeout or something?`);
     });
   }
 
+  disableShader(shaderName = 'main') {
+    if (this.renderer.type !== Phaser.WEBGL) {
+      return;
+    }
+
+    this._shaderSource[shaderName] = null;
+
+    this.renderer.removePipeline(shaderName);
+
+    const shader = this.shaderInstance(shaderName);
+
+    this.scene.scenes.forEach((scene) => {
+      scene.shader = shader;
+      scene.cameras.main.clearRenderToTexture();
+    });
+  }
+
   shaderInstantiation(fragShader) {
     try {
       return new Phaser.Class({

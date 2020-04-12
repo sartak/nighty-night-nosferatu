@@ -1148,7 +1148,11 @@ export default class SuperScene extends Phaser.Scene {
 
       changes.forEach((change) => {
         if (typeof change === 'string') {
-          setProp(change, !prop(change));
+          if (change === 'disableShaders') {
+            this.game.disableShader();
+          } else {
+            setProp(change, !prop(change));
+          }
         } else if (typeof change === 'function') {
           change(setProp);
         }
