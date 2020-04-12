@@ -410,22 +410,22 @@ export default class CommandManager {
       return null;
     }
 
-    if (manager.replayFrame >= manager.replay.commands.length || manager.replayTicks >= manager.replay.postflightCutoff) {
+    if (manager.replayFrameIndex >= manager.replay.commands.length || manager.replayTicks >= manager.replay.postflightCutoff) {
       this.endedReplay(scene);
       return null;
     }
 
-    const frame = manager.replay.commands[manager.replayFrame];
+    const frame = manager.replay.commands[manager.replayFrameIndex];
 
     if (frame._repeat) {
       manager.replayRepeatRun += 1;
 
       if (manager.replayRepeatRun > frame._repeat) {
         manager.replayRepeatRun = 0;
-        manager.replayFrame += 1;
+        manager.replayFrameIndex += 1;
       }
     } else {
-      manager.replayFrame += 1;
+      manager.replayFrameIndex += 1;
     }
 
     manager.replayTicks += 1;
@@ -482,7 +482,7 @@ export default class CommandManager {
   beginReplay(scene, replay, replayOptions) {
     const manager = this.getManager(scene);
     manager.replay = replay;
-    manager.replayFrame = 0;
+    manager.replayFrameIndex = 0;
     manager.replayRepeatRun = 0;
     manager.replayTicks = 0;
     manager.replayOptions = replayOptions;
@@ -498,7 +498,7 @@ export default class CommandManager {
 
     delete manager.replay;
     delete manager.replayOptions;
-    delete manager.replayFrame;
+    delete manager.replayFrameIndex;
     delete manager.replayRepeatRun;
     delete manager.replayTicks;
 
@@ -518,7 +518,7 @@ export default class CommandManager {
 
     delete manager.replay;
     delete manager.replayOptions;
-    delete manager.replayFrame;
+    delete manager.replayFrameIndex;
     delete manager.replayRepeatRun;
     delete manager.replayTicks;
 
