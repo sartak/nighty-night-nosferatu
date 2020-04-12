@@ -456,6 +456,7 @@ export default class SuperScene extends Phaser.Scene {
     const target = `scene-${id}`;
 
     if (this.scene.settings.data._timeSightTarget) {
+      this.endedReplay();
       return;
     }
 
