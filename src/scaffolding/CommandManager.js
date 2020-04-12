@@ -390,7 +390,7 @@ export default class CommandManager {
       });
     }
 
-    if (manager.replay && frame._executedProps) {
+    if (this.replay && frame._executedProps) {
       frame._executedProps.forEach((propName) => {
         const fn = prop(propName);
         if (typeof fn === 'function') {
@@ -404,31 +404,29 @@ export default class CommandManager {
   }
 
   injectReplayFrame(scene) {
-    const manager = this.getManager(scene);
-
-    if (!manager.replay) {
+    if (!this.replay) {
       return null;
     }
 
-    if (manager.replayFrameIndex >= manager.replay.commands.length || manager.replayTicks >= manager.replay.postflightCutoff) {
+    if (this.replayFrameIndex >= this.replay.commands.length || this.replayTicks >= this.replay.postflightCutoff) {
       this.endedReplay(scene);
       return null;
     }
 
-    const frame = manager.replay.commands[manager.replayFrameIndex];
+    const frame = this.replay.commands[this.replayFrameIndex];
 
     if (frame._repeat) {
-      manager.replayRepeatRun += 1;
+      this.replayRepeatRun += 1;
 
-      if (manager.replayRepeatRun > frame._repeat) {
-        manager.replayRepeatRun = 0;
-        manager.replayFrameIndex += 1;
+      if (this.replayRepeatRun > frame._repeat) {
+        this.replayRepeatRun = 0;
+        this.replayFrameIndex += 1;
       }
     } else {
-      manager.replayFrameIndex += 1;
+      this.replayFrameIndex += 1;
     }
 
-    manager.replayTicks += 1;
+    this.replayTicks += 1;
 
     this.replayFrame(frame);
     this.heldCommands(true);
@@ -480,27 +478,25 @@ export default class CommandManager {
   }
 
   beginReplay(scene, replay, replayOptions) {
-    const manager = this.getManager(scene);
-    manager.replay = replay;
-    manager.replayFrameIndex = 0;
-    manager.replayRepeatRun = 0;
-    manager.replayTicks = 0;
-    manager.replayOptions = replayOptions;
+    this.replay = replay;
+    this.replayFrameIndex = 0;
+    this.replayRepeatRun = 0;
+    this.replayTicks = 0;
+    this.replayOptions = replayOptions;
   }
 
   endedReplay(scene) {
-    const manager = this.getManager(scene);
-    if (!manager.replay) {
+    if (!this.replay) {
       return;
     }
 
-    const {onEnd} = manager.replayOptions;
+    const {onEnd} = this.replayOptions;
 
-    delete manager.replay;
-    delete manager.replayOptions;
-    delete manager.replayFrameIndex;
-    delete manager.replayRepeatRun;
-    delete manager.replayTicks;
+    delete this.replay;
+    delete this.replayOptions;
+    delete this.replayFrameIndex;
+    delete this.replayRepeatRun;
+    delete this.replayTicks;
 
     if (onEnd) {
       onEnd();
@@ -508,19 +504,17 @@ export default class CommandManager {
   }
 
   stopReplay(scene) {
-    const manager = this.getManager(scene);
-
-    if (!manager.replay) {
+    if (!this.replay) {
       return;
     }
 
-    const {onStop} = manager.replayOptions;
+    const {onStop} = this.replayOptions;
 
-    delete manager.replay;
-    delete manager.replayOptions;
-    delete manager.replayFrameIndex;
-    delete manager.replayRepeatRun;
-    delete manager.replayTicks;
+    delete this.replay;
+    delete this.replayOptions;
+    delete this.replayFrameIndex;
+    delete this.replayRepeatRun;
+    delete this.replayTicks;
 
     if (onStop) {
       onStop();
@@ -528,16 +522,15 @@ export default class CommandManager {
   }
 
   hasPreflight(scene) {
-    const manager = this.getManager(scene);
-    if (!manager.replay) {
+    if (!this.replay) {
       return false;
     }
 
-    if (manager.replayTicks >= manager.replay.postflightCutoff) {
+    if (this.replayTicks >= this.replay.postflightCutoff) {
       return false;
     }
 
-    return manager.replayTicks < manager.replay.preflightCutoff;
+    return this.replayTicks < this.replay.preflightCutoff;
   }
 
   updateCommandsFromReload(next) {
