@@ -1310,7 +1310,7 @@ export default class SuperScene extends Phaser.Scene {
     const method = `handle${camelName}`;
     if (this[method]) {
       this[method](event);
-    } else if (prop('engine.debug')) {
+    } else if (prop('config.debug')) {
       const debugMethod = `debugHandle${camelName}`;
       if (this[debugMethod]) {
         this[debugMethod](event);
