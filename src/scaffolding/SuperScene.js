@@ -551,7 +551,7 @@ export default class SuperScene extends Phaser.Scene {
     const topScene = game.topScene();
 
     if (replay.timeSight) {
-      this.calculateTimeSight();
+      topScene.calculateTimeSight();
     } else if (replay.timeSightFrameCallback) {
       game._replayPreflight += 1;
       this._timeSightTargetEnded = () => {
