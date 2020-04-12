@@ -478,8 +478,8 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   beginReplay(replay, replayOptions) {
-    const {command} = this;
-    const {loop} = this.game;
+    const {command, game} = this;
+    const {loop} = game;
 
     this._replay = replay;
     this._replayOptions = replayOptions;
@@ -496,7 +496,7 @@ export default class SuperScene extends Phaser.Scene {
     let time = window.performance.now();
     const dt = 1000 / this.physics.world.fps;
 
-    this.game._replayPreflight += 1;
+    game._replayPreflight += 1;
 
     const manager = this.command.getManager(this);
 
@@ -510,7 +510,7 @@ export default class SuperScene extends Phaser.Scene {
       time += dt;
       loop.step(time);
 
-      if (this.game._stepExceptions > 100) {
+      if (game._stepExceptions > 100) {
         // eslint-disable-next-line no-console
         console.error('Too many errors in preflight; bailing out…');
         return;
@@ -518,12 +518,17 @@ export default class SuperScene extends Phaser.Scene {
     }
     loop.resetDelta();
 
-    this.game._replayPreflight -= 1;
+    game._replayPreflight -= 1;
+
+    // now that preflight is done, beware that if it had a scene transition,
+    // then `this` may have been removed from the scene graph and instead
+    // should use topScene
+    const topScene = game.topScene();
 
     if (replay.timeSight) {
       this.calculateTimeSight();
     } else if (replay.timeSightFrameCallback) {
-      this.game._replayPreflight += 1;
+      game._replayPreflight += 1;
       this._timeSightTargetEnded = () => {
         replay.timeSightFrameCallback(this, time, dt, manager, false, true, true);
       };
@@ -540,16 +545,16 @@ export default class SuperScene extends Phaser.Scene {
         time += dt;
         loop.step(time);
 
-        if (this.game._stepExceptions > 100) {
+        if (game._stepExceptions > 100) {
           // eslint-disable-next-line no-console
           console.error('Too many errors in timeSight; bailing out…');
           return;
         }
       }
       this.scene.remove();
-      this.game._replayPreflight -= 1;
+      game._replayPreflight -= 1;
     } else {
-      this.scene.setVisible(true);
+      topScene.scene.setVisible(true);
       loop.wake();
     }
   }
