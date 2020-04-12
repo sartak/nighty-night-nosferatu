@@ -335,7 +335,7 @@ export default class CommandManager {
 
   processCommands(manager, frame, dt) {
     const spec = this._spec;
-    const scene = manager.scene;
+    const {scene} = manager;
 
     const ignoreAll = this.ignoreAll(scene);
 
