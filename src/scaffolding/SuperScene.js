@@ -138,6 +138,15 @@ export default class SuperScene extends Phaser.Scene {
       delete config[key];
     });
 
+    if (this._recording) {
+      this._recording.sceneTransitions.push({
+        tickCount: this._recording.tickCount,
+        timestamp: Date.now(),
+        seed: config.seed,
+        class: this.constructor.name,
+      });
+    }
+
     const {
       width, height, tileWidth, tileHeight,
     } = this.game.config;
@@ -927,6 +936,7 @@ export default class SuperScene extends Phaser.Scene {
   beginRecording(recording) {
     this._recording = recording;
     recording.sceneSaveState = JSON.parse(JSON.stringify(this._initialSave));
+    recording.sceneTransitions = [];
     this.command.beginRecording(this, recording);
   }
 
