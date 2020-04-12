@@ -133,6 +133,11 @@ export default class SuperScene extends Phaser.Scene {
 
     this.sys.events.on('destroy', this.destroy, this);
 
+    ['_recording', '_replay', '_replayOptions'].forEach((key) => {
+      this[key] = config[key];
+      delete config[key];
+    });
+
     const {
       width, height, tileWidth, tileHeight,
     } = this.game.config;
@@ -422,6 +427,8 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   replaceWithSceneNamed(name, reseed, config = {}) {
+    const {game} = this;
+
     if (!this.scene.settings) {
       // this can happen when HMR happens during timeSight; SuperScene's
       // builtinHot causes the top scene to get replaced out of the scene
@@ -444,17 +451,26 @@ export default class SuperScene extends Phaser.Scene {
     }
 
     const oldScene = this.scene;
+    const {_replay, _replayOptions, _recording} = this;
 
-    const newScene = this.game.scene.add(
+    const newScene = game.scene.add(
       target,
-      this.game._sceneConstructors[name],
+      game._sceneConstructors[name],
       true,
       {
         ...this.scene.settings.data,
+        ...{
+          _replay,
+          _replayOptions,
+          _recording,
+        },
         ...config,
         seed,
       },
     );
+
+    // newScene will probably be null; if you need to communicate with it,
+    // pass options above.
 
     oldScene.remove();
 
