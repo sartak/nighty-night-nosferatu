@@ -479,7 +479,7 @@ export default class CommandManager {
     return recording;
   }
 
-  beginReplay(scene, replay, replayOptions) {
+  beginReplay(replay, replayOptions) {
     this.replay = replay;
     this.replayFrameIndex = 0;
     this.replayRepeatRun = 0;
