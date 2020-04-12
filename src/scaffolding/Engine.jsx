@@ -136,7 +136,8 @@ export default class Engine extends React.Component {
       engine.style.overflow = '';
 
       this.resizeHandler = () => {
-        const scale = 0.95 * Math.min(window.innerWidth / 800, window.innerHeight / 600);
+        const {width, height} = this.game.config;
+        const scale = 0.95 * Math.min(window.innerWidth / width, window.innerHeight / height);
         this.setState({scale});
       };
       this.resizeHandler();
