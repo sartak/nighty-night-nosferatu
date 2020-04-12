@@ -51,7 +51,7 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
     'scene.text': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Text').length],
     'scene.sounds': [0, null, 'sounds.length'],
     'scene.timers': [0, null, 'timers.length'],
-    'scene.physicsColliders_length': [0, null, 'physics.world.colliders._active.length'],
+    'scene.physicsColliders': [0, null, 'physics.world.colliders._active.length'],
     'scene.musicVolume': [1, 0, 1, (value, scene, game) => {
       game.changeVolume(game.volume);
     }],
