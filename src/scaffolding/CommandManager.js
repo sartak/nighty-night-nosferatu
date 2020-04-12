@@ -424,7 +424,10 @@ export default class CommandManager {
     const frame = this.injectReplayFrame(scene)
       || this.heldCommands(onlyUnsuppressable);
 
-    this.addFrameToList(manager.suppressRepeatFrames, manager.commands, frame);
+    if (manager.commands) {
+      this.addFrameToList(manager.suppressRepeatFrames, manager.commands, frame);
+    }
+
     manager.tickCount += 1;
 
     if (manager.recording) {
