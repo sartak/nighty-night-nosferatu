@@ -472,7 +472,7 @@ export default class CommandManager {
     recording.originalPreflightCutoff = recording.preflightCutoff = recording.tickCount = manager.tickCount;
   }
 
-  stopRecording(scene) {
+  stopRecording() {
     const {recording} = this;
     delete this.recording;
     recording.postflightCutoff = recording.tickCount;

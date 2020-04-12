@@ -917,7 +917,7 @@ export default class SuperScene extends Phaser.Scene {
   stopRecording() {
     const recording = this._recording;
     delete this._recording;
-    this.command.stopRecording(this);
+    this.command.stopRecording();
     return recording;
   }
 
