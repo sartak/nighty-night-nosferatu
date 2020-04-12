@@ -12,6 +12,8 @@ const baseConfig = {
   parent: 'engine',
   width: 800,
   height: 600,
+  tileWidth: 24,
+  tileHeight: 24,
 };
 
 export default class SuperGame extends Phaser.Game {

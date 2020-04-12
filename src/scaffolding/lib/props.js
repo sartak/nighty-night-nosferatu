@@ -25,7 +25,6 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
   }
 
   return {
-    'engine.debug': [debug, null, () => debug],
     'engine.time': [0.01, null, 'loop.time'],
     'engine.frameTime': [0.01, null, 'loop.delta'],
     'engine.actualFps': [0.01, null, 'loop.actualFps'],
@@ -38,6 +37,14 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
     'engine.clearLocalStorage': [() => { removeAllFields(); freezeStorage(); window.location = window.location; }],
     'engine.clearGameState': [() => { removeAllFields('game_'); freezeStorage(); window.location = window.location; }],
     'engine.disableDebugUI': [(scene, game) => game.disableDebugUI()],
+
+    'config.debug': [debug, null, () => debug],
+    'config.width': [0, null, (scene, game) => game.config.width],
+    'config.height': [0, null, (scene, game) => game.config.height],
+    'config.tileWidth': [0, null, (scene, game) => game.config.tileWidth],
+    'config.tileHeight': [0, null, (scene, game) => game.config.tileHeight],
+    'config.xBorder': [0, null, (scene, game) => scene.xBorder],
+    'config.yBorder': [0, null, (scene, game) => scene.xBorder],
 
     'scene.count': ['', null, 'scene.scenes.length'],
     'scene.commandScenes': ['', null, (scene) => scene.command._scenes.size],
