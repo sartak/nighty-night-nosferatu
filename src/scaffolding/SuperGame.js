@@ -416,36 +416,39 @@ handler to fire outside the game loop with a setTimeout or something?`);
     return this.renderer.getPipeline(shaderName);
   }
 
-  initializeShader(shaderName = 'main') {
+  initializeShader(shaderName = 'main', replace) {
     if (this.renderer.type !== Phaser.WEBGL) {
       return;
     }
 
-    if (this.renderer.hasPipeline(shaderName)) {
+    if (!replace && this.renderer.hasPipeline(shaderName)) {
       return;
     }
 
-    if (!this._shaderSource[shaderName]) {
-      this._shaderSource[shaderName] = this.fullShaderSource();
+    const source = this.fullShaderSource();
+
+    if (source) {
+      const shaderClass = this.shaderInstantiation(source);
+      const shader = new shaderClass(this);
+
+      // undefined `active` indicates the shader didn't completely load,
+      // probably due to a compile error
+      if (!shader || shader.active === undefined) {
+        return;
+      }
+
+      if (replace) {
+        this.renderer.removePipeline(shaderName);
+      }
+
+      this.renderer.addPipeline(shaderName, shader);
+
+      shader.setFloat2('resolution', this.config.width, this.config.height);
+    } else {
+      this.renderer.removePipeline(shaderName);
     }
 
-    const source = this._shaderSource[shaderName];
-    if (!source) {
-      return;
-    }
-
-    const shaderClass = this.shaderInstantiation(source);
-    const shader = new shaderClass(this);
-
-    // undefined `active` indicates the shader didn:t completely load,
-    // probably due to a compile error
-    if (!shader || shader.active === undefined) {
-      return;
-    }
-
-    this.renderer.addPipeline(shaderName, shader);
-
-    shader.setFloat2('resolution', this.config.width, this.config.height);
+    this._shaderSource[shaderName] = source;
   }
 
   updateShaderFragments(nextCoord, nextColor) {
@@ -556,17 +559,18 @@ handler to fire outside the game loop with a setTimeout or something?`);
 
     this._shaderSource[shaderName] = newSource;
 
-    this.renderer.removePipeline(shaderName);
-
     if (newSource) {
-      this.initializeShader(shaderName);
+      this.initializeShader(shaderName, true);
+    }
+    else {
+      this.renderer.removePipeline(shaderName);
     }
 
     const shader = this.shaderInstance();
 
     this.scene.scenes.forEach((scene) => {
       scene.shader = shader;
-      if (shader) {
+      if (newSource) {
         scene._shaderInitialize();
         scene._shaderUpdate();
         scene.cameras.main.setPipeline(shader);
