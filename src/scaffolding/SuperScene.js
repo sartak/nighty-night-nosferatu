@@ -1112,7 +1112,10 @@ export default class SuperScene extends Phaser.Scene {
     }
 
     if (this.performanceProps.length) {
-      const change = this.performanceProps.shift();
+      let changes = this.performanceProps.shift();
+      if (!Array.isArray(changes)) {
+        changes = [changes];
+      }
 
       const applyPropChanges = (keys) => {
         if (keys.length) {
@@ -1135,16 +1138,18 @@ export default class SuperScene extends Phaser.Scene {
         }
       };
 
-      if (typeof change === 'string') {
-        setProp(change, true);
-      } else if (typeof change === 'function') {
-        change(setProp);
-      }
+      changes.forEach((change) => {
+        if (typeof change === 'string') {
+          setProp(change, !prop(change));
+        } else if (typeof change === 'function') {
+          change(setProp);
+        }
+      });
 
       batch = false;
 
       // eslint-disable-next-line no-console
-      console.log(`Performance seems iffy; applying ${change}`);
+      console.log(`Performance seems iffy; applying ${changes.join(', ')}`);
 
       applyPropChanges(changedProps);
     }
