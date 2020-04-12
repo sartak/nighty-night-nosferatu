@@ -39,3 +39,17 @@
 .DoubleEnder .slider.dragging {
   background: #dddddd;
 }
+
+.DoubleEnder .notch {
+  display: block;
+  position: absolute;
+  top: 2px;
+  width: 4px;
+  border-radius: 4px;
+  height: 16px;
+  background-color: black;
+}
+
+.DoubleEnder .notch.selected {
+  background: #4397F7;
+}

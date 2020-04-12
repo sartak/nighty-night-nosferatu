@@ -336,6 +336,7 @@ export default class Replay extends React.Component {
           max={replay.tickCount}
           value1={replay.preflightCutoff}
           value2={replay.postflightCutoff}
+          notches={(replay.sceneTransitions || []).map((t) => ({ value: t.tickCount, title: 'Scene transition' }))}
           onMouseEnter={(e) => {
             this._inCutoffs = true;
             if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {

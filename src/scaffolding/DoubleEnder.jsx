@@ -33,7 +33,7 @@ export default class DoubleEnder extends React.Component {
     const {
       min, max, value1, value2, onChange1, onChange2,
       onMouseUp, onMouseEnter, onMouseMove, onMouseLeave,
-      onBeginChange, onEndChange,
+      onBeginChange, onEndChange, notches,
     } = this.props;
     const {dragging, lastDrag} = this.state;
     const sliderWidth = 16;
@@ -54,6 +54,20 @@ export default class DoubleEnder extends React.Component {
           }}
           className="track selected"
         />
+        {notches.map(({value, title}) => {
+          const isSelected = (value >= value1 && value <= value2) || (value >= value2 && value <= value1);
+          const percent = Math.max(0, Math.min(1, (value - min) / (max - min)));
+          return (
+            <div
+              key={value}
+              title={title}
+              className={`notch ${isSelected ? 'selected' : ''}`}
+              style={{left: `${trackWidth * percent}px`}}
+            >
+              {' '}
+            </div>
+          );
+        })}
         {[1, 2].map((index) => {
           let i = index;
           const value = i === 1 ? value1 : value2;
