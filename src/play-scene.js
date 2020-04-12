@@ -14,6 +14,9 @@ export default class PlayScene extends SuperScene {
         },
       },
     });
+
+    this.performanceProps = [];
+    this.mapsAreRectangular = true;
   }
 
   initialSaveState() {
@@ -44,23 +47,6 @@ export default class PlayScene extends SuperScene {
   fixedUpdate(time, dt) {
   }
 
-  static shaderSource() {
-    return `
-      void main( void ) {
-        vec2 uv = outTexCoord;
-        vec4 c = texture2D(u_texture, uv);
-
-        gl_FragColor = vec4(c.r*c.a, c.g*c.a, c.b*c.a, 1.0);
-      }
-    `;
-  }
-
-  shaderInitialization() {
-  }
-
-  shaderUpdate(time, dt) {
-  }
-
   launchTimeSight() {
     super.launchTimeSight();
   }
@@ -69,6 +55,14 @@ export default class PlayScene extends SuperScene {
     const objects = [];
 
     return objects;
+  }
+
+  debugHandlePointerdown(event) {
+    let {x, y} = event;
+
+    x += this.cameras.main.scrollX;
+    y += this.cameras.main.scrollY;
+
   }
 
   _hot() {
