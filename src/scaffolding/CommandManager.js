@@ -485,6 +485,12 @@ export default class CommandManager {
     this.replayRepeatRun = 0;
     this.replayTicks = 0;
     this.replayOptions = replayOptions;
+
+    if (replay.startTick) {
+      for (let i = 0; i < replay.startTick; i += 1) {
+        this.injectReplayFrame();
+      }
+    }
   }
 
   endedReplay() {

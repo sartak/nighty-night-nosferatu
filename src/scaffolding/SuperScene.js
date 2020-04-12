@@ -511,6 +511,7 @@ export default class SuperScene extends Phaser.Scene {
     this._replayOptions = replayOptions;
 
     command.beginReplay(replay, {
+      startTick: replay.startTick,
       onEnd: () => {
         this.game.topScene().endedReplay();
       },
@@ -596,6 +597,15 @@ export default class SuperScene extends Phaser.Scene {
 
     this.launchTimeSight();
 
+    let latestTransition;
+    (this._replay.sceneTransitions || []).forEach((transition) => {
+      if (transition.tickCount < this.command.replayTicks) {
+        latestTransition = transition;
+      }
+    });
+
+    const startTick = latestTransition ? latestTransition.tickCount : 0;
+
     const target = `scene-${Math.random() * Date.now()}`;
     const targetScene = this.game.scene.add(target, this.constructor, true, {...this.scene.settings.data, _timeSightTarget: true});
     this.game.scene.bringToTop(target);
@@ -606,6 +616,7 @@ export default class SuperScene extends Phaser.Scene {
       {
         ...this._replay,
         timeSight: false,
+        startTick,
         timeSightFrameCallback: (scene, frameTime, frameDt, manager, isPreflight, isPostflight, isLast) => {
           objectDt += frameDt;
 
