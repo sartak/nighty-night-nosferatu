@@ -44,6 +44,7 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
     'scene.class': ['', null, (scene) => scene.constructor.name],
     'scene.key': ['', null, 'scene.key'],
     'scene.seed': ['', null, 'scene.settings.data.seed'],
+    'scene.scene_time': [0.01, null, 'scene_time'],
     'scene.music': ['', null, 'currentMusicName'],
     'scene.timeScale': [0.01, null, 'timeScale'],
     'scene.physicsFps': [0.01, null, 'physics.world.fps'],

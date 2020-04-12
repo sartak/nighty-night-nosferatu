@@ -27,6 +27,7 @@ export default class SuperScene extends Phaser.Scene {
     this.timers = [];
     this.performanceFrames = 0;
     this.performanceAcceptable = true;
+    this.scene_time = 0;
   }
 
   init(config) {
@@ -85,6 +86,7 @@ export default class SuperScene extends Phaser.Scene {
           time += dt;
           physics.dt = dt;
           physics.time = time;
+          this.scene_time = time;
 
           if (this.game._stepExceptions > 100) {
             return;
@@ -379,6 +381,7 @@ export default class SuperScene extends Phaser.Scene {
     const shaderUpdate = [
       '(function () {',
       `  shader.setFloat2('camera_scroll', camera.scrollX / ${this.game.config.width}, camera.scrollY / ${this.game.config.height});`,
+      `  shader.setFloat1('scene_time', this.scene_time);`,
     ];
 
     this.game.shaderFragments.forEach(([fragmentName, uniforms]) => {
