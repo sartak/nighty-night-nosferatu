@@ -950,7 +950,7 @@ export default class SuperScene extends Phaser.Scene {
       this.replayParticleSystems();
     }
 
-    this._recompileShader();
+    this.game.recompileShader();
   }
 
   particleSystem(name, options = {}, reloadSeed) {
