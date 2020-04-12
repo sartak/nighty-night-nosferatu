@@ -1,6 +1,6 @@
 export const builtinCoordFragments = [
   ['shockwave', {
-    time: ['float', 1000000.0, null],
+    time: ['float', 0, null],
     center: ['vec2', [0.5, 0.5], null],
     scale: ['float', 10.0, 0, 500],
     range: ['float', 0.8, 0, 10],
@@ -9,9 +9,10 @@ export const builtinCoordFragments = [
     inner: ['float', 0.09, 0, 1],
     dropoff: ['float', 40.0, 0, 500],
   }, `
-      if (shockwave_time < 10.0) {
+      float shockwave_dt = (scene_time - shockwave_time) / 3333.0;
+      if (shockwave_time > 0.0 && shockwave_dt < 10.0) {
         float dist = distance(uv, shockwave_center - camera_scroll);
-        float t = shockwave_time * shockwave_speed;
+        float t = shockwave_dt * shockwave_speed;
         if (dist <= t + shockwave_thickness && dist >= t - shockwave_thickness && dist >= shockwave_inner) {
           float diff = dist - t;
           float scaleDiff = 1.0 - pow(abs(diff * shockwave_scale), shockwave_range);

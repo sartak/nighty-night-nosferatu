@@ -28,6 +28,7 @@ export default class SuperScene extends Phaser.Scene {
     this.performanceFrames = 0;
     this.performanceAcceptable = true;
     this.scene_time = 0;
+    this.shockwave_time = 0;
   }
 
   init(config) {
@@ -1241,6 +1242,11 @@ export default class SuperScene extends Phaser.Scene {
     this.time.timeScale = scale;
     this.anims.globalTimeScale = scale;
     */
+  }
+
+  shockwave(x, y) {
+    this.shockwave_time = this.scene_time;
+    this.shockwave_center = [x / this.game.config.width, y / this.game.config.height];
   }
 
   destroy() {
