@@ -27,6 +27,7 @@ export default class CommandManager {
     this.keyboard = {};
     this.gamepad = {};
     this.pointerEvents = [];
+    this.executedProps = [];
 
     Object.keys(spec).forEach((name) => {
       if (this[name]) {
@@ -262,6 +263,13 @@ export default class CommandManager {
       this.pointerEvents.length = 0;
     }
 
+    if (this.executedProps.length) {
+      if (!onlyUnsuppressable) {
+        frame._executedProps = [...this.executedProps];
+      }
+      this.executedProps.length = 0;
+    }
+
     return frame;
   }
 
@@ -282,6 +290,8 @@ export default class CommandManager {
       const prevFrame = list[list.length - 1];
       let isSame = true;
       if (frame._pointer || prevFrame._pointer) {
+        isSame = false;
+      } else if (frame._executedProps || prevFrame._executedProps) {
         isSame = false;
       } else {
         Object.keys(this._spec).forEach((key) => {
@@ -323,8 +333,9 @@ export default class CommandManager {
     return ignoreAlls[type];
   }
 
-  processCommands(scene, frame, dt) {
+  processCommands(manager, frame, dt) {
     const spec = this._spec;
+    const scene = manager.scene;
 
     const ignoreAll = this.ignoreAll(scene);
 
@@ -378,6 +389,18 @@ export default class CommandManager {
         scene.handlePointerEvent(event);
       });
     }
+
+    if (manager.replay && frame._executedProps) {
+      frame._executedProps.forEach((propName) => {
+        const fn = prop(propName);
+        if (typeof fn === 'function') {
+          fn();
+        } else {
+          // eslint-disable-next-line no-console
+          console.error(`Recorded prop ${propName} is no longer a function? It's ${fn}`);
+        }
+      });
+    }
   }
 
   injectReplayFrame(scene) {
@@ -417,7 +440,7 @@ export default class CommandManager {
 
     if (manager.scene.timeSightFrozen) {
       const frame = this.heldCommands(onlyUnsuppressable);
-      this.processCommands(scene, frame, dt);
+      this.processCommands(manager, frame, dt);
       return;
     }
 
@@ -434,7 +457,11 @@ export default class CommandManager {
       manager.recording.tickCount += 1;
     }
 
-    this.processCommands(scene, frame, dt);
+    this.processCommands(manager, frame, dt);
+  }
+
+  recordPropExecution(scene, propName) {
+    this.executedProps.push(propName);
   }
 
   beginRecording(scene, recording) {

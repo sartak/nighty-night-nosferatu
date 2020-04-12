@@ -470,7 +470,9 @@ export function ManageableProps(propSpecs) {
       value = () => {
         try {
           const {game} = window;
-          original(game.topScene(), game);
+          const scene = game.topScene();
+          scene.command.recordPropExecution(scene, key);
+          original(scene, game);
         } catch (e) {
           // eslint-disable-next-line no-console
           console.error(e);
