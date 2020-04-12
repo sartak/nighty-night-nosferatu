@@ -567,7 +567,7 @@ export default class SuperScene extends Phaser.Scene {
       }
 
       while (!topScene._timeSightTargetDone) {
-        const isPostflight = postflightCutoff !== undefined && manager.tickCount >= postflightCutoff;
+        const isPostflight = postflightCutoff !== undefined && this.command.replayTicks >= postflightCutoff;
         replay.timeSightFrameCallback(topScene, time, dt, manager, false, isPostflight, false);
         time += dt;
         loop.step(time);
@@ -605,6 +605,7 @@ export default class SuperScene extends Phaser.Scene {
     });
 
     const startTick = latestTransition ? latestTransition.tickCount : 0;
+    this.timeSightStartTick = startTick;
 
     const target = `scene-${Math.random() * Date.now()}`;
     const targetScene = this.game.scene.add(target, this.constructor, true, {...this.scene.settings.data, _timeSightTarget: true});
@@ -914,11 +915,12 @@ export default class SuperScene extends Phaser.Scene {
     this._replay.postflightCutoff = end;
 
     this._timeSightFrames.forEach((frame, f) => {
-      frame.isPreflight = frame.tickCount < start;
-      frame.isPostflight = frame.tickCount > end;
+      const tick = frame.tickCount + this.timeSightStartTick;
+      frame.isPreflight = tick < start;
+      frame.isPostflight = tick > end;
 
       frame.objects.forEach((object) => {
-        object.alpha = frame.tickCount >= start && frame.tickCount <= end ? 1 : object._timeSightAlpha;
+        object.alpha = (frame.isPreflight || frame.isPostflight) ? object._timeSightAlpha : 1;
       });
     });
   }
