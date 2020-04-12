@@ -523,7 +523,7 @@ export default class CommandManager {
     }
   }
 
-  hasPreflight(scene) {
+  hasPreflight() {
     if (!this.replay) {
       return false;
     }

@@ -502,7 +502,7 @@ export default class SuperScene extends Phaser.Scene {
 
     loop.sleep();
     this.scene.setVisible(false);
-    while (command.hasPreflight(this)) {
+    while (command.hasPreflight()) {
       if (replay.timeSightFrameCallback) {
         replay.timeSightFrameCallback(this, time, dt, manager, true, false, false);
       }
