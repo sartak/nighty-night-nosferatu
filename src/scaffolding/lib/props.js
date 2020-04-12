@@ -421,7 +421,7 @@ function shaderProps(coordFragments, colorFragments) {
           config.push((value, scene) => scene.shader && scene.shader[setter](name, value));
         }
 
-        if (config[0] === 0) {
+        if (config[0] === 0 && config[1] === null) {
           config[0] = 0.1;
         }
 
@@ -444,7 +444,7 @@ function shaderProps(coordFragments, colorFragments) {
             });
           }
 
-          if (c[0] === 0) {
+          if (c[0] === 0 && c[1] === null) {
             c[0] = 0.1;
           }
 
