@@ -383,7 +383,7 @@ export default class SuperScene extends Phaser.Scene {
     const {shader} = this;
 
     if (!shader) {
-      this._shaderUpdate = function () {};
+      this._shaderUpdate = function() {};
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -392,7 +392,7 @@ export default class SuperScene extends Phaser.Scene {
     const shaderUpdate = [
       '(function () {',
       `  shader.setFloat2('camera_scroll', camera.scrollX / ${this.game.config.width}, camera.scrollY / ${this.game.config.height});`,
-      `  shader.setFloat1('scene_time', this.scene_time);`,
+      '  shader.setFloat1(\'scene_time\', this.scene_time);',
     ];
 
     this.game.shaderFragments.forEach(([fragmentName, uniforms]) => {
