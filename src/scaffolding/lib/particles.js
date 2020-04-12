@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 
 const ParticleProps = [];
-export function isParticleProp(prop) {
-  return ParticleProps.filter((p) => prop.startsWith(p)).length > 0;
+export function particlePropFromProp(prop) {
+  return ParticleProps.find((p) => prop.startsWith(p));
 }
 
 let injected = false;

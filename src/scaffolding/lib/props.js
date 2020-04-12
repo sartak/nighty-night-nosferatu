@@ -570,7 +570,15 @@ export function makePropsWithPrefix(propSpecs, manageableProps) {
   }
 
   const cache = {};
-  return (prefix) => {
+  return (prefix, clearCache) => {
+    if (clearCache) {
+      if (prefix) {
+        delete cache[prefix];
+      } else {
+        Object.keys(cache).forEach((key) => delete cache[key]);
+      }
+    }
+
     if (!cache[prefix]) {
       const props = {};
       Object.entries(propSpecs).forEach(([key, spec]) => {

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import deepEqual from 'deep-equal';
 import prop, {propsWithPrefix, manageableProps, propSpecs} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
-import massageParticleProps, {injectEmitterOpSeededRandom, isParticleProp} from './lib/particles';
+import massageParticleProps, {injectEmitterOpSeededRandom, particlePropFromProp} from './lib/particles';
 import massageTweenProps from './lib/tweens';
 import {shaderTypeMeta, propNamesForUniform} from './lib/props';
 import {saveField, loadField} from './lib/store';
@@ -1117,12 +1117,19 @@ export default class SuperScene extends Phaser.Scene {
         changes = [changes];
       }
 
-      const applyPropChanges = (keys) => {
-        if (keys.length) {
-          refreshUI();
+      const applyPropChanges = (props) => {
+        if (props.length) {
+          if (this.game.debug) {
+            refreshUI();
+          }
 
-          keys.filter((p) => isParticleProp(p)).forEach((p) => {
-            this.replayParticleSystems(p);
+          props.forEach((propName) => {
+            const particleProp = particlePropFromProp(propName);
+            if (particleProp) {
+              propsWithPrefix(`${particleProp}.`, true);
+
+              this.replayParticleSystems(particleProp);
+            }
           });
         }
       };
@@ -1131,9 +1138,14 @@ export default class SuperScene extends Phaser.Scene {
       const changedProps = [];
       const setProp = (key, value) => {
         changedProps.push(key);
-        manageableProps[key] = value;
-
         const spec = propSpecs[key];
+
+        if (this.game.debug) {
+          manageableProps[key] = value;
+        } else {
+          propSpecs[key][0] = value;
+        }
+
         if (spec.length > 1 && spec[1] !== null) {
           if (typeof spec[spec.length - 1] === 'function') {
             const changeCallback = spec[spec.length - 1];
