@@ -502,10 +502,10 @@ export default class SuperScene extends Phaser.Scene {
 
     command.beginReplay(replay, {
       onEnd: () => {
-        this.endedReplay();
+        this.game.topScene().endedReplay();
       },
       onStop: () => {
-        this.stopReplay(true);
+        this.game.topScene().stopReplay(true);
       },
     });
 
