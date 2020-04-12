@@ -403,7 +403,7 @@ export default class CommandManager {
     }
   }
 
-  injectReplayFrame(scene) {
+  injectReplayFrame() {
     if (!this.replay) {
       return null;
     }
@@ -442,7 +442,7 @@ export default class CommandManager {
       return;
     }
 
-    const frame = this.injectReplayFrame(scene)
+    const frame = this.injectReplayFrame()
       || this.heldCommands(onlyUnsuppressable);
 
     if (manager.commands) {
