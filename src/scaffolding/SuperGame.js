@@ -23,6 +23,12 @@ export default class SuperGame extends Phaser.Game {
 
     super(config);
 
+    Object.entries(config).forEach(([key, value]) => {
+      if (!(key in this.config)) {
+        this.config[key] = value;
+      }
+    });
+
     this.debug = config.debug;
 
     this.scene.add('BootScene', BootScene, true, {seed: Date.now()});
