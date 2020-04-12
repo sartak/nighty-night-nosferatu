@@ -3,6 +3,7 @@ import deepEqual from 'deep-equal';
 import prop, {propsWithPrefix, manageableProps, propSpecs} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, particlePropFromProp} from './lib/particles';
+import {injectAddSpriteTimeScale} from './lib/sprites';
 import massageTweenProps from './lib/tweens';
 import {shaderTypeMeta, propNamesForUniform} from './lib/props';
 import {saveField, loadField} from './lib/store';
@@ -21,6 +22,7 @@ export default class SuperScene extends Phaser.Scene {
     };
     super(config);
 
+    this.timeScale = 1;
     this.sounds = [];
     this.timers = [];
     this.performanceFrames = 0;
@@ -58,6 +60,8 @@ export default class SuperScene extends Phaser.Scene {
     this._initialSave = JSON.parse(JSON.stringify(this.save));
 
     if (this.physics && this.physics.world) {
+      injectAddSpriteTimeScale(this);
+
       if (prop('scene.debugDraw')) {
         this.physics.world.createDebugGraphic();
       }
@@ -74,7 +78,9 @@ export default class SuperScene extends Phaser.Scene {
         const originalStep = world.step;
         let time = 0;
         physics.time = physics.dt = 0;
-        world.step = (delta) => {
+        world.step = (originalDelta) => {
+          const delta = originalDelta * world.timeScale * world.timeScale;
+
           const dt = delta * 1000;
           time += dt;
           physics.dt = dt;
@@ -969,6 +975,8 @@ export default class SuperScene extends Phaser.Scene {
     const emitterProps = massageParticleProps(props);
     const emitter = particles.createEmitter(emitterProps);
 
+    particles.timeScale = this.timeScale;
+
     injectEmitterOpSeededRandom(emitter, reloadSeed || this.randFloat('particles'));
 
     if (onAdd) {
@@ -1200,6 +1208,36 @@ export default class SuperScene extends Phaser.Scene {
     } else {
       this.cameras.main.stopFollow();
     }
+  }
+
+  get timeScale() {
+    return this._timeScale;
+  }
+
+  set timeScale(scale) {
+    this._timeScale = scale;
+
+    if (this.particleSystems) {
+      this.particleSystems.forEach((p) => {
+        p.particles.timeScale = scale;
+      });
+    }
+
+    if (this.physics) {
+      this.physics.world.timeScale = scale;
+      this.physics.world.bodies.entries.forEach((body) => {
+        if (body.gameObject && body.gameObject.anims) {
+          body.gameObject.anims.setTimeScale(scale);
+        }
+      });
+    }
+
+    // None of these are necessary thanks to us rewiring the event loop:
+    /*
+    this.tweens.timeScale = scale;
+    this.time.timeScale = scale;
+    this.anims.globalTimeScale = scale;
+    */
   }
 
   destroy() {

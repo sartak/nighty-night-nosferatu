@@ -44,6 +44,7 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
     'scene.key': ['', null, 'scene.key'],
     'scene.seed': ['', null, 'scene.settings.data.seed'],
     'scene.music': ['', null, 'currentMusicName'],
+    'scene.timeScale': [0.01, null, 'timeScale'],
     'scene.physicsFps': [0.01, null, 'physics.world.fps'],
     'scene.images': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Image').length],
     'scene.sprites': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Sprite').length],
