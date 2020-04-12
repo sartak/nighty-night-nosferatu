@@ -505,7 +505,7 @@ export default class CommandManager {
     }
   }
 
-  stopReplay(scene) {
+  stopReplay() {
     if (!this.replay) {
       return;
     }

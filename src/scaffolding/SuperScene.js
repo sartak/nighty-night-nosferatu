@@ -817,7 +817,7 @@ export default class SuperScene extends Phaser.Scene {
     }
 
     if (!skipDownward) {
-      this.command.stopReplay(this);
+      this.command.stopReplay();
     }
 
     if (onStop) {
