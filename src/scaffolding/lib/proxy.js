@@ -33,7 +33,14 @@ export default function(originalFrom, originalTo = originalFrom, proxy = {}) {
   // eslint-disable-next-line no-proto
   to = to.__proto__;
 
+  const leftover = {};
+  Object.getOwnPropertyNames(to).forEach((name) => {
+    leftover[name] = true;
+  });
+
   Object.getOwnPropertyNames(from).forEach((name) => {
+    delete leftover[name];
+
     // constructor has special behavior, React injects a __ method
     if (name === 'constructor' || name.startsWith('__')) {
       return;
@@ -52,6 +59,11 @@ export default function(originalFrom, originalTo = originalFrom, proxy = {}) {
         return proxy[name].bind(this)(...args);
       };
     }
+  });
+
+  Object.keys(leftover).forEach((name) => {
+    delete proxy[name];
+    delete to[name];
   });
 
   // hack to update shaderSource
