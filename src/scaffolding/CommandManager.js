@@ -410,7 +410,7 @@ export default class CommandManager {
       return null;
     }
 
-    if (manager.replayFrame >= manager.replay.commands.length || manager.tickCount >= manager.replay.postflightCutoff) {
+    if (manager.replayFrame >= manager.replay.commands.length || manager.replayTicks >= manager.replay.postflightCutoff) {
       this.endedReplay(scene);
       return null;
     }
