@@ -1,6 +1,14 @@
 import React from 'react';
 import './DoubleEnder.css';
 
+const semiFloor = (n) => {
+  return Math.floor(2 * n) / 2;
+};
+
+const semiCeil = (n) => {
+  return Math.ceil(2 * n) / 2;
+};
+
 export default class DoubleEnder extends React.Component {
   constructor(props) {
     super(props);
@@ -51,15 +59,15 @@ export default class DoubleEnder extends React.Component {
         <div className="track" ref={this.trackRef} />
         <div
           style={{
-            left: `${percent1 * trackWidth}px`,
-            right: `${trackWidth - percent2 * trackWidth}px`,
+            left: `${semiFloor(percent1 * trackWidth)}px`,
+            right: `${semiCeil(trackWidth - percent2 * trackWidth)}px`,
           }}
           className="track selected"
         />
         <div
           style={{
-            left: `${highlightPercent1 * trackWidth}px`,
-            right: `${trackWidth - highlightPercent2 * trackWidth}px`,
+            left: `${semiFloor(highlightPercent1 * trackWidth)}px`,
+            right: `${semiCeil(trackWidth - highlightPercent2 * trackWidth)}px`,
           }}
           className="track highlighted"
         />
@@ -80,7 +88,7 @@ export default class DoubleEnder extends React.Component {
               title={title}
               className={classes.join(' ')}
               style={{
-                left: `${percent * trackWidth}px`,
+                left: `${semiFloor(percent * trackWidth)}px`,
               }}
             >
               {' '}
@@ -98,7 +106,7 @@ export default class DoubleEnder extends React.Component {
             <div
               key={i}
               style={{
-                left: `${percent * (trackWidth - sliderWidth)}px`,
+                left: `${semiFloor(percent * (trackWidth - sliderWidth))}px`,
                 zIndex: i === lastDrag ? 5 : 4,
               }}
               className={`slider slider${i} ${dragging === i ? 'dragging' : ''}`}
