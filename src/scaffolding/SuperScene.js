@@ -97,6 +97,7 @@ export default class SuperScene extends Phaser.Scene {
             if (this.timeSightFrozen) {
               this.command.processInput(this, time, dt, true);
               tweens.update(time, dt);
+              this.timeSightMouseDrag();
               return;
             }
 
@@ -1407,6 +1408,27 @@ export default class SuperScene extends Phaser.Scene {
   positionToScreenCoordinate(x, y) {
     const {tileWidth, tileHeight} = this.game.config;
     return [x * tileWidth + this.xBorder, y * tileHeight + this.yBorder];
+  }
+
+  timeSightMouseDrag() {
+    const {activePointer} = this.game.input;
+    if (activePointer.isDown) {
+      this.cameraFollow();
+
+      if (this._timeSightMouseDragX) {
+        this.cameras.main.scrollX += this._timeSightMouseDragX - activePointer.position.x;
+      }
+
+      if (this._timeSightMouseDragY) {
+        this.cameras.main.scrollY += this._timeSightMouseDragY - activePointer.position.y;
+      }
+
+      this._timeSightMouseDragX = activePointer.position.x;
+      this._timeSightMouseDragY = activePointer.position.y;
+    } else {
+      delete this._timeSightMouseDragX;
+      delete this._timeSightMouseDragY;
+    }
   }
 
   destroy() {
