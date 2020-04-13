@@ -326,7 +326,7 @@ export default class SuperGame extends Phaser.Game {
     return recording;
   }
 
-  beginReplay(replay) {
+  beginReplay(replay, options = {}) {
     this._replay = replay;
 
     const save = JSON.parse(JSON.stringify(replay.sceneSaveState));
@@ -340,6 +340,7 @@ handler to fire outside the game loop with a setTimeout or something?`);
     }
 
     this.topScene().beginReplay(replay, {
+      ...options,
       onEnd: () => {
         this.endedReplay();
       },

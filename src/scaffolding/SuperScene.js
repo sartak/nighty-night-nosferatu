@@ -526,6 +526,7 @@ export default class SuperScene extends Phaser.Scene {
     delete this._replayLatestTransition;
 
     command.beginReplay(replay, {
+      ...replayOptions,
       startTick: replay.startTick,
       onEnd: () => {
         this.game.topScene().endedReplay();

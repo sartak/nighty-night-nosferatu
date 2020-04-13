@@ -538,7 +538,7 @@ export default class CommandManager {
       return false;
     }
 
-    return this.replayTicks < this.replay.preflightCutoff;
+    return this.replayTicks < (this.replayOptions.preflightCutoff || this.replay.preflightCutoff);
   }
 
   updateCommandsFromReload(next) {

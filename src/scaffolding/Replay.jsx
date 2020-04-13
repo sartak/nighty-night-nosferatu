@@ -133,7 +133,13 @@ export default class Replay extends React.Component {
     const {editing} = this.state;
     activateGame(() => {
       const {activeReplay} = this.state;
+      let transition;
+
       if (activeReplay) {
+        if (activeReplay.timestamp === replay.timestamp && !activeReplay.timeSight && replay.timeSight) {
+          transition = window.game.topScene()._replayLatestTransition;
+        }
+
         window.game.stopReplay();
       }
 
@@ -141,7 +147,13 @@ export default class Replay extends React.Component {
         this.setEditing(null);
       }
 
-      window.game.beginReplay(replay);
+      if (transition) {
+        window.game.beginReplay(replay, {
+          preflightCutoff: (transition.tickCount ? (transition.tickCount + 1) : 0),
+        });
+      } else {
+        window.game.beginReplay(replay);
+      }
     });
   }
 
