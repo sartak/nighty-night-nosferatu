@@ -285,6 +285,16 @@ export default class CommandManager {
     });
   }
 
+  mergeUnignorable(frame) {
+    const spec = this._spec;
+
+    Object.entries(spec).forEach(([name, config]) => {
+      if (frame[name] && config.unignorable && !config.unreplayable) {
+        this[name].held = true;
+      }
+    });
+  }
+
   addFrameToList(suppressRepeatFrames, list, frame) {
     if (!suppressRepeatFrames && list.length) {
       const prevFrame = list[list.length - 1];
@@ -430,6 +440,8 @@ export default class CommandManager {
 
     this.replayFrame(frame);
     this.heldCommands(true);
+    this.mergeUnignorable(frame);
+
     return {...frame, _repeat: 0};
   }
 
