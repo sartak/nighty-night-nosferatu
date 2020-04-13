@@ -109,3 +109,37 @@
 .Replay .replays .replay input {
   margin: 0 0.5em;
 }
+
+.Replay.tweaking .fields {
+  display: block;
+  height: 25em;
+  overflow: scroll;
+}
+
+.Replay.tweaking label {
+  display: block;
+  text-align: center;
+}
+
+.Replay .fields {
+  padding: 1em;
+}
+
+.Replay textarea {
+  width: 100%;
+  height: 20em;
+  font-family: "Menlo", "Courier New", monospace;
+  font-size: 0.7em;
+}
+
+.Replay .field.changed textarea {
+  background: #FFFFEE;
+}
+
+.Replay .field.error textarea {
+  background: #FFEEEE;
+}
+
+.Replay .field.error .info {
+  color: red;
+}

@@ -3,6 +3,13 @@ import './Replay.css';
 import {saveField, loadField} from './lib/store';
 import DoubleEnder from './DoubleEnder';
 
+const ReplayEditFields = [
+  'metadata', // must be first
+  'commands',
+  'sceneSaveState',
+  'sceneTransitions',
+];
+
 export default class Replay extends React.Component {
   constructor(props) {
     super(props);
@@ -37,6 +44,7 @@ export default class Replay extends React.Component {
       replays,
       activeRecording: null,
       activeReplay: loadField('activeReplay', null),
+      tweaking: loadField('tweaking', null),
       editing: loadField('editing', null),
       repeat: loadField('repeat', true),
     };
@@ -394,6 +402,7 @@ export default class Replay extends React.Component {
           onChange={(e) => this.editName(replay, e.target.value)}
         />
         <span className="play button" title="Load snapshot (load state)" onClick={() => this.beginReplay({...replay, snapshot: true, commands: []})}>🎆</span>
+        <span className="tweak button" title="Tweak replay" onClick={() => this.tweakReplay(replay)}>ℹ</span>
         <span className="copy button" title="Copy replay" onClick={() => this.copyReplay(replay)}>🔃</span>
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
         <span className="detail">
@@ -479,10 +488,128 @@ export default class Replay extends React.Component {
     );
   }
 
+  tweakReplay(replay) {
+    const metadata = {...replay};
+    const tweaking = {replay};
+    ReplayEditFields.forEach((field) => {
+      if (field !== 'metadata') {
+        tweaking[field] = JSON.stringify(metadata[field], null, 2);
+        delete metadata[field];
+      }
+    });
+    tweaking.metadata = JSON.stringify(metadata, null, 2);
+
+    ReplayEditFields.forEach((field) => {
+      tweaking[`${field}_original`] = tweaking[field];
+    });
+
+    this.setState({tweaking});
+    saveField('tweaking', tweaking);
+  }
+
+  updateTweak(field, value) {
+    this.setState(({tweaking}) => {
+      const t = {
+        ...tweaking,
+        [field]: value,
+        [`${field}_error`]: null,
+        [`${field}_changed`]: value !== tweaking[`${field}_original`],
+      };
+
+      setTimeout(() => saveField('tweaking', t));
+
+      return {tweaking: t};
+    });
+  }
+
+  revertTweak(field) {
+    // eslint-disable-next-line react/destructuring-assignment
+    this.updateTweak(field, this.state.tweaking[`${field}_original`]);
+  }
+
+  discardTweaks() {
+    setTimeout(() => { saveField('tweaking', null); });
+    this.setState({
+      tweaking: null,
+    });
+  }
+
+  saveTweaks() {
+    this.setState(({tweaking}) => {
+      let replay;
+      let sawError = false;
+      const newState = {...tweaking};
+
+      ReplayEditFields.forEach((field) => {
+        try {
+          const value = JSON.parse(tweaking[field]);
+          if (field === 'metadata') {
+            replay = value;
+          } else {
+            if (replay) {
+              replay[field] = value;
+            }
+          }
+
+          newState[`${field}_error`] = null;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e);
+          sawError = true;
+          newState[`${field}_error`] = e.toString();
+        }
+      });
+
+      if (sawError) {
+        setTimeout(() => { saveField('tweaking', newState); });
+        return {tweaking: newState};
+      } else {
+        setTimeout(() => {
+          this.updateReplay(tweaking.replay, replay, false);
+          setTimeout(() => { saveField('tweaking', null); });
+        });
+
+        return {tweaking: null};
+      }
+    });
+  }
+
+  renderTweaking() {
+    const {tweaking} = this.state;
+
+    return (
+      <div className="Replay tweaking">
+        <div className="controls tweaking">
+          <span className="button" title="Cancel tweaks" onClick={() => this.discardTweaks()}>🚮</span>
+          <span className="button" title="Save tweaks" onClick={() => this.saveTweaks()}>🆙</span>
+        </div>
+        <div className="fields">
+          {ReplayEditFields.map((field) => (
+            <div key={field} className={`field ${tweaking[`${field}_error`] ? 'error' : ''} ${tweaking[`${field}_changed`] ? 'changed' : ''}`}>
+              <label>
+                {field}
+                {' '}
+                <span style={{visibility: tweaking[`${field}_changed`] ? 'visible' : 'hidden'}} className="button" title="Discard these tweaks" onClick={() => this.revertTweak(field)}>🚮</span>
+              </label>
+              {tweaking[`${field}_error`] && (
+                <span className="info">{tweaking[`${field}_error`]}</span>
+              )}
+              <textarea value={tweaking[field]} onChange={(e) => this.updateTweak(field, e.target.value)} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   render() {
     const {
-      replays, activeRecording, activeReplay, editing, repeat,
+      replays, activeRecording, activeReplay, editing, repeat, tweaking,
     } = this.state;
+
+    if (tweaking) {
+      return this.renderTweaking();
+    }
 
     return (
       <div className="Replay">
