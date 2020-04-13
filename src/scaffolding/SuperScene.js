@@ -810,6 +810,7 @@ export default class SuperScene extends Phaser.Scene {
       this.game.stopReplay();
       this.game.beginReplay({
         ...replay,
+        ...(this._replayLatestTransition || {}),
         timeSight: false,
         snapshot: true,
         commands: activeObject._timeSightFrame.commands,
