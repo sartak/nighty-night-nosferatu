@@ -1037,14 +1037,16 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   removeAnimations() {
-    this.physics.world.bodies.entries.forEach((body) => {
-      if (body.gameObject && body.gameObject.anims) {
-        // none of these seem to work
-        body.gameObject.anims.pause();
-        body.gameObject.anims.stop();
-        body.gameObject.anims.remove();
-      }
-    });
+    if (this.physics && this.physics.world && this.physics.world.bodies && this.physics.world.bodies.entries) {
+      this.physics.world.bodies.entries.forEach((body) => {
+        if (body.gameObject && body.gameObject.anims) {
+          // none of these seem to work
+          body.gameObject.anims.pause();
+          body.gameObject.anims.stop();
+          body.gameObject.anims.remove();
+        }
+      });
+    }
 
     Object.keys(this.anims.anims.entries).forEach((key) => {
       this.anims.remove(key);
@@ -1058,12 +1060,14 @@ export default class SuperScene extends Phaser.Scene {
 
     this.setupAnimations();
 
-    this.physics.world.bodies.entries.forEach((body) => {
-      if (body.gameObject && body.gameObject.anims && body.gameObject.anims.currentAnim) {
-        const {key} = body.gameObject.anims.currentAnim;
-        body.gameObject.anims.play(key, false);
-      }
-    });
+    if (this.physics && this.physics.world && this.physics.world.bodies && this.physics.world.bodies.entries) {
+      this.physics.world.bodies.entries.forEach((body) => {
+        if (body.gameObject && body.gameObject.anims && body.gameObject.anims.currentAnim) {
+          const {key} = body.gameObject.anims.currentAnim;
+          body.gameObject.anims.play(key, false);
+        }
+      });
+    }
   }
 
   particleSystem(name, options = {}, reloadSeed) {
