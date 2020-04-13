@@ -67,3 +67,12 @@
 .DoubleEnder .notch.highlighted {
   background: rgb(189, 93, 209);
 }
+
+.DoubleEnder .cursor {
+  position: absolute;
+  top: 6px;
+  width: 2px;
+  z-index: 6;
+  height: 8px;
+  background-color: rgb(189, 93, 209);
+}

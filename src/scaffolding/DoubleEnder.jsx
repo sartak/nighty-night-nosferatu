@@ -19,6 +19,7 @@ export default class DoubleEnder extends React.Component {
     };
 
     this.trackRef = React.createRef();
+    this.cursorRef = React.createRef();
   }
 
   componentDidMount() {
@@ -27,21 +28,48 @@ export default class DoubleEnder extends React.Component {
     this.setState({refreshDimensions: true});
 
     window.addEventListener('resize', this.didResize);
+
+    window.game.updateReplayCursor = (frame, replay) => {
+      this.updateCursor(frame, replay);
+    };
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.didResize);
+    delete window.game.updateReplayCursor;
   }
 
   didResize = () => {
     this.forceUpdate();
   };
 
+  updateCursor(frame, replay) {
+    const {replayTimestamp} = this.props;
+    if (!replay || replay.timestamp !== replayTimestamp) {
+      return;
+    }
+
+    if (!this.cursorRef.current || !this.trackRef.current) {
+      return;
+    }
+
+    if (frame) {
+      const {min, max} = this.props;
+      const trackWidth = this.trackRef.current.getBoundingClientRect().width;
+      const cursorPercent = Math.max(0, Math.min(1, (frame - min) / (max - min)));
+      this.cursorRef.current.style.left = `${semiFloor(cursorPercent * trackWidth)}px`;
+      this.cursorRef.current.style.display = 'block';
+    } else {
+      this.cursorRef.current.style.display = 'none';
+    }
+  }
+
   render() {
     const {
       min, max, value1, value2, onChange1, onChange2,
       onMouseUp, onMouseEnter, onMouseMove, onMouseLeave,
       onBeginChange, onEndChange, notches, highlight1, highlight2,
+      cursor,
     } = this.props;
     const {dragging, lastDrag} = this.state;
     const sliderWidth = 16;
@@ -53,6 +81,7 @@ export default class DoubleEnder extends React.Component {
     const percent2 = Math.max(0, Math.min(1, (value2 - min) / (max - min)));
     const highlightPercent1 = Math.max(0, Math.min(1, (highlight1 - min) / (max - min)));
     const highlightPercent2 = Math.max(0, Math.min(1, (highlight2 - min) / (max - min)));
+    const cursorPercent = Math.max(0, Math.min(1, (cursor - min) / (max - min)));
 
     return (
       <div className="DoubleEnder" onMouseUp={onMouseUp} onMouseEnter={onMouseEnter} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
@@ -70,6 +99,14 @@ export default class DoubleEnder extends React.Component {
             right: `${semiCeil(trackWidth - highlightPercent2 * trackWidth)}px`,
           }}
           className="track highlighted"
+        />
+        <div
+          style={{
+            left: `${semiFloor(cursorPercent * trackWidth)}px`,
+            display: cursor === null ? 'none' : 'block',
+          }}
+          className="cursor highlighted"
+          ref={this.cursorRef}
         />
         {notches.map(({value, title}) => {
           const isSelected = (value >= value1 && value <= value2) || (value >= value2 && value <= value1);

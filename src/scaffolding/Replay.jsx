@@ -330,16 +330,23 @@ export default class Replay extends React.Component {
     let highlight1 = null;
     let highlight2 = null;
 
+    const {game} = window;
+    const scene = game && game.topScene();
+    let cursor = scene && scene.command ? scene.command.replayTicks : null;
+
+    if (activeReplay && activeReplay.timestamp !== replay.timestamp) {
+      cursor = null;
+    }
+
     if (activeReplay && activeReplay.timestamp === replay.timestamp && activeReplay.timeSight) {
+      cursor = null;
+
       const {sceneTransitions} = replay;
       if (!sceneTransitions || sceneTransitions.length === 0) {
         highlight1 = replay.preflightCutoff;
         highlight2 = replay.postflightCutoff;
       } else {
-        const {game} = window;
-        const scene = game && game.topScene();
         const latestTransition = scene && scene._replayLatestTransition;
-
         if (!scene) {
           // if we haven't rendered yet, the default is preflightCutoff until the next scene transition
           highlight1 = replay.preflightCutoff;
@@ -400,7 +407,9 @@ export default class Replay extends React.Component {
           value2={replay.postflightCutoff}
           highlight1={highlight1}
           highlight2={highlight2}
+          cursor={cursor}
           notches={(replay.sceneTransitions || []).map((t) => ({value: t.tickCount, title: 'Scene transition'}))}
+          replayTimestamp={replay.timestamp}
           onMouseEnter={(e) => {
             this._inCutoffs = true;
             if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {

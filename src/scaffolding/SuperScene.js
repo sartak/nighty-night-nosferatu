@@ -102,6 +102,10 @@ export default class SuperScene extends Phaser.Scene {
 
             originalStep.call(world, delta);
             this.command.processInput(this, time, dt);
+            if (this.game.updateReplayCursor) {
+              this.game.updateReplayCursor(this.command.replayTicks, this._replay);
+            }
+
             this.fixedUpdate(time, dt);
             this.updateTimers(time, dt);
 
