@@ -898,6 +898,10 @@ export default class SuperScene extends Phaser.Scene {
   cutoffTimeSightEnter() {
     const frames = this._timeSightFrames;
 
+    if (!frames) {
+      return;
+    }
+
     if (this._timeSightRemoveFocusTimer) {
       this._timeSightRemoveFocusTimer.destroy();
     }
@@ -920,12 +924,17 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   cutoffTimeSightChanged(start, end) {
+    const frames = this._timeSightFrames;
+    if (!frames) {
+      return;
+    }
+
     // ordinarily to be avoided, but we don't want to start a new replay
     // to take the update from Replay.jsx
     this._replay.preflightCutoff = start;
     this._replay.postflightCutoff = end;
 
-    this._timeSightFrames.forEach((frame, f) => {
+    frames.forEach((frame, f) => {
       const tick = frame.tickCount + ((this._replayLatestTransition ? this._replayLatestTransition.tickCount : 0) || 0);
       frame.isPreflight = tick < start;
       frame.isPostflight = tick > end;
@@ -937,7 +946,12 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   cutoffTimeSightLeave() {
-    this._timeSightFrames.forEach((frame) => {
+    const frames = this._timeSightFrames;
+    if (!frames) {
+      return;
+    }
+
+    frames.forEach((frame) => {
       frame.objects.forEach((object) => {
         object.alpha = (frame.isPreflight || frame.isPostflight) ? 0 : object._timeSightAlpha;
       });

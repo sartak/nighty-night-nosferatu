@@ -421,15 +421,24 @@ handler to fire outside the game loop with a setTimeout or something?`);
   }
 
   cutoffTimeSightEnter() {
-    this.topScene().cutoffTimeSightEnter();
+    const scene = this.topScene();
+    if (scene) {
+      scene.cutoffTimeSightEnter();
+    }
   }
 
   cutoffTimeSightChanged(start, end) {
-    this.topScene().cutoffTimeSightChanged(start, end);
+    const scene = this.topScene();
+    if (scene) {
+      scene.cutoffTimeSightChanged(start, end);
+    }
   }
 
   cutoffTimeSightLeave() {
-    this.topScene().cutoffTimeSightLeave();
+    const scene = this.topScene();
+    if (scene) {
+      scene.cutoffTimeSightLeave();
+    }
   }
 
   shaderInstance(shaderName = 'main') {
