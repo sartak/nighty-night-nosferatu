@@ -149,6 +149,18 @@ export default class SuperScene extends Phaser.Scene {
       });
     }
 
+    if (this._replay) {
+      const {sceneTransitions} = this._replay;
+      const {replayTicks} = this.command;
+      for (let i = 0; i < sceneTransitions.length; i += 1) {
+        if (sceneTransitions[i].tickCount <= replayTicks) {
+          this._replayLatestTransition = sceneTransitions[i];
+        } else {
+          break;
+        }
+      }
+    }
+
     const {
       width, height, tileWidth, tileHeight,
     } = this.game.config;
@@ -511,6 +523,7 @@ export default class SuperScene extends Phaser.Scene {
 
     this._replay = replay;
     this._replayOptions = replayOptions;
+    delete this._replayLatestTransition;
 
     command.beginReplay(replay, {
       startTick: replay.startTick,
@@ -599,16 +612,6 @@ export default class SuperScene extends Phaser.Scene {
 
     this.launchTimeSight();
 
-    let latestTransition;
-    (this._replay.sceneTransitions || []).forEach((transition) => {
-      if (transition.tickCount < this.command.replayTicks) {
-        latestTransition = transition;
-      }
-    });
-
-    const startTick = latestTransition ? latestTransition.tickCount : 0;
-    this.timeSightStartTick = startTick;
-
     const target = `scene-${Math.random() * Date.now()}`;
     const targetScene = this.game.scene.add(target, this.constructor, true, {...this.scene.settings.data, _timeSightTarget: true});
     this.game.scene.bringToTop(target);
@@ -619,7 +622,7 @@ export default class SuperScene extends Phaser.Scene {
       {
         ...this._replay,
         timeSight: false,
-        startTick,
+        startTick: (this._replayLatestTransition ? this._replayLatestTransition.tickCount : 0) || 0,
         timeSightFrameCallback: (scene, frameTime, frameDt, manager, isPreflight, isPostflight, isLast) => {
           objectDt += frameDt;
 
@@ -917,7 +920,7 @@ export default class SuperScene extends Phaser.Scene {
     this._replay.postflightCutoff = end;
 
     this._timeSightFrames.forEach((frame, f) => {
-      const tick = frame.tickCount + this.timeSightStartTick;
+      const tick = frame.tickCount + ((this._replayLatestTransition ? this._replayLatestTransition.tickCount : 0) || 0);
       frame.isPreflight = tick < start;
       frame.isPostflight = tick > end;
 
