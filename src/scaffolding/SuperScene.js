@@ -1051,7 +1051,7 @@ export default class SuperScene extends Phaser.Scene {
     this.setupAnimations();
 
     this.physics.world.bodies.entries.forEach((body) => {
-      if (body.gameObject && body.gameObject.anims) {
+      if (body.gameObject && body.gameObject.anims && body.gameObject.anims.currentAnim) {
         const {key} = body.gameObject.anims.currentAnim;
         body.gameObject.anims.play(key, false);
       }
