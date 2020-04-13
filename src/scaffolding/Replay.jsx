@@ -396,6 +396,7 @@ export default class Replay extends React.Component {
         <span className="play button" title="Load snapshot (load state)" onClick={() => this.beginReplay({...replay, snapshot: true, commands: []})}>🎆</span>
         <span className="copy button" title="Copy replay" onClick={() => this.copyReplay(replay)}>🔃</span>
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
+        <span className="detail">{replay.preflightCutoff}-{replay.postflightCutoff}{replay.postflightCutoff !== replay.tickCount && ` / ${replay.tickCount}`}</span>
         <br />
         <DoubleEnder
           min={0}
