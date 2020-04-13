@@ -697,6 +697,10 @@ export default class SuperScene extends Phaser.Scene {
 
     overrideProps(activeFrames[0].props);
 
+    if (this.game.updateReplayCursor) {
+      this.game.updateReplayCursor();
+    }
+
     let loopAlpha;
     // eslint-disable-next-line prefer-const
     loopAlpha = (frame, n) => {
@@ -786,6 +790,10 @@ export default class SuperScene extends Phaser.Scene {
 
       if (matchedFrame) {
         overrideProps(matchedFrame.props);
+
+        if (this.game.updateReplayCursor) {
+          this.game.updateReplayCursor(matchedFrame.tickCount, this._replay);
+        }
       }
     });
 

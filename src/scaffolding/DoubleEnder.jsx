@@ -45,15 +45,11 @@ export default class DoubleEnder extends React.Component {
 
   updateCursor(frame, replay) {
     const {replayTimestamp} = this.props;
-    if (!replay || replay.timestamp !== replayTimestamp) {
-      return;
-    }
-
     if (!this.cursorRef.current || !this.trackRef.current) {
       return;
     }
 
-    if (frame) {
+    if (frame && replay && replay.timestamp === replayTimestamp) {
       const {min, max} = this.props;
       const trackWidth = this.trackRef.current.getBoundingClientRect().width;
       const cursorPercent = Math.max(0, Math.min(1, (frame - min) / (max - min)));
