@@ -393,6 +393,7 @@ export default class Replay extends React.Component {
           value={replay.name}
           onChange={(e) => this.editName(replay, e.target.value)}
         />
+        <span className="play button" title="Load snapshot (load state)" onClick={() => this.beginReplay({...replay, snapshot: true, commands: []})}>🎆</span>
         <span className="copy button" title="Copy replay" onClick={() => this.copyReplay(replay)}>🔃</span>
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
         <br />
