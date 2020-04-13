@@ -329,8 +329,17 @@ export default class SuperGame extends Phaser.Game {
   beginReplay(replay, options = {}) {
     this._replay = replay;
 
+    let {startFromTransition} = options;
+    const {sceneTransitions} = replay;
+    if (!startFromTransition && sceneTransitions) {
+      for (let i = 0; i < sceneTransitions.length; i += 1) {
+        if (sceneTransitions[i].tickCount <= replay.preflightCutoff) {
+          startFromTransition = sceneTransitions[i];
+        }
+      }
+    }
 
-    const transition = options.startFromTransition;
+    const transition = startFromTransition;
 
     const {sceneSaveState, sceneName, initData} = transition || replay;
     const save = JSON.parse(JSON.stringify(sceneSaveState));
