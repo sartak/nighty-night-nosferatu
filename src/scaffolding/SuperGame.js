@@ -571,8 +571,7 @@ handler to fire outside the game loop with a setTimeout or something?`);
 
     if (newSource) {
       this.initializeShader(shaderName, true);
-    }
-    else {
+    } else {
       this.renderer.removePipeline(shaderName);
     }
 
