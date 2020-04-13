@@ -327,6 +327,56 @@ export default class Replay extends React.Component {
 
   renderEditReplay(replay) {
     const {activeReplay} = this.state;
+    let highlight1 = null;
+    let highlight2 = null;
+
+    if (activeReplay && activeReplay.timestamp === replay.timestamp && activeReplay.timeSight) {
+      const {sceneTransitions} = replay;
+      if (!sceneTransitions || sceneTransitions.length === 0) {
+        highlight1 = replay.preflightCutoff;
+        highlight2 = replay.postflightCutoff;
+      } else {
+        const {game} = window;
+        const scene = game && game.topScene();
+        const latestTransition = scene && scene._replayLatestTransition;
+
+        if (!scene) {
+          // if we haven't rendered yet, the default is preflightCutoff until the next scene transition
+          highlight1 = replay.preflightCutoff;
+          for (let i = 0; i < sceneTransitions.length; i += 1) {
+            if (sceneTransitions[i].tickCount > highlight1) {
+              highlight2 = Math.min(replay.postflightCutoff, sceneTransitions[i].tickCount);
+              break;
+            }
+          }
+        } else if (!latestTransition) {
+          // no transition yet, so take the first segment
+          highlight1 = replay.preflightCutoff;
+          highlight2 = Math.min(replay.postflightCutoff, sceneTransitions[0].tickCount);
+        } else {
+          // take the intersection of the scene's ticks and pre/post flight
+          const firstTick = latestTransition ? (latestTransition.tickCount || 0) : 0;
+          let lastTick = replay.postflightCutoff;
+
+          highlight1 = Math.max(firstTick, replay.preflightCutoff);
+
+          for (let i = 0; i < sceneTransitions.length; i += 1) {
+            if (sceneTransitions[i].tickCount >= firstTick) {
+              if (i + 1 < sceneTransitions.length) {
+                lastTick = sceneTransitions[i + 1].tickCount;
+              }
+              break;
+            }
+          }
+
+          highlight2 = Math.min(lastTick, replay.postflightCutoff);
+        }
+      }
+
+      if (highlight1 > highlight2) {
+        highlight1 = highlight2 = null;
+      }
+    }
 
     return (
       <form onSubmit={(e) => {
@@ -348,7 +398,9 @@ export default class Replay extends React.Component {
           max={replay.tickCount}
           value1={replay.preflightCutoff}
           value2={replay.postflightCutoff}
-          notches={(replay.sceneTransitions || []).map((t) => ({ value: t.tickCount, title: 'Scene transition' }))}
+          highlight1={highlight1}
+          highlight2={highlight2}
+          notches={(replay.sceneTransitions || []).map((t) => ({value: t.tickCount, title: 'Scene transition'}))}
           onMouseEnter={(e) => {
             this._inCutoffs = true;
             if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {

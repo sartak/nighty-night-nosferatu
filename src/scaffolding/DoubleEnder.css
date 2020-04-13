@@ -23,6 +23,15 @@
   background: #4397F7;
 }
 
+.DoubleEnder .track.highlighted {
+  position: absolute;
+  margin-top: 0;
+  top: 8px;
+  z-index: 2;
+  width: auto;
+  background: rgb(189, 93, 209);
+}
+
 .DoubleEnder .slider {
   position: absolute;
   top: 0;
@@ -44,7 +53,8 @@
   display: block;
   position: absolute;
   top: 2px;
-  width: 4px;
+  width: 3px;
+  z-index: 3;
   border-radius: 4px;
   height: 16px;
   background-color: black;
@@ -52,4 +62,8 @@
 
 .DoubleEnder .notch.selected {
   background: #4397F7;
+}
+
+.DoubleEnder .notch.highlighted {
+  background: rgb(189, 93, 209);
 }
