@@ -143,7 +143,9 @@ export default class SuperScene extends Phaser.Scene {
         tickCount: this._recording.tickCount,
         timestamp: Date.now(),
         seed: config.seed,
-        class: this.constructor.name,
+        sceneName: this.constructor.name,
+        initData: this.scene.settings.data,
+        sceneSaveState: JSON.parse(JSON.stringify(this._initialSave)),
       });
     }
 
