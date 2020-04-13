@@ -355,6 +355,7 @@ handler to fire outside the game loop with a setTimeout or something?`);
 
     this.topScene().beginReplay(replay, {
       ...options,
+      startFromTransition: transition,
       preflightCutoff: (transition && transition.tickCount ? (transition.tickCount + 1) : 0),
       onEnd: () => {
         this.endedReplay();
