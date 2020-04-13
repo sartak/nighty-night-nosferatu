@@ -204,13 +204,13 @@ export default class CommandManager {
     });
   }
 
-  heldCommands(onlyUnsuppressable) {
+  heldCommands(onlyUnignorable) {
     const {gamepad} = this;
     const spec = this._spec;
     const frame = {_repeat: 0};
 
     Object.entries(spec).forEach(([name, config]) => {
-      if (onlyUnsuppressable && !config.unsuppressable) {
+      if (onlyUnignorable && !config.unignorable) {
         return;
       }
 
@@ -257,14 +257,14 @@ export default class CommandManager {
     });
 
     if (this.pointerEvents.length) {
-      if (!onlyUnsuppressable) {
+      if (!onlyUnignorable) {
         frame._pointer = [...this.pointerEvents];
       }
       this.pointerEvents.length = 0;
     }
 
     if (this.executedProps.length) {
-      if (!onlyUnsuppressable) {
+      if (!onlyUnignorable) {
         frame._executedProps = [...this.executedProps];
       }
       this.executedProps.length = 0;
@@ -342,7 +342,7 @@ export default class CommandManager {
     Object.entries(spec).forEach(([name, config]) => {
       const command = this[name];
 
-      if (!prop(`command.${name}.enabled`) || (ignoreAll && !config.unsuppressable)) {
+      if (!prop(`command.${name}.enabled`) || (ignoreAll && !config.unignorable)) {
         command.held = false;
       }
 
@@ -433,17 +433,17 @@ export default class CommandManager {
     return {...frame, _repeat: 0};
   }
 
-  processInput(scene, time, dt, onlyUnsuppressable) {
+  processInput(scene, time, dt, onlyUnignorable) {
     const manager = this.getManager(scene);
 
     if (manager.scene.timeSightFrozen) {
-      const frame = this.heldCommands(onlyUnsuppressable);
+      const frame = this.heldCommands(onlyUnignorable);
       this.processCommands(manager, frame, dt);
       return;
     }
 
     const frame = this.injectReplayFrame()
-      || this.heldCommands(onlyUnsuppressable);
+      || this.heldCommands(onlyUnignorable);
 
     if (manager.commands) {
       this.addFrameToList(manager.suppressRepeatFrames, manager.commands, frame);
