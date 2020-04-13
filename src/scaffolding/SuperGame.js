@@ -329,9 +329,14 @@ export default class SuperGame extends Phaser.Game {
   beginReplay(replay, options = {}) {
     this._replay = replay;
 
-    const save = JSON.parse(JSON.stringify(replay.sceneSaveState));
 
-    const newScene = this.topScene().replaceWithSceneNamed(replay.sceneName, replay.initData.seed, {...replay.initData, save});
+    const transition = options.startFromTransition;
+
+    const {sceneSaveState, sceneName, initData} = transition || replay;
+    const save = JSON.parse(JSON.stringify(sceneSaveState));
+    const {seed} = (transition || replay).initData;
+
+    const newScene = this.topScene().replaceWithSceneNamed(sceneName, seed, {...initData, save});
     if (!newScene) {
       // eslint-disable-next-line no-console
       console.warn(`No scene returned from replaceWithSceneNamed,
@@ -341,6 +346,7 @@ handler to fire outside the game loop with a setTimeout or something?`);
 
     this.topScene().beginReplay(replay, {
       ...options,
+      preflightCutoff: (transition && transition.tickCount ? (transition.tickCount + 1) : 0),
       onEnd: () => {
         this.endedReplay();
       },

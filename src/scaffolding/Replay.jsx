@@ -147,13 +147,9 @@ export default class Replay extends React.Component {
         this.setEditing(null);
       }
 
-      if (transition) {
-        window.game.beginReplay(replay, {
-          preflightCutoff: (transition.tickCount ? (transition.tickCount + 1) : 0),
-        });
-      } else {
-        window.game.beginReplay(replay);
-      }
+      window.game.beginReplay(replay, {
+        startFromTransition: transition,
+      });
     });
   }
 

@@ -527,7 +527,7 @@ export default class SuperScene extends Phaser.Scene {
 
     this._replay = replay;
     this._replayOptions = replayOptions;
-    delete this._replayLatestTransition;
+    this._replayLatestTransition = replayOptions.startFromTransition;
 
     command.beginReplay(replay, {
       ...replayOptions,
@@ -954,15 +954,9 @@ export default class SuperScene extends Phaser.Scene {
     if (this._replay && this._replay.timeSight) {
       const replay = this._replay;
       this.game.stopReplay();
-
-      const transition = this._replayLatestTransition;
-      if (transition) {
-        this.game.beginReplay(replay, {
-          preflightCutoff: (transition.tickCount ? (transition.tickCount + 1) : 0),
-        });
-      } else {
-        this.game.beginReplay(replay);
-      }
+      this.game.beginReplay(replay, {
+        startFromTransition: this._replayLatestTransition,
+      });
     }
   }
 
@@ -1022,7 +1016,9 @@ export default class SuperScene extends Phaser.Scene {
     if (this._replay && this._replay.timeSight) {
       const replay = this._replay;
       this.game.stopReplay();
-      this.game.beginReplay(replay);
+      this.game.beginReplay(replay, {
+        startFromTransition: this._replayLatestTransition,
+      });
     } else {
       this.replayParticleSystems();
     }
