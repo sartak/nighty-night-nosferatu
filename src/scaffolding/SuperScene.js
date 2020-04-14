@@ -40,6 +40,7 @@ export default class SuperScene extends Phaser.Scene {
     this.command.attachScene(this, config._timeSightTarget);
 
     this.camera = this.cameras.main;
+    this.camera.setBackgroundColor(0);
 
     this.rnd = {};
 
