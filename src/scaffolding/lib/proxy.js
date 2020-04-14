@@ -66,7 +66,7 @@ export default function(originalFrom, originalTo = originalFrom, proxy = {}) {
     delete to[name];
   });
 
-  // hack to update shaderSource
+  // hack to update static methods
   // https://stackoverflow.com/a/35581512
   Object.getOwnPropertyNames(from.constructor).filter((prop) => typeof from.constructor[prop] === 'function').forEach((name) => {
     to.constructor[name] = from.constructor[name];
