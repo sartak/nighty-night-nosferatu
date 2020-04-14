@@ -619,6 +619,47 @@ export default class SuperScene extends Phaser.Scene {
             completeTransition();
           },
         );
+      } else if (animation === 'pushRight' || animation === 'pushLeft' || animation === 'pushUp' || animation === 'pushDown') {
+        const {height, width} = this.game.config;
+
+        oldScene.camera.x = 0;
+        oldScene.camera.y = 0;
+
+        let dx = 0;
+        let dy = 0;
+
+        if (animation === 'pushRight') {
+          newScene.camera.x = -width;
+          dx = 1;
+        } else if (animation === 'pushLeft') {
+          newScene.camera.x = width;
+          dx = -1;
+        } else if (animation === 'pushUp') {
+          newScene.camera.y = -height;
+          dy = -1;
+        } else if (animation === 'pushDown') {
+          newScene.camera.y = height;
+          dy = 1;
+        }
+
+        this.tweenPercent(
+          duration,
+          (factor) => {
+            newScene.camera.x = dx * (factor - 1) * width;
+            oldScene.camera.x = dx * factor * width;
+            newScene.camera.y = dy * (factor - 1) * height;
+            oldScene.camera.y = dy * factor * height;
+
+            if (factor >= 0.5) {
+              cutoverPrimary();
+            }
+          },
+          () => {
+            newScene.camera.x = 0;
+            newScene.camera.y = 0;
+            completeTransition();
+          },
+        );
       } else {
         // eslint-disable-next-line no-console
         console.error(`Invalid transition animation '${animation}'`);
