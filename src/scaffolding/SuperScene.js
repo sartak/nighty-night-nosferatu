@@ -678,6 +678,56 @@ export default class SuperScene extends Phaser.Scene {
             completeTransition();
           },
         );
+      } else if (animation === 'wipeRight') {
+        const {height, width} = this.game.config;
+
+        // we cannot wipe with the builtin camera
+        newScene.camera.alpha = 0;
+
+        const newCamera = newScene.cameras.add(0, 0, width, height);
+        newCamera.setBackgroundColor(0);
+        newCamera.scrollX = newScene.camera.scrollX;
+        newCamera.scrollY = newScene.camera.scrollY;
+
+        let dw = 0;
+
+        if (animation === 'wipeRight') {
+          newCamera.width = 1;
+          dw = 1;
+        }
+
+        let firstCall = true;
+
+        this.tweenPercent(
+          duration,
+          (factor) => {
+            if (firstCall) {
+              if (newScene.camera.pipeline) {
+                newCamera.setRenderToTexture(newScene.camera.pipeline);
+              }
+              firstCall = false;
+            }
+
+            newCamera.setSize(Math.max(1, dw * factor * width), height);
+
+            if (factor >= 0.5) {
+              cutoverPrimary();
+            }
+          },
+          () => {
+            newScene.cameras.main.alpha = 1;
+            newScene.camera.scrollX = newCamera.scrollX;
+            newScene.camera.scrollY = newCamera.scrollY;
+            newScene.cameras.remove(newCamera);
+
+            if (!transition.suppressShaderCheck && !transition.delayNewSceneShader && newScene.shader) {
+              // eslint-disable-next-line no-console, max-len
+              console.error('wipe transitions do not render correctly if the new scene has a shader; provide delayNewSceneShader or suppressShaderCheck to the transition, or use a different animation');
+            }
+
+            completeTransition();
+          },
+        );
       } else {
         // eslint-disable-next-line no-console
         console.error(`Invalid transition animation '${animation}'`);
