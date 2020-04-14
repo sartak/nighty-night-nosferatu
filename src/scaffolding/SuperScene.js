@@ -454,7 +454,7 @@ export default class SuperScene extends Phaser.Scene {
     this._shaderUpdate = eval(shaderUpdate.join('\n'));
   }
 
-  replaceWithSceneNamed(name, reseed, config = {}) {
+  replaceWithSceneNamed(name, reseed, config = {}, originalTransition = null) {
     const {game} = this;
 
     if (!this.scene.settings) {
@@ -479,8 +479,14 @@ export default class SuperScene extends Phaser.Scene {
       return;
     }
 
-    const oldScene = this.scene;
+    const oldScene = this;
     const {_replay, _replayOptions, _recording} = this;
+
+    const transition = originalTransition ? {
+      duration: 1000,
+      animation: 'crossFade',
+      ...originalTransition,
+    } : originalTransition;
 
     const newScene = game.scene.add(
       target,
@@ -494,20 +500,71 @@ export default class SuperScene extends Phaser.Scene {
           _recording,
         },
         ...config,
+        transition,
         seed,
       },
     );
 
-    // newScene will probably be null; if you need to communicate with it,
-    // pass options above.
+    if (transition) {
+      const {animation, duration} = transition;
 
-    oldScene.remove();
+      const completeTransition = () => {
+        oldScene.scene.remove();
+      };
+
+      if (typeof animation === 'function') {
+        animation(oldScene, newScene, completeTransition, transition);
+      } else if (animation === 'fadeInOut') {
+        newScene.cameras.main.alpha = 0;
+        oldScene.cameras.main.alpha = 1;
+
+        this.tweenInOut(
+          duration / 2,
+          duration / 2,
+          (factor, firstHalf) => {
+            if (firstHalf) {
+              oldScene.cameras.main.alpha = 1 - factor;
+            } else {
+              newScene.cameras.main.alpha = 1 - factor;
+            }
+          },
+          () => {},
+          () => {
+            newScene.cameras.main.alpha = 1;
+            oldScene.cameras.main.alpha = 0;
+            completeTransition();
+          },
+        );
+      } else if (animation === 'crossFade') {
+        newScene.cameras.main.alpha = 0;
+        oldScene.cameras.main.alpha = 1;
+
+        this.tweenPercent(
+          duration,
+          (factor) => {
+            newScene.cameras.main.alpha = factor;
+            oldScene.cameras.main.alpha = 1 - factor;
+          },
+          () => {
+            newScene.cameras.main.alpha = 1;
+            oldScene.cameras.main.alpha = 0;
+            completeTransition();
+          },
+        );
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(`Invalid transition animation '${animation}'`);
+        completeTransition();
+      }
+    } else {
+      oldScene.scene.remove();
+    }
 
     return newScene;
   }
 
-  replaceWithSelf(reseed, config = {}) {
-    return this.replaceWithSceneNamed(this.constructor.name, reseed, config);
+  replaceWithSelf(reseed, config = {}, transition = null) {
+    return this.replaceWithSceneNamed(this.constructor.name, reseed, config, transition);
   }
 
   preemitEmitter(emitter) {
