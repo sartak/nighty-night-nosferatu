@@ -498,7 +498,14 @@ export default class SuperScene extends Phaser.Scene {
       ...originalTransition,
     } : originalTransition;
 
-    const newScene = game.scene.add(
+    const returnPromise = new Promise((resolve, reject) => {
+      this.game.onSceneInit(target, (newScene) => {
+        this._sceneTransition(oldScene, newScene, transition);
+        resolve(newScene, transition);
+      });
+    });
+
+    this.scene.add(
       target,
       game._sceneConstructors[name],
       true,
@@ -515,6 +522,14 @@ export default class SuperScene extends Phaser.Scene {
       },
     );
 
+    return returnPromise;
+  }
+
+  replaceWithSelf(reseed, config = {}, transition = null) {
+    return this.replaceWithSceneNamed(this.constructor.name, reseed, config, transition);
+  }
+
+  _sceneTransition(oldScene, newScene, transition) {
     if (transition) {
       const {animation, duration} = transition;
 
@@ -593,12 +608,6 @@ export default class SuperScene extends Phaser.Scene {
     } else {
       oldScene.scene.remove();
     }
-
-    return newScene;
-  }
-
-  replaceWithSelf(reseed, config = {}, transition = null) {
-    return this.replaceWithSceneNamed(this.constructor.name, reseed, config, transition);
   }
 
   preemitEmitter(emitter) {
