@@ -253,7 +253,9 @@ export default class SuperScene extends Phaser.Scene {
       this.setupAnimations();
     }
 
-    this.shader = this.game.shaderInstance();
+    this.shaderName = 'main';
+    this.game.initializeShader(this.shaderName);
+    this.shader = this.game.shaderInstance(this.shaderName);
     if (this.shader) {
       this._shaderInitialize(true);
       this._shaderUpdate();
@@ -1152,7 +1154,7 @@ export default class SuperScene extends Phaser.Scene {
       this.removeAnimations();
     }
 
-    this.game.recompileShader();
+    this.game.recompileMainShaders();
   }
 
   removeAnimations() {
@@ -1468,8 +1470,8 @@ export default class SuperScene extends Phaser.Scene {
 
       changes.forEach((change) => {
         if (typeof change === 'string') {
-          if (change === 'disableShaders') {
-            this.game.disableShader();
+          if (change === 'disableMainShaders') {
+            this.game.disableMainShaders();
           } else {
             setProp(change, !prop(change));
           }

@@ -438,7 +438,7 @@ export default class SuperGame extends Phaser.Game {
     }
   }
 
-  shaderInstance(shaderName = 'main') {
+  shaderInstance(shaderName) {
     if (this.renderer.type !== Phaser.WEBGL) {
       return null;
     }
@@ -446,7 +446,7 @@ export default class SuperGame extends Phaser.Game {
     return this.renderer.getPipeline(shaderName);
   }
 
-  initializeShader(shaderName = 'main', replace) {
+  initializeShader(shaderName, replace) {
     if (this.renderer.type !== Phaser.WEBGL) {
       return;
     }
@@ -455,7 +455,7 @@ export default class SuperGame extends Phaser.Game {
       return;
     }
 
-    const source = this.fullShaderSource();
+    const source = this.generateShaderSource(shaderName);
 
     if (source) {
       const shaderClass = this.shaderInstantiation(source);
@@ -481,15 +481,23 @@ export default class SuperGame extends Phaser.Game {
     this._shaderSource[shaderName] = source;
   }
 
+  initializeMainShaders() {
+    this.initializeShader('main');
+  }
+
   updateShaderFragments(nextCoord, nextColor) {
     this._shaderCoordFragments = nextCoord;
     this._shaderColorFragments = nextColor;
     this.shaderFragments = [...(nextCoord || []), ...(nextColor || [])];
 
-    this.recompileShader();
+    this.recompileMainShaders();
   }
 
-  shaderMainFull() {
+  generateShaderSourceInternal(shaderName) {
+    if (shaderName !== 'main') {
+      throw new Error('Multi-shader support not yet available');
+    }
+
     const [shaderCoordSource, shaderColorSource] = [this._shaderCoordFragments, this._shaderColorFragments].map((fragments) => {
       if (!fragments) {
         return '';
@@ -521,7 +529,11 @@ export default class SuperGame extends Phaser.Game {
     `;
   }
 
-  fullShaderSource() {
+  generateShaderSource(shaderName) {
+    if (shaderName !== 'main') {
+      throw new Error('Multi-shader support not yet available');
+    }
+
     const builtinDeclarations = `
       precision mediump float;
     `;
@@ -551,7 +563,7 @@ export default class SuperGame extends Phaser.Game {
       });
     });
 
-    const userShaderMain = this.shaderMainFull();
+    const userShaderMain = this.generateShaderSourceInternal(shaderName);
     if (!userShaderMain) {
       return userShaderMain;
     }
@@ -573,13 +585,13 @@ export default class SuperGame extends Phaser.Game {
     `;
   }
 
-  recompileShader(shaderName = 'main') {
+  recompileShader(shaderName) {
     if (this.renderer.type !== Phaser.WEBGL) {
       return;
     }
 
     const oldSource = this._shaderSource[shaderName];
-    const newSource = this.fullShaderSource();
+    const newSource = this.generateShaderSource(shaderName);
 
     if (oldSource === newSource) {
       return;
@@ -596,9 +608,13 @@ export default class SuperGame extends Phaser.Game {
       this.renderer.removePipeline(shaderName);
     }
 
-    const shader = this.shaderInstance();
+    const shader = this.shaderInstance(shaderName);
 
     this.scene.scenes.forEach((scene) => {
+      if (scene.shaderName !== shaderName) {
+        return;
+      }
+
       scene.shader = shader;
       if (newSource) {
         scene._shaderInitialize();
@@ -610,7 +626,11 @@ export default class SuperGame extends Phaser.Game {
     });
   }
 
-  disableShader(shaderName = 'main') {
+  recompileMainShaders() {
+    this.recompileShader('main');
+  }
+
+  disableShader(shaderName) {
     if (this.renderer.type !== Phaser.WEBGL) {
       return;
     }
@@ -622,9 +642,17 @@ export default class SuperGame extends Phaser.Game {
     const shader = this.shaderInstance(shaderName);
 
     this.scene.scenes.forEach((scene) => {
+      if (scene.shaderName !== shaderName) {
+        return;
+      }
+
       scene.shader = shader;
       scene.cameras.main.clearRenderToTexture();
     });
+  }
+
+  disableMainShaders() {
+    this.disableShader('main');
   }
 
   shaderInstantiation(fragShader) {
