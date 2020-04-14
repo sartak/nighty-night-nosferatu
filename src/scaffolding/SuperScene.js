@@ -174,6 +174,8 @@ export default class SuperScene extends Phaser.Scene {
 
     this.xBorder = (width - (mapWidth * tileWidth)) / 2;
     this.yBorder = (height - (mapHeight * tileHeight)) / 2;
+
+    this.game.sceneDidInit(this);
   }
 
   saveStateFieldName() {

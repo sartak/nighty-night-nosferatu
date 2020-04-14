@@ -47,6 +47,8 @@ export default class SuperGame extends Phaser.Game {
 
     this._onDisableDebugUI = [];
 
+    this._sceneInitCallbacks = {};
+
     this.command = new CommandManager(commands);
 
     this._shaderSource = {};
@@ -652,5 +654,26 @@ handler to fire outside the game loop with a setTimeout or something?`);
       // eslint-disable-next-line no-console
       console.error(e);
     }
+  }
+
+  onSceneInit(key, cb) {
+    if (!this._sceneInitCallbacks[key]) {
+      this._sceneInitCallbacks[key] = [];
+    }
+
+    this._sceneInitCallbacks[key].push(cb);
+  }
+
+  sceneDidInit(scene) {
+    const {key} = scene.scene;
+    if (!this._sceneInitCallbacks[key]) {
+      return;
+    }
+
+    this._sceneInitCallbacks[key].forEach((cb) => {
+      cb(scene);
+    });
+
+    delete this._sceneInitCallbacks[key];
   }
 }
