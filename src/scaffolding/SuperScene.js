@@ -678,22 +678,38 @@ export default class SuperScene extends Phaser.Scene {
             completeTransition();
           },
         );
-      } else if (animation === 'wipeRight') {
+      } else if (animation === 'wipeRight' || animation === 'wipeLeft' || animation === 'wipeUp' || animation === 'wipeDown') {
         const {height, width} = this.game.config;
 
+        let newCamera;
+        let oldCamera;
+
         // we cannot wipe with the builtin camera
-        newScene.camera.alpha = 0;
+        if (animation === 'wipeRight' || animation === 'wipeDown') {
+          newScene.camera.alpha = 0;
 
-        const newCamera = newScene.cameras.add(0, 0, width, height);
-        newCamera.setBackgroundColor(0);
-        newCamera.scrollX = newScene.camera.scrollX;
-        newCamera.scrollY = newScene.camera.scrollY;
+          newCamera = newScene.cameras.add(0, 0, width, height);
+          newCamera.setBackgroundColor(0);
+          newCamera.scrollX = newScene.camera.scrollX;
+          newCamera.scrollY = newScene.camera.scrollY;
 
-        let dw = 0;
+          if (animation === 'wipeRight') {
+            newCamera.width = 1;
+          } else {
+            newCamera.height = 1;
+          }
+        } else {
+          oldScene.game.scene.bringToTop(oldScene.scene.key);
+          oldScene.camera.alpha = 0;
 
-        if (animation === 'wipeRight') {
-          newCamera.width = 1;
-          dw = 1;
+          oldCamera = oldScene.cameras.add(0, 0, width, height);
+          oldCamera.setBackgroundColor(0);
+          oldCamera.scrollX = oldScene.camera.scrollX;
+          oldCamera.scrollY = oldScene.camera.scrollY;
+
+          if (oldScene.shader) {
+            oldCamera.setRenderToTexture(oldScene.shader);
+          }
         }
 
         let firstCall = true;
@@ -701,28 +717,44 @@ export default class SuperScene extends Phaser.Scene {
         this.tweenPercent(
           duration,
           (factor) => {
-            if (firstCall) {
-              if (newScene.camera.pipeline) {
-                newCamera.setRenderToTexture(newScene.camera.pipeline);
+            if (newCamera && firstCall) {
+              if (newScene.shader) {
+                newCamera.setRenderToTexture(newScene.shader);
               }
               firstCall = false;
             }
 
-            newCamera.setSize(Math.max(1, dw * factor * width), height);
+            if (animation === 'wipeRight') {
+              newCamera.setSize(Math.max(1, factor * width), height);
+            } else if (animation === 'wipeLeft') {
+              oldCamera.setSize(Math.max(1, (1 - factor) * width), height);
+            } else if (animation === 'wipeUp') {
+              oldCamera.setSize(width, Math.max(1, (1 - factor) * height));
+            } else if (animation === 'wipeDown') {
+              newCamera.setSize(width, Math.max(1, factor * height));
+            }
 
             if (factor >= 0.5) {
               cutoverPrimary();
             }
           },
           () => {
-            newScene.cameras.main.alpha = 1;
-            newScene.camera.scrollX = newCamera.scrollX;
-            newScene.camera.scrollY = newCamera.scrollY;
-            newScene.cameras.remove(newCamera);
+            if (newCamera) {
+              newScene.cameras.main.alpha = 1;
+              newScene.camera.scrollX = newCamera.scrollX;
+              newScene.camera.scrollY = newCamera.scrollY;
+              newScene.cameras.remove(newCamera);
+            }
 
-            if (!transition.suppressShaderCheck && !transition.delayNewSceneShader && newScene.shader) {
-              // eslint-disable-next-line no-console, max-len
-              console.error('wipe transitions do not render correctly if the new scene has a shader; provide delayNewSceneShader or suppressShaderCheck to the transition, or use a different animation');
+            if (!transition.suppressShaderCheck) {
+              if (!transition.delayNewSceneShader && newScene.shader && newCamera) {
+                // eslint-disable-next-line no-console, max-len
+                console.error(`${animation} transitions do not render correctly if the new scene has a shader; provide delayNewSceneShader or suppressShaderCheck to the transition, or use a different animation`);
+              }
+              if (oldScene.shader && oldCamera) {
+                // eslint-disable-next-line no-console, max-len
+                console.error(`${animation} transitions do not render correctly if the old scene has a shader; provide removeOldSceneShader or suppressShaderCheck to the transition, or use a different animation`);
+              }
             }
 
             completeTransition();
