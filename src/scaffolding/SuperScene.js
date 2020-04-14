@@ -518,8 +518,14 @@ export default class SuperScene extends Phaser.Scene {
     if (transition) {
       const {animation, duration} = transition;
 
+      let _hasCompleted = false;
       const completeTransition = () => {
+        if (_hasCompleted) {
+          return;
+        }
+
         oldScene.scene.remove();
+        _hasCompleted = true;
       };
 
       if (typeof animation === 'function') {
