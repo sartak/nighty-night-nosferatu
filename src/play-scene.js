@@ -63,8 +63,8 @@ export default class PlayScene extends SuperScene {
   debugHandlePointerdown(event) {
     let {x, y} = event;
 
-    x += this.cameras.main.scrollX;
-    y += this.cameras.main.scrollY;
+    x += this.camera.scrollX;
+    y += this.camera.scrollY;
 
   }
 

@@ -39,6 +39,8 @@ export default class SuperScene extends Phaser.Scene {
     this.command = this.game.command;
     this.command.attachScene(this, config._timeSightTarget);
 
+    this.camera = this.cameras.main;
+
     this.rnd = {};
 
     if (config.save) {
@@ -263,7 +265,7 @@ export default class SuperScene extends Phaser.Scene {
       if (this.shader) {
         this._shaderInitialize(true);
         this._shaderUpdate();
-        this.cameras.main.setRenderToTexture(this.shader);
+        this.camera.setRenderToTexture(this.shader);
       }
     }
   }
@@ -327,7 +329,7 @@ export default class SuperScene extends Phaser.Scene {
     const {level} = this;
 
     if (!prop('scene.camera.hasBounds')) {
-      this.cameras.main.removeBounds();
+      this.camera.removeBounds();
       return;
     }
 
@@ -345,19 +347,19 @@ export default class SuperScene extends Phaser.Scene {
         boundsHeight += this.yBorder * 2;
       }
 
-      this.cameras.main.setBounds(boundsX, boundsY, boundsWidth, boundsHeight);
+      this.camera.setBounds(boundsX, boundsY, boundsWidth, boundsHeight);
     }
   }
 
   setCameraDeadzone() {
-    this.cameras.main.setDeadzone(
+    this.camera.setDeadzone(
       prop('scene.camera.deadzoneX'),
       prop('scene.camera.deadzoneY'),
     );
   }
 
   setCameraLerp() {
-    this.cameras.main.setLerp(prop('scene.camera.lerp'));
+    this.camera.setLerp(prop('scene.camera.lerp'));
   }
 
   firstUpdate(time, dt) {
@@ -425,14 +427,11 @@ export default class SuperScene extends Phaser.Scene {
     // generate this._shaderUpdate based on what's being used
 
     // eslint-disable-next-line no-unused-vars
-    const {shader} = this;
+    const {shader, camera} = this;
 
     if (!shader) {
       this._shaderUpdate = function() {};
     }
-
-    // eslint-disable-next-line no-unused-vars
-    const camera = this.cameras.main;
 
     const shaderUpdate = [
       '(function () {',
@@ -567,42 +566,42 @@ export default class SuperScene extends Phaser.Scene {
       if (typeof animation === 'function') {
         animation(oldScene, newScene, cutoverPrimary, completeTransition, transition);
       } else if (animation === 'fadeInOut') {
-        newScene.cameras.main.alpha = 0;
-        oldScene.cameras.main.alpha = 1;
+        newScene.camera.alpha = 0;
+        oldScene.camera.alpha = 1;
 
         this.tweenInOut(
           duration / 2,
           duration / 2,
           (factor, firstHalf) => {
             if (firstHalf) {
-              oldScene.cameras.main.alpha = 1 - factor;
+              oldScene.camera.alpha = 1 - factor;
             } else {
-              newScene.cameras.main.alpha = 1 - factor;
+              newScene.camera.alpha = 1 - factor;
             }
           },
           cutoverPrimary,
           () => {
-            newScene.cameras.main.alpha = 1;
-            oldScene.cameras.main.alpha = 0;
+            newScene.camera.alpha = 1;
+            oldScene.camera.alpha = 0;
             completeTransition();
           },
         );
       } else if (animation === 'crossFade') {
-        newScene.cameras.main.alpha = 0;
-        oldScene.cameras.main.alpha = 1;
+        newScene.camera.alpha = 0;
+        oldScene.camera.alpha = 1;
 
         this.tweenPercent(
           duration,
           (factor) => {
-            newScene.cameras.main.alpha = factor;
-            oldScene.cameras.main.alpha = 1 - factor;
+            newScene.camera.alpha = factor;
+            oldScene.camera.alpha = 1 - factor;
             if (factor >= 0.5) {
               cutoverPrimary();
             }
           },
           () => {
-            newScene.cameras.main.alpha = 1;
-            oldScene.cameras.main.alpha = 0;
+            newScene.camera.alpha = 1;
+            oldScene.camera.alpha = 0;
             completeTransition();
           },
         );
@@ -1511,9 +1510,9 @@ export default class SuperScene extends Phaser.Scene {
     if (object) {
       const lerp = prop('scene.camera.lerp');
       // true is roundPixels to avoid subpixel rendering
-      this.cameras.main.startFollow(object, true, lerp, lerp, offsetX, offsetY);
+      this.camera.startFollow(object, true, lerp, lerp, offsetX, offsetY);
     } else {
-      this.cameras.main.stopFollow();
+      this.camera.stopFollow();
     }
   }
 
@@ -1563,11 +1562,11 @@ export default class SuperScene extends Phaser.Scene {
       this.cameraFollow();
 
       if (this._timeSightMouseDragX) {
-        this.cameras.main.scrollX += this._timeSightMouseDragX - activePointer.position.x;
+        this.camera.scrollX += this._timeSightMouseDragX - activePointer.position.x;
       }
 
       if (this._timeSightMouseDragY) {
-        this.cameras.main.scrollY += this._timeSightMouseDragY - activePointer.position.y;
+        this.camera.scrollY += this._timeSightMouseDragY - activePointer.position.y;
       }
 
       this._timeSightMouseDragX = activePointer.position.x;

@@ -619,9 +619,9 @@ export default class SuperGame extends Phaser.Game {
       if (newSource) {
         scene._shaderInitialize();
         scene._shaderUpdate();
-        scene.cameras.main.setPipeline(shader);
+        scene.camera.setPipeline(shader);
       } else {
-        scene.cameras.main.clearRenderToTexture();
+        scene.camera.clearRenderToTexture();
       }
     });
   }
@@ -647,7 +647,7 @@ export default class SuperGame extends Phaser.Game {
       }
 
       scene.shader = shader;
-      scene.cameras.main.clearRenderToTexture();
+      scene.camera.clearRenderToTexture();
     });
   }
 
