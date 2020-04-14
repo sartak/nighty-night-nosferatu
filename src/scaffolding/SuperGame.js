@@ -347,29 +347,23 @@ export default class SuperGame extends Phaser.Game {
     const save = JSON.parse(JSON.stringify(sceneSaveState));
     const {seed} = (transition || replay).initData;
 
-    const newScene = this.topScene().replaceWithSceneNamed(sceneName, seed, {...initData, save});
-    if (!newScene) {
-      // eslint-disable-next-line no-console
-      console.warn(`No scene returned from replaceWithSceneNamed,
-so we are probably about to crash. Perhaps you need to schedule the event
-handler to fire outside the game loop with a setTimeout or something?`);
-    }
+    this.topScene().replaceWithSceneNamed(sceneName, seed, {...initData, save}).then((newScene) => {
+      newScene.beginReplay(replay, {
+        ...options,
+        startFromTransition: transition,
+        preflightCutoff: (transition && transition.tickCount ? (transition.tickCount + 1) : 0),
+        onEnd: () => {
+          this.endedReplay();
+        },
+        onStop: () => {
+          this.stopReplay(true);
+        },
+      });
 
-    this.topScene().beginReplay(replay, {
-      ...options,
-      startFromTransition: transition,
-      preflightCutoff: (transition && transition.tickCount ? (transition.tickCount + 1) : 0),
-      onEnd: () => {
-        this.endedReplay();
-      },
-      onStop: () => {
-        this.stopReplay(true);
-      },
+      if (this.onReplayBegin) {
+        this.onReplayBegin(replay);
+      }
     });
-
-    if (this.onReplayBegin) {
-      this.onReplayBegin(replay);
-    }
   }
 
   endedReplay() {
