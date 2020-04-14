@@ -549,7 +549,7 @@ export default class SuperScene extends Phaser.Scene {
 
         if (!_hasCutover) {
           // eslint-disable-next-line no-console
-          console.error("completeTransition called, but cutoverPrimary hasn't been yet");
+          console.error('completeTransition called, but cutoverPrimary hasn\'t been yet');
           cutoverPrimary();
         }
 
