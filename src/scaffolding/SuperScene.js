@@ -1138,6 +1138,46 @@ export default class SuperScene extends Phaser.Scene {
     return tween;
   }
 
+  tweenPercent(duration, update, onComplete, startPoint = 0) {
+    let tween;
+
+    // eslint-disable-next-line prefer-const
+    tween = this.tweens.addCounter({
+      from: startPoint,
+      to: 100,
+      duration,
+      onUpdate: () => {
+        const factor = tween.getValue() / 100.0;
+        update(factor);
+      },
+      onComplete,
+    });
+
+    return tween;
+  }
+
+  tweenPercentExclusive(fieldName, duration, update, onComplete) {
+    let startPoint = 0;
+    if (this[fieldName]) {
+      startPoint = this[fieldName].getValue();
+      this[fieldName].stop();
+    }
+
+    this[fieldName] = this.tweenPercent(
+      duration * (1 - startPoint / 100.0),
+      update,
+      (...args) => {
+        if (onComplete) {
+          onComplete(...args);
+        }
+        delete this[fieldName];
+      },
+      startPoint,
+    );
+
+    return this[fieldName];
+  }
+
   tweenInOut(inDuration, outDuration, update, onMidpoint, onComplete, startPoint = 0) {
     let tween;
 
