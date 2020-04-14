@@ -518,10 +518,24 @@ export default class SuperScene extends Phaser.Scene {
     if (transition) {
       const {animation, duration} = transition;
 
+      let _hasCutover = false;
+      const cutoverPrimary = () => {
+        if (_hasCutover) {
+          return;
+        }
+        _hasCutover = true;
+      };
+
       let _hasCompleted = false;
       const completeTransition = () => {
         if (_hasCompleted) {
           return;
+        }
+
+        if (!_hasCutover) {
+          // eslint-disable-next-line no-console
+          console.error("completeTransition called, but cutoverPrimary hasn't been yet");
+          cutoverPrimary();
         }
 
         oldScene.scene.remove();
@@ -529,7 +543,7 @@ export default class SuperScene extends Phaser.Scene {
       };
 
       if (typeof animation === 'function') {
-        animation(oldScene, newScene, completeTransition, transition);
+        animation(oldScene, newScene, cutoverPrimary, completeTransition, transition);
       } else if (animation === 'fadeInOut') {
         newScene.cameras.main.alpha = 0;
         oldScene.cameras.main.alpha = 1;
@@ -544,7 +558,7 @@ export default class SuperScene extends Phaser.Scene {
               newScene.cameras.main.alpha = 1 - factor;
             }
           },
-          () => {},
+          cutoverPrimary,
           () => {
             newScene.cameras.main.alpha = 1;
             oldScene.cameras.main.alpha = 0;
@@ -560,6 +574,9 @@ export default class SuperScene extends Phaser.Scene {
           (factor) => {
             newScene.cameras.main.alpha = factor;
             oldScene.cameras.main.alpha = 1 - factor;
+            if (factor >= 0.5) {
+              cutoverPrimary();
+            }
           },
           () => {
             newScene.cameras.main.alpha = 1;
@@ -570,6 +587,7 @@ export default class SuperScene extends Phaser.Scene {
       } else {
         // eslint-disable-next-line no-console
         console.error(`Invalid transition animation '${animation}'`);
+        cutoverPrimary();
         completeTransition();
       }
     } else {
