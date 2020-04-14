@@ -509,6 +509,7 @@ export default class SuperScene extends Phaser.Scene {
     const transition = originalTransition ? {
       duration: 1000,
       animation: 'crossFade',
+      ease: 'Linear',
       delayNewSceneShader: false,
       removeOldSceneShader: false,
       suppressShaderCheck: false,
@@ -550,7 +551,7 @@ export default class SuperScene extends Phaser.Scene {
 
   _sceneTransition(oldScene, newScene, transition) {
     if (transition) {
-      const {animation, duration} = transition;
+      const {animation, ease, duration} = transition;
 
       let _hasCutover = false;
       const cutoverPrimary = () => {
@@ -605,6 +606,8 @@ export default class SuperScene extends Phaser.Scene {
             oldScene.camera.alpha = 0;
             completeTransition();
           },
+          0,
+          ease,
         );
       } else if (animation === 'crossFade') {
         // crossfade doesn't really care about scene order, so help the
@@ -636,6 +639,8 @@ export default class SuperScene extends Phaser.Scene {
 
             completeTransition();
           },
+          0,
+          ease,
         );
       } else if (animation === 'pushRight' || animation === 'pushLeft' || animation === 'pushUp' || animation === 'pushDown') {
         const {height, width} = this.game.config;
@@ -677,6 +682,8 @@ export default class SuperScene extends Phaser.Scene {
             newScene.camera.y = 0;
             completeTransition();
           },
+          0,
+          ease,
         );
       } else if (animation === 'wipeRight' || animation === 'wipeLeft' || animation === 'wipeUp' || animation === 'wipeDown') {
         const {height, width} = this.game.config;
@@ -759,6 +766,8 @@ export default class SuperScene extends Phaser.Scene {
 
             completeTransition();
           },
+          0,
+          ease,
         );
       } else {
         // eslint-disable-next-line no-console
@@ -1401,10 +1410,11 @@ export default class SuperScene extends Phaser.Scene {
     return tween;
   }
 
-  tweenPercent(duration, update, onComplete, startPoint = 0) {
+  tweenPercent(duration, update, onComplete, startPoint = 0, ease = 'Linear') {
     const tween = this.tweens.addCounter({
       from: startPoint,
       to: 100,
+      ease,
       duration,
       onUpdate: () => {
         const factor = tween.getValue() / 100.0;
@@ -1416,7 +1426,7 @@ export default class SuperScene extends Phaser.Scene {
     return tween;
   }
 
-  tweenPercentExclusive(fieldName, duration, update, onComplete) {
+  tweenPercentExclusive(fieldName, duration, update, onComplete, ease = 'Linear') {
     let startPoint = 0;
     if (this[fieldName]) {
       startPoint = this[fieldName].getValue();
@@ -1433,17 +1443,19 @@ export default class SuperScene extends Phaser.Scene {
         delete this[fieldName];
       },
       startPoint,
+      ease,
     );
 
     return this[fieldName];
   }
 
-  tweenInOut(inDuration, outDuration, update, onMidpoint, onComplete, startPoint = 0) {
+  tweenInOut(inDuration, outDuration, update, onMidpoint, onComplete, startPoint = 0, inEase = 'Linear', outEase = inEase) {
     let tween;
 
     tween = this.tweens.addCounter({
       from: startPoint,
       to: 100,
+      ease: inEase,
       duration: inDuration,
       onUpdate: () => {
         const factor = tween.getValue() / 100.0;
@@ -1453,6 +1465,7 @@ export default class SuperScene extends Phaser.Scene {
         tween = this.tweens.addCounter({
           from: 100,
           to: 0,
+          ease: outEase,
           duration: outDuration,
           onUpdate: () => {
             const factor = tween.getValue() / 100.0;
@@ -1470,7 +1483,7 @@ export default class SuperScene extends Phaser.Scene {
     return tween;
   }
 
-  tweenInOutExclusive(fieldName, inDuration, outDuration, update, onMidpoint, onComplete) {
+  tweenInOutExclusive(fieldName, inDuration, outDuration, update, onMidpoint, onComplete, inEase = 'Linear', outEase = inEase) {
     let startPoint = 0;
     if (this[fieldName]) {
       startPoint = this[fieldName].getValue();
@@ -1495,6 +1508,8 @@ export default class SuperScene extends Phaser.Scene {
         delete this[fieldName];
       },
       startPoint,
+      inEase,
+      outEase,
     );
 
     return this[fieldName];
