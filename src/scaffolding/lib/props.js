@@ -79,6 +79,7 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
 
     'scene.camera.width': [0, null, 'cameras.main.width'],
     'scene.camera.height': [0, null, 'cameras.main.height'],
+    'scene.camera.alpha': [0.1, null, 'cameras.main.alpha'],
     'scene.camera.zoom': [0.1, null, 'cameras.main.zoom'],
     'scene.camera.rotation': [0.1, null, 'cameras.main.rotation'],
     'scene.camera.x': [0, null, 'cameras.main.x'],
