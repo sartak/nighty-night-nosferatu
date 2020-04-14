@@ -510,6 +510,8 @@ export default class SuperScene extends Phaser.Scene {
 
     const returnPromise = new Promise((resolve, reject) => {
       this.game.onSceneInit(target, (newScene) => {
+        this.willTransitionTo(newScene, transition);
+        newScene.willTransitionFrom(oldScene, transition);
         this._sceneTransition(oldScene, newScene, transition);
         resolve(newScene, transition);
       });
@@ -563,6 +565,8 @@ export default class SuperScene extends Phaser.Scene {
           cutoverPrimary();
         }
 
+        oldScene.didTransitionTo(newScene, transition);
+        newScene.didTransitionFrom(oldScene, transition);
         oldScene.scene.remove();
         _hasCompleted = true;
       };
@@ -616,6 +620,8 @@ export default class SuperScene extends Phaser.Scene {
         completeTransition();
       }
     } else {
+      oldScene.didTransitionTo(newScene, transition);
+      newScene.didTransitionFrom(oldScene, transition);
       oldScene.scene.remove();
     }
   }
@@ -1579,6 +1585,18 @@ export default class SuperScene extends Phaser.Scene {
       delete this._timeSightMouseDragX;
       delete this._timeSightMouseDragY;
     }
+  }
+
+  willTransitionTo(newScene, transition) {
+  }
+
+  willTransitionFrom(oldScene, transition) {
+  }
+
+  didTransitionTo(newScene, transition) {
+  }
+
+  didTransitionFrom(oldScene, transition) {
   }
 
   destroy() {
