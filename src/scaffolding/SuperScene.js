@@ -253,13 +253,18 @@ export default class SuperScene extends Phaser.Scene {
       this.setupAnimations();
     }
 
-    this.shaderName = 'main';
-    this.game.initializeShader(this.shaderName);
-    this.shader = this.game.shaderInstance(this.shaderName);
-    if (this.shader) {
-      this._shaderInitialize(true);
-      this._shaderUpdate();
-      this.cameras.main.setRenderToTexture(this.shader);
+    if (!('shaderName' in this)) {
+      this.shaderName = 'main';
+    }
+
+    if (this.shaderName) {
+      this.game.initializeShader(this.shaderName);
+      this.shader = this.game.shaderInstance(this.shaderName);
+      if (this.shader) {
+        this._shaderInitialize(true);
+        this._shaderUpdate();
+        this.cameras.main.setRenderToTexture(this.shader);
+      }
     }
   }
 
