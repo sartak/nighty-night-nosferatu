@@ -595,6 +595,12 @@ export default class SuperScene extends Phaser.Scene {
           },
         );
       } else if (animation === 'crossFade') {
+        // crossfade doesn't really care about scene order, so help the
+        // shader out if we can
+        if (!oldScene.shader) {
+          oldScene.game.scene.bringToTop(oldScene.scene.key);
+        }
+
         newScene.camera.alpha = 0;
         oldScene.camera.alpha = 1;
 
