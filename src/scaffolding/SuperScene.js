@@ -255,7 +255,10 @@ export default class SuperScene extends Phaser.Scene {
       this.setupAnimations();
     }
 
-    this._setupShader();
+    const {transition} = this.scene.settings.data;
+    if (!transition || !transition.delayNewSceneShader) {
+      this._setupShader();
+    }
   }
 
   _setupShader() {
@@ -505,6 +508,9 @@ export default class SuperScene extends Phaser.Scene {
     const transition = originalTransition ? {
       duration: 1000,
       animation: 'crossFade',
+      delayNewSceneShader: false,
+      removeOldSceneShader: false,
+      suppressShaderCheck: false,
       ...originalTransition,
     } : originalTransition;
 
@@ -571,6 +577,11 @@ export default class SuperScene extends Phaser.Scene {
         _hasCompleted = true;
       };
 
+      if (transition.removeOldSceneShader) {
+        oldScene.shader = null;
+        oldScene.camera.clearRenderToTexture();
+      }
+
       if (typeof animation === 'function') {
         animation(oldScene, newScene, cutoverPrimary, completeTransition, transition);
       } else if (animation === 'fadeInOut') {
@@ -616,6 +627,12 @@ export default class SuperScene extends Phaser.Scene {
           () => {
             newScene.camera.alpha = 1;
             oldScene.camera.alpha = 0;
+
+            if (!transition.suppressShaderCheck && !transition.delayNewSceneShader && oldScene.shader && newScene.shader) {
+              // eslint-disable-next-line no-console, max-len
+              console.error('crossFade transitions do not render correctly if the both scenes have a shader; provide delayNewSceneShader, removeOldSceneShader, or suppressShaderCheck to the transition, or use fadeInOut animation');
+            }
+
             completeTransition();
           },
         );
@@ -1644,6 +1661,9 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   didTransitionFrom(oldScene, transition) {
+    if (transition && transition.delayNewSceneShader) {
+      this._setupShader();
+    }
   }
 
   destroy() {
