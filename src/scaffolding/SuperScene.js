@@ -1402,10 +1402,7 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   tweenPercent(duration, update, onComplete, startPoint = 0) {
-    let tween;
-
-    // eslint-disable-next-line prefer-const
-    tween = this.tweens.addCounter({
+    const tween = this.tweens.addCounter({
       from: startPoint,
       to: 100,
       duration,
