@@ -481,6 +481,14 @@ export default class SuperScene extends Phaser.Scene {
       return;
     }
 
+    if (this._isTransitioning) {
+      // eslint-disable-next-line no-console
+      console.error('replaceWithSceneName called again even though this scene is already transitioning. Ignoring.');
+      return;
+    }
+
+    this._isTransitioning = true;
+
     const oldScene = this;
     const {_replay, _replayOptions, _recording} = this;
 
