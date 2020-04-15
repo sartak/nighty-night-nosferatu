@@ -30,7 +30,13 @@ export default class SuperScene extends Phaser.Scene {
     this.performanceAcceptable = true;
     this.scene_time = 0;
     this.shockwave_time = 0;
-    this._paused = {};
+    this._paused = {
+      physics: false,
+      particles: false,
+      timers: false,
+      tweens: false,
+      anims: false,
+    };
   }
 
   init(config) {
@@ -1967,7 +1973,7 @@ export default class SuperScene extends Phaser.Scene {
   unpausePhysicsForTransition(transition) {
     this.unpauseInputForTransition(transition);
 
-    delete this._paused.physics;
+    this._paused.physics = false;
 
     this.anims.resumeAll();
   }
@@ -1983,7 +1989,7 @@ export default class SuperScene extends Phaser.Scene {
   unpauseEverythingForTransition(transition) {
     this.unpausePhysicsForTransition(transition);
 
-    delete this._paused.timers;
+    this._paused.timers = false;
     this.resumeAllParticleSystems();
     this.resumeAllTweens();
   }
@@ -2001,7 +2007,7 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   resumeAllParticleSystems() {
-    delete this._paused.particles;
+    this._paused.particles = false;
 
     this.particleSystems.forEach((p) => {
       p.particles.resume();
@@ -2009,7 +2015,7 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   resumeAllTweens() {
-    delete this._paused.tweens;
+    this._paused.tweens = false;
   }
 
   destroy() {
