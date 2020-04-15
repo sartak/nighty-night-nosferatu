@@ -58,6 +58,10 @@ export function expandTransitionProps(props) {
       }
     });
 
+    props[`${prefix}.execute`] = [(scene, game) => {
+      scene.replaceWithSelf(false, null, prefix);
+    }];
+
     if (Object.keys(seen).length) {
       throw new Error(`Got unexpected transition config settings: ${Object.keys(seen).join(', ')}`);
     }
