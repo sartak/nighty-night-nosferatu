@@ -864,6 +864,10 @@ export default class SuperScene extends Phaser.Scene {
 
       const oldAnimate = animate;
       animate = () => {
+        if (transition && transition.onDelayEnd) {
+          transition.onDelayEnd(oldScene, newScene, transition);
+        }
+
         if (oldPauseTime === 'delayEnd') {
           applyPause(oldScene, transition, transition.oldPause);
         }
