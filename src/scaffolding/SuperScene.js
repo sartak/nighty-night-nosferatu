@@ -1468,7 +1468,6 @@ export default class SuperScene extends Phaser.Scene {
     if (this.physics && this.physics.world && this.physics.world.bodies && this.physics.world.bodies.entries) {
       this.physics.world.bodies.entries.forEach((body) => {
         if (body.gameObject && body.gameObject.anims) {
-          // none of these seem to work
           body.gameObject.anims.pause();
           body.gameObject.anims.stop();
           body.gameObject.anims.remove();
@@ -1492,7 +1491,9 @@ export default class SuperScene extends Phaser.Scene {
       this.physics.world.bodies.entries.forEach((body) => {
         if (body.gameObject && body.gameObject.anims && body.gameObject.anims.currentAnim) {
           const {key} = body.gameObject.anims.currentAnim;
-          body.gameObject.anims.play(key, false);
+          body.gameObject.anims.stop();
+          body.gameObject.anims.currentAnim = null;
+          this.timer(() => body.gameObject.anims.play(key)).ignoresScenePause = true;
         }
       });
     }
