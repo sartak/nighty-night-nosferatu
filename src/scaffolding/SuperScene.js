@@ -1507,6 +1507,10 @@ export default class SuperScene extends Phaser.Scene {
     this.particleSystems.push({
       particles, emitter, name, options,
     });
+
+    if (this._paused.particles) {
+      particles.pause();
+    }
   }
 
   tween(name, target, options = {}) {
@@ -1917,10 +1921,30 @@ export default class SuperScene extends Phaser.Scene {
 
   pauseEverythingForTransition(transition) {
     this.pausePhysicsForTransition(transition);
+
+    this.pauseAllParticleSystems();
   }
 
   unpauseEverythingForTransition(transition) {
     this.unpausePhysicsForTransition(transition);
+
+    this.resumeAllParticleSystems();
+  }
+
+  pauseAllParticleSystems() {
+    this._paused.particles = true;
+
+    this.particleSystems.forEach((p) => {
+      p.particles.pause();
+    });
+  }
+
+  resumeAllParticleSystems() {
+    delete this._paused.particles;
+
+    this.particleSystems.forEach((p) => {
+      p.particles.resume();
+    });
   }
 
   destroy() {
