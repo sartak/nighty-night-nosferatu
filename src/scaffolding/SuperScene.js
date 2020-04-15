@@ -1526,6 +1526,10 @@ export default class SuperScene extends Phaser.Scene {
 
     const tween = this.tweens.add(massageTweenProps(target, props, options));
 
+    if (this._paused.tweens) {
+      tween.pause();
+    }
+
     return tween;
   }
 
@@ -1698,6 +1702,10 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   updateTimers(time, dt) {
+    if (this._paused.timers) {
+      return;
+    }
+
     const {timers} = this;
     const newTimers = this.timers = [];
 
@@ -1909,26 +1917,34 @@ export default class SuperScene extends Phaser.Scene {
 
   pausePhysicsForTransition(transition) {
     this.pauseInputForTransition(transition);
-    this.anims.pauseAll();
+
     this._paused.physics = true;
+
+    this.anims.pauseAll();
   }
 
   unpausePhysicsForTransition(transition) {
     this.unpauseInputForTransition(transition);
-    this.anims.resumeAll();
+
     delete this._paused.physics;
+
+    this.anims.resumeAll();
   }
 
   pauseEverythingForTransition(transition) {
     this.pausePhysicsForTransition(transition);
 
+    this._paused.timers = true;
     this.pauseAllParticleSystems();
+    this.pauseAllTweens();
   }
 
   unpauseEverythingForTransition(transition) {
     this.unpausePhysicsForTransition(transition);
 
+    delete this._paused.timers;
     this.resumeAllParticleSystems();
+    this.resumeAllTweens();
   }
 
   pauseAllParticleSystems() {
@@ -1939,11 +1955,27 @@ export default class SuperScene extends Phaser.Scene {
     });
   }
 
+  pauseAllTweens() {
+    this._paused.tweens = true;
+
+    this.tweens._active.forEach((tween) => {
+      tween.pause();
+    });
+  }
+
   resumeAllParticleSystems() {
     delete this._paused.particles;
 
     this.particleSystems.forEach((p) => {
       p.particles.resume();
+    });
+  }
+
+  resumeAllTweens() {
+    delete this._paused.tweens;
+
+    this.tweens._active.forEach((tween) => {
+      tween.resume();
     });
   }
 
