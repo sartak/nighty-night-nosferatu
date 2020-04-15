@@ -5,7 +5,7 @@ import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, particlePropFromProp} from './lib/particles';
 import massageTransitionProps, {applyPause} from './lib/transitions';
 import {injectAddSpriteTimeScale} from './lib/sprites';
-import massageTweenProps from './lib/tweens';
+import massageTweenProps, {injectTweenManagerAdd} from './lib/tweens';
 import {shaderTypeMeta, propNamesForUniform} from './lib/props';
 import {saveField, loadField} from './lib/store';
 
@@ -68,6 +68,7 @@ export default class SuperScene extends Phaser.Scene {
 
     if (this.physics && this.physics.world) {
       injectAddSpriteTimeScale(this);
+      injectTweenManagerAdd(this.tweens);
 
       if (prop('scene.debugDraw')) {
         this.physics.world.createDebugGraphic();
@@ -1546,7 +1547,9 @@ export default class SuperScene extends Phaser.Scene {
       ...options,
     };
 
-    return this.tweens.add(massageTweenProps(target, props, options));
+    const params = massageTweenProps(target, props, options);
+
+    return this.tweens.add(params);
   }
 
   _transitionProps(input) {

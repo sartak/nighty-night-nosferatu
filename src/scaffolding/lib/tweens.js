@@ -50,6 +50,7 @@ const defaultTweenProps = {
 
   yoyo: [false],
   loop: [0, -1, 100, 1],
+  ignoresScenePause: [false],
   refreshPhysics: [false],
   destroyOnComplete: [false],
   animated: [true],
@@ -199,4 +200,23 @@ export default function massageTweenProps(target, {...props}, options) {
   delete props.animated;
 
   return props;
+}
+
+let injected = false;
+export function injectTweenManagerAdd(tweens) {
+  if (injected) {
+    return;
+  }
+
+  // eslint-disable-next-line no-proto
+  const proto = tweens.__proto__;
+
+  const origAdd = proto.add;
+  proto.add = function(config) {
+    const tween = origAdd.call(this, config);
+    tween.ignoresScenePause = config.ignoresScenePause;
+    return tween;
+  };
+
+  injected = true;
 }
