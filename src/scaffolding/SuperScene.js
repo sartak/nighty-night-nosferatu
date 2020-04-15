@@ -1510,15 +1510,16 @@ export default class SuperScene extends Phaser.Scene {
 
     if (props.preemit || (reloadSeed && props.preemitOnReload)) {
       this.preemitEmitter(emitter);
+      if (this._paused.particles) {
+        this.timer(() => particles.pause()).ignoresScenePause = true;
+      }
+    } else if (this._paused.particles) {
+      particles.pause();
     }
 
     this.particleSystems.push({
       particles, emitter, name, options,
     });
-
-    if (this._paused.particles) {
-      particles.pause();
-    }
   }
 
   tween(name, target, options = {}) {
