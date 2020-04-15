@@ -1546,13 +1546,7 @@ export default class SuperScene extends Phaser.Scene {
       ...options,
     };
 
-    const tween = this.tweens.add(massageTweenProps(target, props, options));
-
-    if (this._paused.tweens) {
-      tween.pause();
-    }
-
-    return tween;
+    return this.tweens.add(massageTweenProps(target, props, options));
   }
 
   _transitionProps(input) {
