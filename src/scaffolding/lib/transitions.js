@@ -27,6 +27,7 @@ export const transitionPauseTimes = [
   'delayEnd',
   'cutover',
   'complete',
+  'waitEnd',
 ];
 
 const defaultTransitionProps = {
@@ -36,11 +37,13 @@ const defaultTransitionProps = {
   delay: [0, 0, 10000],
   duration: [0, 0, 10000],
   ease: ['Linear', tweenEases],
+  wait_enabled: [true],
+  wait: [0, 0, 10000],
 
   oldPause: ['input', transitionPauses],
-  oldPauseTime: ['begin', transitionPauseTimes],
+  oldPauseTime: ['begin', transitionPauseTimes.filter((t) => t !== 'waitEnd')],
   newPause: ['input', transitionPauses],
-  newUnpauseTime: ['complete', transitionPauseTimes],
+  newUnpauseTime: ['waitEnd', transitionPauseTimes],
 
   delayNewSceneShader: [false],
   removeOldSceneShader: [false],

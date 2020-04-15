@@ -617,6 +617,19 @@ export default class SuperScene extends Phaser.Scene {
       newScene.didTransitionFrom(oldScene, transition);
       oldScene.scene.remove();
       _hasCompleted = true;
+
+      if (transition) {
+        const waitTimer = newScene.timer(() => {
+          if (transition && transition.onWaitEnd) {
+            transition.onWaitEnd(oldScene, newScene, transition);
+          }
+
+          if (newUnpauseTime === 'waitEnd') {
+            newUnpauseFn();
+          }
+        }, transition.wait);
+        waitTimer.ignoresScenePause = true;
+      }
     };
 
     if (transition) {
