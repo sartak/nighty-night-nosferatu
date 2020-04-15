@@ -888,7 +888,7 @@ export default class SuperScene extends Phaser.Scene {
 
       if (transition.delay) {
         const delayTimer = this.timer(animate, transition.delay);
-        delayTimer.ignoresPause = true;
+        delayTimer.ignoresScenePause = true;
       } else {
         animate();
       }
@@ -1708,7 +1708,7 @@ export default class SuperScene extends Phaser.Scene {
     const isPaused = this._paused.timers;
 
     timers.forEach((timer) => {
-      if (isPaused && !timer.ignoresPause) {
+      if (isPaused && !timer.ignoresScenePause) {
         newTimers.push(timer);
         return;
       }
