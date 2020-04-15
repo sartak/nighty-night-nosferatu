@@ -570,7 +570,7 @@ export default class SuperScene extends Phaser.Scene {
       }
 
       if (oldPauseTime === 'cutover') {
-        applyPause(oldScene, transition.oldPause);
+        applyPause(oldScene, transition, transition.oldPause);
       }
 
       if (newUnpauseTime === 'cutover') {
@@ -599,7 +599,7 @@ export default class SuperScene extends Phaser.Scene {
       }
 
       if (oldPauseTime === 'complete') {
-        applyPause(oldScene, transition.oldPause);
+        applyPause(oldScene, transition, transition.oldPause);
       }
 
       if (newUnpauseTime === 'complete') {
@@ -855,17 +855,17 @@ export default class SuperScene extends Phaser.Scene {
       }
 
       if (oldPauseTime === 'begin') {
-        applyPause(oldScene, transition.oldPause);
+        applyPause(oldScene, transition, transition.oldPause);
       }
 
       if (newUnpauseTime !== 'begin') {
-        newUnpauseFn = applyPause(newScene, transition.newPause);
+        newUnpauseFn = applyPause(newScene, transition, transition.newPause);
       }
 
       const oldAnimate = animate;
       animate = () => {
         if (oldPauseTime === 'delayEnd') {
-          applyPause(oldScene, transition.oldPause);
+          applyPause(oldScene, transition, transition.oldPause);
         }
 
         if (newUnpauseTime === 'delayEnd') {

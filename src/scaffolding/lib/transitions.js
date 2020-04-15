@@ -116,7 +116,7 @@ export default function massageTransitionProps(props, options) {
   return props;
 }
 
-export function applyPause(scene, type) {
+export function applyPause(scene, transition, type) {
   if (type === 'nothing') {
     return () => {};
   } else if (type === 'input') {
