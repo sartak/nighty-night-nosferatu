@@ -1471,6 +1471,10 @@ export default class SuperScene extends Phaser.Scene {
     this.game.recompileMainShaders();
   }
 
+  _hotReloadCurrentLevel(...args) {
+    return this.replaceWithSelf(false, ...args);
+  }
+
   removeAnimations() {
     if (this.physics && this.physics.world && this.physics.world.bodies && this.physics.world.bodies.entries) {
       this.physics.world.bodies.entries.forEach((body) => {
@@ -2126,6 +2130,9 @@ if (module.hot) {
             if (scene._hot) {
               scene._hot();
             }
+
+            scene._hotReloadCurrentLevel();
+
           } catch (e) {
             // eslint-disable-next-line no-console
             console.error(e);

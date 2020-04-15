@@ -65,7 +65,17 @@ export default class PlayScene extends SuperScene {
 
     x += this.camera.scrollX;
     y += this.camera.scrollY;
+  }
 
+  _hotReloadCurrentLevel() {
+    super._hotReloadCurrentLevel({
+    }, {
+      animation: 'crossFade',
+      duration: 200,
+      delayNewSceneShader: true,
+      removeOldSceneShader: true,
+    }).then((scene) => {
+    });
   }
 
   _hot() {
