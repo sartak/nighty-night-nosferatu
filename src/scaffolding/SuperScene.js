@@ -101,7 +101,7 @@ export default class SuperScene extends Phaser.Scene {
           try {
             if (this.timeSightFrozen) {
               this.command.processInput(this, time, dt, true);
-              tweens.update(time, dt);
+              this.updateTweens(time, dt);
               this.timeSightMouseDrag();
               return;
             }
@@ -125,7 +125,7 @@ export default class SuperScene extends Phaser.Scene {
               this.recoverPerformance();
             }
 
-            tweens.update(time, dt);
+            this.updateTweens(time, dt);
 
             this.game._stepExceptions = 0;
           } catch (e) {
@@ -1722,6 +1722,20 @@ export default class SuperScene extends Phaser.Scene {
       }
 
       timer.callback();
+    });
+  }
+
+  updateTweens(time, origDt) {
+    const {tweens} = this.scene.systems;
+
+    // taken from Phaser TweenManager.update
+    const dt = origDt * tweens.timeScale;
+
+    tweens._active.forEach((tween) => {
+      if (tween.update(time, dt)) {
+        tweens._destroy.push(tween);
+        tweens._toProcess += 1;
+      }
     });
   }
 
