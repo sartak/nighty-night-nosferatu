@@ -3,6 +3,7 @@ import deepEqual from 'deep-equal';
 import prop, {propsWithPrefix, manageableProps, propSpecs} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, particlePropFromProp} from './lib/particles';
+import massageTransitionProps from './lib/transitions';
 import {injectAddSpriteTimeScale} from './lib/sprites';
 import massageTweenProps from './lib/tweens';
 import {shaderTypeMeta, propNamesForUniform} from './lib/props';
@@ -506,15 +507,7 @@ export default class SuperScene extends Phaser.Scene {
     const oldScene = this;
     const {_replay, _replayOptions, _recording} = this;
 
-    const transition = originalTransition ? {
-      duration: 1000,
-      animation: 'crossFade',
-      ease: 'Linear',
-      delayNewSceneShader: false,
-      removeOldSceneShader: false,
-      suppressShaderCheck: false,
-      ...originalTransition,
-    } : originalTransition;
+    const transition = this._transitionProps(originalTransition);
 
     const returnPromise = new Promise((resolve, reject) => {
       this.game.onSceneInit(target, (newScene) => {
@@ -1407,6 +1400,25 @@ export default class SuperScene extends Phaser.Scene {
     const tween = this.tweens.add(massageTweenProps(target, props, options));
 
     return tween;
+  }
+
+  _transitionProps(input) {
+    if (!input) {
+      return input;
+    }
+
+    const prefix = typeof input === 'object' ? input.name : input;
+    const options = typeof input === 'object' ? input : {};
+
+    // throws error if invalid
+    prop(`${prefix}.animation`);
+
+    const props = {
+      ...propsWithPrefix(`${prefix}.`),
+      ...options,
+    };
+
+    return massageTransitionProps(props, options);
   }
 
   tweenPercent(duration, update, onComplete, startPoint = 0, ease = 'Linear') {

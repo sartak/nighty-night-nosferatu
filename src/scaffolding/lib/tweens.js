@@ -1,4 +1,4 @@
-const tweenEases = [
+export const tweenEases = [
   'Linear',
   'Quad.easeIn',
   'Quad.easeOut',

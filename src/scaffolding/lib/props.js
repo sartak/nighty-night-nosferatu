@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import {expandParticleProps} from './particles';
 import {expandTweenProps} from './tweens';
+import {expandTransitionProps} from './transitions';
 import {freezeStorage, removeAllFields, loadField} from './store';
 import {builtinCoordFragments, builtinColorFragments} from './shaders.js';
 
@@ -463,6 +464,7 @@ export function commandKeyProps(commands) {
 export function preprocessPropSpecs(propSpecs, particleImages) {
   expandParticleProps(propSpecs, particleImages);
   expandTweenProps(propSpecs, particleImages);
+  expandTransitionProps(propSpecs, particleImages);
 }
 
 export function ManageableProps(propSpecs) {
