@@ -585,36 +585,40 @@ export default class SuperScene extends Phaser.Scene {
         oldScene.camera.clearRenderToTexture();
       }
 
+      let animate;
+
       if (typeof animation === 'function') {
-        animation(oldScene, newScene, cutoverPrimary, completeTransition, transition);
+        animate = () => animation(oldScene, newScene, cutoverPrimary, completeTransition, transition);
       } else if (animation === 'fadeInOut') {
         newScene.camera.alpha = 0;
         oldScene.camera.alpha = 1;
 
-        this.tweenInOut(
-          duration / 2,
-          duration / 2,
-          (factor, firstHalf) => {
-            if (firstHalf) {
-              oldScene.camera.alpha = 1 - factor;
-            } else {
-              newScene.camera.alpha = 1 - factor;
-            }
+        animate = () => {
+          this.tweenInOut(
+            duration / 2,
+            duration / 2,
+            (factor, firstHalf) => {
+              if (firstHalf) {
+                oldScene.camera.alpha = 1 - factor;
+              } else {
+                newScene.camera.alpha = 1 - factor;
+              }
 
-            if (onUpdate) {
-              const percent = firstHalf ? factor / 2 : 1 - factor / 2;
-              onUpdate(percent, oldScene, newScene, transition);
-            }
-          },
-          cutoverPrimary,
-          () => {
-            newScene.camera.alpha = 1;
-            oldScene.camera.alpha = 0;
-            completeTransition();
-          },
-          0,
-          ease,
-        );
+              if (onUpdate) {
+                const percent = firstHalf ? factor / 2 : 1 - factor / 2;
+                onUpdate(percent, oldScene, newScene, transition);
+              }
+            },
+            cutoverPrimary,
+            () => {
+              newScene.camera.alpha = 1;
+              oldScene.camera.alpha = 0;
+              completeTransition();
+            },
+            0,
+            ease,
+          );
+        };
       } else if (animation === 'crossFade') {
         // crossfade doesn't really care about scene order, so help the
         // shader out if we can
@@ -625,33 +629,35 @@ export default class SuperScene extends Phaser.Scene {
         newScene.camera.alpha = 0;
         oldScene.camera.alpha = 1;
 
-        this.tweenPercent(
-          duration,
-          (factor) => {
-            newScene.camera.alpha = factor;
-            oldScene.camera.alpha = 1 - factor;
-            if (factor >= 0.5) {
-              cutoverPrimary();
-            }
+        animate = () => {
+          this.tweenPercent(
+            duration,
+            (factor) => {
+              newScene.camera.alpha = factor;
+              oldScene.camera.alpha = 1 - factor;
+              if (factor >= 0.5) {
+                cutoverPrimary();
+              }
 
-            if (onUpdate) {
-              onUpdate(factor, oldScene, newScene, transition);
-            }
-          },
-          () => {
-            newScene.camera.alpha = 1;
-            oldScene.camera.alpha = 0;
+              if (onUpdate) {
+                onUpdate(factor, oldScene, newScene, transition);
+              }
+            },
+            () => {
+              newScene.camera.alpha = 1;
+              oldScene.camera.alpha = 0;
 
-            if (!transition.suppressShaderCheck && !transition.delayNewSceneShader && oldScene.shader && newScene.shader) {
-              // eslint-disable-next-line no-console, max-len
-              console.error('crossFade transitions do not render correctly if the both scenes have a shader; provide delayNewSceneShader, removeOldSceneShader, or suppressShaderCheck to the transition, or use fadeInOut animation');
-            }
+              if (!transition.suppressShaderCheck && !transition.delayNewSceneShader && oldScene.shader && newScene.shader) {
+                // eslint-disable-next-line no-console, max-len
+                console.error('crossFade transitions do not render correctly if the both scenes have a shader; provide delayNewSceneShader, removeOldSceneShader, or suppressShaderCheck to the transition, or use fadeInOut animation');
+              }
 
-            completeTransition();
-          },
-          0,
-          ease,
-        );
+              completeTransition();
+            },
+            0,
+            ease,
+          );
+        };
       } else if (animation === 'pushRight' || animation === 'pushLeft' || animation === 'pushUp' || animation === 'pushDown') {
         const {height, width} = this.game.config;
 
@@ -675,30 +681,32 @@ export default class SuperScene extends Phaser.Scene {
           dy = 1;
         }
 
-        this.tweenPercent(
-          duration,
-          (factor) => {
-            newScene.camera.x = dx * (factor - 1) * width;
-            oldScene.camera.x = dx * factor * width;
-            newScene.camera.y = dy * (factor - 1) * height;
-            oldScene.camera.y = dy * factor * height;
+        animate = () => {
+          this.tweenPercent(
+            duration,
+            (factor) => {
+              newScene.camera.x = dx * (factor - 1) * width;
+              oldScene.camera.x = dx * factor * width;
+              newScene.camera.y = dy * (factor - 1) * height;
+              oldScene.camera.y = dy * factor * height;
 
-            if (factor >= 0.5) {
-              cutoverPrimary();
-            }
+              if (factor >= 0.5) {
+                cutoverPrimary();
+              }
 
-            if (onUpdate) {
-              onUpdate(factor, oldScene, newScene, transition);
-            }
-          },
-          () => {
-            newScene.camera.x = 0;
-            newScene.camera.y = 0;
-            completeTransition();
-          },
-          0,
-          ease,
-        );
+              if (onUpdate) {
+                onUpdate(factor, oldScene, newScene, transition);
+              }
+            },
+            () => {
+              newScene.camera.x = 0;
+              newScene.camera.y = 0;
+              completeTransition();
+            },
+            0,
+            ease,
+          );
+        };
       } else if (animation === 'wipeRight' || animation === 'wipeLeft' || animation === 'wipeUp' || animation === 'wipeDown') {
         const {height, width} = this.game.config;
 
@@ -735,63 +743,69 @@ export default class SuperScene extends Phaser.Scene {
 
         let firstCall = true;
 
-        this.tweenPercent(
-          duration,
-          (factor) => {
-            if (newCamera && firstCall) {
-              if (newScene.shader) {
-                newCamera.setRenderToTexture(newScene.shader);
+        animate = () => {
+          this.tweenPercent(
+            duration,
+            (factor) => {
+              if (newCamera && firstCall) {
+                if (newScene.shader) {
+                  newCamera.setRenderToTexture(newScene.shader);
+                }
+                firstCall = false;
               }
-              firstCall = false;
-            }
 
-            if (animation === 'wipeRight') {
-              newCamera.setSize(Math.max(1, factor * width), height);
-            } else if (animation === 'wipeLeft') {
-              oldCamera.setSize(Math.max(1, (1 - factor) * width), height);
-            } else if (animation === 'wipeUp') {
-              oldCamera.setSize(width, Math.max(1, (1 - factor) * height));
-            } else if (animation === 'wipeDown') {
-              newCamera.setSize(width, Math.max(1, factor * height));
-            }
-
-            if (factor >= 0.5) {
-              cutoverPrimary();
-            }
-
-            if (onUpdate) {
-              onUpdate(factor, oldScene, newScene, transition);
-            }
-          },
-          () => {
-            if (newCamera) {
-              newScene.cameras.main.alpha = 1;
-              newScene.camera.scrollX = newCamera.scrollX;
-              newScene.camera.scrollY = newCamera.scrollY;
-              newScene.cameras.remove(newCamera);
-            }
-
-            if (!transition.suppressShaderCheck) {
-              if (!transition.delayNewSceneShader && newScene.shader && newCamera) {
-                // eslint-disable-next-line no-console, max-len
-                console.error(`${animation} transitions do not render correctly if the new scene has a shader; provide delayNewSceneShader or suppressShaderCheck to the transition, or use a different animation`);
+              if (animation === 'wipeRight') {
+                newCamera.setSize(Math.max(1, factor * width), height);
+              } else if (animation === 'wipeLeft') {
+                oldCamera.setSize(Math.max(1, (1 - factor) * width), height);
+              } else if (animation === 'wipeUp') {
+                oldCamera.setSize(width, Math.max(1, (1 - factor) * height));
+              } else if (animation === 'wipeDown') {
+                newCamera.setSize(width, Math.max(1, factor * height));
               }
-              if (oldScene.shader && oldCamera) {
-                // eslint-disable-next-line no-console, max-len
-                console.error(`${animation} transitions do not render correctly if the old scene has a shader; provide removeOldSceneShader or suppressShaderCheck to the transition, or use a different animation`);
-              }
-            }
 
-            completeTransition();
-          },
-          0,
-          ease,
-        );
+              if (factor >= 0.5) {
+                cutoverPrimary();
+              }
+
+              if (onUpdate) {
+                onUpdate(factor, oldScene, newScene, transition);
+              }
+            },
+            () => {
+              if (newCamera) {
+                newScene.cameras.main.alpha = 1;
+                newScene.camera.scrollX = newCamera.scrollX;
+                newScene.camera.scrollY = newCamera.scrollY;
+                newScene.cameras.remove(newCamera);
+              }
+
+              if (!transition.suppressShaderCheck) {
+                if (!transition.delayNewSceneShader && newScene.shader && newCamera) {
+                  // eslint-disable-next-line no-console, max-len
+                  console.error(`${animation} transitions do not render correctly if the new scene has a shader; provide delayNewSceneShader or suppressShaderCheck to the transition, or use a different animation`);
+                }
+                if (oldScene.shader && oldCamera) {
+                  // eslint-disable-next-line no-console, max-len
+                  console.error(`${animation} transitions do not render correctly if the old scene has a shader; provide removeOldSceneShader or suppressShaderCheck to the transition, or use a different animation`);
+                }
+              }
+
+              completeTransition();
+            },
+            0,
+            ease,
+          );
+        };
       } else {
         // eslint-disable-next-line no-console
         console.error(`Invalid transition animation '${animation}'`);
         cutoverPrimary();
         completeTransition();
+        return;
+      }
+
+        animate();
       }
     } else {
       cutoverPrimary();
