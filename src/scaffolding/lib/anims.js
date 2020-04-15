@@ -10,7 +10,7 @@ export function injectAnimationUpdate(animation) {
   const origUpdate = proto.update;
 
   proto.update = function(...args) {
-    if (this.parent.scene._paused.anims && !this.ignoresScenePause) {
+    if (this.parent.scene._paused.anims && !this.ignoresScenePause && (!this.currentAnim || !this.currentAnim.ignoresScenePause)) {
       return;
     }
 
