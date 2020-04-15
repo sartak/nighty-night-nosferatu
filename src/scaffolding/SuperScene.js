@@ -549,6 +549,10 @@ export default class SuperScene extends Phaser.Scene {
         return;
       }
       _hasCutover = true;
+
+      if (transition && transition.onCutover) {
+        transition.onCutover(oldScene, newScene, transition);
+      }
     };
 
     let _hasCompleted = false;
@@ -563,6 +567,10 @@ export default class SuperScene extends Phaser.Scene {
         cutoverPrimary();
       }
 
+      if (transition && transition.onComplete) {
+        transition.onComplete(oldScene, newScene, transition);
+      }
+
       oldScene.didTransitionTo(newScene, transition);
       newScene.didTransitionFrom(oldScene, transition);
       oldScene.scene.remove();
@@ -570,7 +578,7 @@ export default class SuperScene extends Phaser.Scene {
     };
 
     if (transition) {
-      const {animation, ease, duration} = transition;
+      const {animation, ease, duration, onUpdate} = transition;
 
       if (transition.removeOldSceneShader) {
         oldScene.shader = null;
@@ -591,6 +599,11 @@ export default class SuperScene extends Phaser.Scene {
               oldScene.camera.alpha = 1 - factor;
             } else {
               newScene.camera.alpha = 1 - factor;
+            }
+
+            if (onUpdate) {
+              const percent = firstHalf ? factor / 2 : 1 - factor / 2;
+              onUpdate(percent, oldScene, newScene, transition);
             }
           },
           cutoverPrimary,
@@ -619,6 +632,10 @@ export default class SuperScene extends Phaser.Scene {
             oldScene.camera.alpha = 1 - factor;
             if (factor >= 0.5) {
               cutoverPrimary();
+            }
+
+            if (onUpdate) {
+              onUpdate(factor, oldScene, newScene, transition);
             }
           },
           () => {
@@ -668,6 +685,10 @@ export default class SuperScene extends Phaser.Scene {
 
             if (factor >= 0.5) {
               cutoverPrimary();
+            }
+
+            if (onUpdate) {
+              onUpdate(factor, oldScene, newScene, transition);
             }
           },
           () => {
@@ -736,6 +757,10 @@ export default class SuperScene extends Phaser.Scene {
 
             if (factor >= 0.5) {
               cutoverPrimary();
+            }
+
+            if (onUpdate) {
+              onUpdate(factor, oldScene, newScene, transition);
             }
           },
           () => {
