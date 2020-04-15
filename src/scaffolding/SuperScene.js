@@ -1727,11 +1727,16 @@ export default class SuperScene extends Phaser.Scene {
 
   updateTweens(time, origDt) {
     const {tweens} = this.scene.systems;
+    const isPaused = this._paused.tweens;
 
     // taken from Phaser TweenManager.update
     const dt = origDt * tweens.timeScale;
 
     tweens._active.forEach((tween) => {
+      if (isPaused && !tween.ignoresScenePause) {
+        return;
+      }
+
       if (tween.update(time, dt)) {
         tweens._destroy.push(tween);
         tweens._toProcess += 1;
@@ -1974,10 +1979,6 @@ export default class SuperScene extends Phaser.Scene {
 
   pauseAllTweens() {
     this._paused.tweens = true;
-
-    this.tweens._active.forEach((tween) => {
-      tween.pause();
-    });
   }
 
   resumeAllParticleSystems() {
@@ -1990,10 +1991,6 @@ export default class SuperScene extends Phaser.Scene {
 
   resumeAllTweens() {
     delete this._paused.tweens;
-
-    this.tweens._active.forEach((tween) => {
-      tween.resume();
-    });
   }
 
   destroy() {
