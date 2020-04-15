@@ -18,6 +18,8 @@ export const transitionAnimations = [
 const defaultTransitionProps = {
   animation: ['fadeInOut', transitionAnimations],
 
+  delay_enabled: [true],
+  delay: [0, 0, 10000],
   duration: [0, 0, 10000],
   ease: ['Linear', tweenEases],
 

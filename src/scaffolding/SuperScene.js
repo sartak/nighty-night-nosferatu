@@ -805,6 +805,10 @@ export default class SuperScene extends Phaser.Scene {
         return;
       }
 
+      if (transition.delay) {
+        this.timer(animate, transition.delay);
+      }
+      else {
         animate();
       }
     } else {
