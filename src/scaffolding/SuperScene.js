@@ -3,7 +3,7 @@ import deepEqual from 'deep-equal';
 import prop, {propsWithPrefix, manageableProps, propSpecs} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, particlePropFromProp} from './lib/particles';
-import massageTransitionProps from './lib/transitions';
+import massageTransitionProps, {applyPause} from './lib/transitions';
 import {injectAddSpriteTimeScale} from './lib/sprites';
 import massageTweenProps from './lib/tweens';
 import {shaderTypeMeta, propNamesForUniform} from './lib/props';
@@ -543,6 +543,13 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   _sceneTransition(oldScene, newScene, transition) {
+    const {animation, ease, duration, onUpdate, oldPauseTime, newUnpauseTime} = transition || {};
+
+    let newUnpauseFn = () => {
+      // eslint-disable-next-line no-console
+      console.error('Transition did not instantiate newUnpauseFn');
+    };
+
     let _hasCutover = false;
     const cutoverPrimary = () => {
       if (_hasCutover) {
@@ -552,6 +559,14 @@ export default class SuperScene extends Phaser.Scene {
 
       if (transition && transition.onCutover) {
         transition.onCutover(oldScene, newScene, transition);
+      }
+
+      if (oldPauseTime === 'cutover') {
+        applyPause(oldScene, transition.oldPause);
+      }
+
+      if (newUnpauseTime === 'cutover') {
+        newUnpauseFn();
       }
     };
 
@@ -571,6 +586,14 @@ export default class SuperScene extends Phaser.Scene {
         transition.onComplete(oldScene, newScene, transition);
       }
 
+      if (oldPauseTime === 'complete') {
+        applyPause(oldScene, transition.oldPause);
+      }
+
+      if (newUnpauseTime === 'complete') {
+        newUnpauseFn();
+      }
+
       oldScene.didTransitionTo(newScene, transition);
       newScene.didTransitionFrom(oldScene, transition);
       oldScene.scene.remove();
@@ -578,8 +601,6 @@ export default class SuperScene extends Phaser.Scene {
     };
 
     if (transition) {
-      const {animation, ease, duration, onUpdate} = transition;
-
       if (transition.removeOldSceneShader) {
         oldScene.shader = null;
         oldScene.camera.clearRenderToTexture();
@@ -804,6 +825,27 @@ export default class SuperScene extends Phaser.Scene {
         completeTransition();
         return;
       }
+
+      if (oldPauseTime === 'begin') {
+        applyPause(oldScene, transition.oldPause);
+      }
+
+      if (newUnpauseTime !== 'begin') {
+        newUnpauseFn = applyPause(newScene, transition.newPause);
+      }
+
+      const oldAnimate = animate;
+      animate = () => {
+        if (oldPauseTime === 'delayEnd') {
+          applyPause(oldScene, transition.oldPause);
+        }
+
+        if (newUnpauseTime === 'delayEnd') {
+          newUnpauseFn();
+        }
+
+        oldAnimate();
+      };
 
       if (transition.delay) {
         this.timer(animate, transition.delay);

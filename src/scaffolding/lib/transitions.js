@@ -15,6 +15,20 @@ export const transitionAnimations = [
   'wipeDown',
 ];
 
+export const transitionPauses = [
+  'nothing',
+  'input',
+  'physics',
+  'everything',
+];
+
+export const transitionPauseTimes = [
+  'begin',
+  'delayEnd',
+  'cutover',
+  'complete',
+];
+
 const defaultTransitionProps = {
   animation: ['fadeInOut', transitionAnimations],
 
@@ -22,6 +36,11 @@ const defaultTransitionProps = {
   delay: [0, 0, 10000],
   duration: [0, 0, 10000],
   ease: ['Linear', tweenEases],
+
+  oldPause: ['input', transitionPauses],
+  oldPauseTime: ['begin', transitionPauseTimes],
+  newPause: ['input', transitionPauses],
+  newUnpauseTime: ['complete', transitionPauseTimes],
 
   delayNewSceneShader: [false],
   removeOldSceneShader: [false],
@@ -96,3 +115,23 @@ export default function massageTransitionProps(props, options) {
 
   return props;
 }
+
+export function applyPause(scene, type) {
+  if (type === 'nothing') {
+    return () => {};
+  } else if (type === 'input') {
+    return () => {
+    };
+  } else if (type === 'physics') {
+    return () => {
+    };
+  } else if (type === 'everything') {
+    return () => {
+    };
+  } else {
+    // eslint-disable-next-line no-console
+    console.error(`Invalid transition pause '${type}'`);
+    return () => {};
+  }
+}
+
