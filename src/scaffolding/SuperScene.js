@@ -550,12 +550,18 @@ export default class SuperScene extends Phaser.Scene {
       console.error('Transition did not instantiate newUnpauseFn');
     };
 
+    let swapScenes = true;
+
     let _hasCutover = false;
-    const cutoverPrimary = () => {
+    const cutoverPrimary = (overrideSwapScenes) => {
       if (_hasCutover) {
         return;
       }
       _hasCutover = true;
+
+      if (overrideSwapScenes !== undefined) {
+        swapScenes = overrideSwapScenes;
+      }
 
       if (transition && transition.onCutover) {
         transition.onCutover(oldScene, newScene, transition);
@@ -567,6 +573,10 @@ export default class SuperScene extends Phaser.Scene {
 
       if (newUnpauseTime === 'cutover') {
         newUnpauseFn();
+      }
+
+      if (swapScenes) {
+        newScene.game.scene.bringToTop(newScene.scene.key);
       }
     };
 
@@ -611,6 +621,8 @@ export default class SuperScene extends Phaser.Scene {
       if (typeof animation === 'function') {
         animate = () => animation(oldScene, newScene, cutoverPrimary, completeTransition, transition);
       } else if (animation === 'fadeInOut') {
+        swapScenes = true;
+
         newScene.camera.alpha = 0;
         oldScene.camera.alpha = 1;
 
@@ -643,8 +655,14 @@ export default class SuperScene extends Phaser.Scene {
       } else if (animation === 'crossFade') {
         // crossfade doesn't really care about scene order, so help the
         // shader out if we can
-        if (!oldScene.shader) {
+        if (!oldScene.shader && newScene.shader) {
           oldScene.game.scene.bringToTop(oldScene.scene.key);
+          swapScenes = false;
+        } else if (oldScene.shader && !newScene.shader) {
+          newScene.game.scene.bringToTop(newScene.scene.key);
+          swapScenes = false;
+        } else {
+          swapScenes = true;
         }
 
         newScene.camera.alpha = 0;
@@ -681,6 +699,8 @@ export default class SuperScene extends Phaser.Scene {
         };
       } else if (animation === 'pushRight' || animation === 'pushLeft' || animation === 'pushUp' || animation === 'pushDown') {
         const {height, width} = this.game.config;
+
+        swapScenes = true;
 
         oldScene.camera.x = 0;
         oldScene.camera.y = 0;
@@ -730,6 +750,8 @@ export default class SuperScene extends Phaser.Scene {
         };
       } else if (animation === 'wipeRight' || animation === 'wipeLeft' || animation === 'wipeUp' || animation === 'wipeDown') {
         const {height, width} = this.game.config;
+
+        swapScenes = false;
 
         let newCamera;
         let oldCamera;
@@ -824,6 +846,10 @@ export default class SuperScene extends Phaser.Scene {
         cutoverPrimary();
         completeTransition();
         return;
+      }
+
+      if (swapScenes) {
+        oldScene.game.scene.bringToTop(oldScene.scene.key);
       }
 
       if (oldPauseTime === 'begin') {
