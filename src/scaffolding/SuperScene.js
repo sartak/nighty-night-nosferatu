@@ -550,34 +550,34 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   _sceneTransition(oldScene, newScene, transition) {
+    let _hasCutover = false;
+    const cutoverPrimary = () => {
+      if (_hasCutover) {
+        return;
+      }
+      _hasCutover = true;
+    };
+
+    let _hasCompleted = false;
+    const completeTransition = () => {
+      if (_hasCompleted) {
+        return;
+      }
+
+      if (!_hasCutover) {
+        // eslint-disable-next-line no-console
+        console.error('completeTransition called, but cutoverPrimary hasn\'t been yet');
+        cutoverPrimary();
+      }
+
+      oldScene.didTransitionTo(newScene, transition);
+      newScene.didTransitionFrom(oldScene, transition);
+      oldScene.scene.remove();
+      _hasCompleted = true;
+    };
+
     if (transition) {
       const {animation, ease, duration} = transition;
-
-      let _hasCutover = false;
-      const cutoverPrimary = () => {
-        if (_hasCutover) {
-          return;
-        }
-        _hasCutover = true;
-      };
-
-      let _hasCompleted = false;
-      const completeTransition = () => {
-        if (_hasCompleted) {
-          return;
-        }
-
-        if (!_hasCutover) {
-          // eslint-disable-next-line no-console
-          console.error('completeTransition called, but cutoverPrimary hasn\'t been yet');
-          cutoverPrimary();
-        }
-
-        oldScene.didTransitionTo(newScene, transition);
-        newScene.didTransitionFrom(oldScene, transition);
-        oldScene.scene.remove();
-        _hasCompleted = true;
-      };
 
       if (transition.removeOldSceneShader) {
         oldScene.shader = null;
@@ -776,9 +776,8 @@ export default class SuperScene extends Phaser.Scene {
         completeTransition();
       }
     } else {
-      oldScene.didTransitionTo(newScene, transition);
-      newScene.didTransitionFrom(oldScene, transition);
-      oldScene.scene.remove();
+      cutoverPrimary();
+      completeTransition();
     }
   }
 
