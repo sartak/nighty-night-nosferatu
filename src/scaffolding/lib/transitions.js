@@ -120,13 +120,19 @@ export function applyPause(scene, transition, type) {
   if (type === 'nothing') {
     return () => {};
   } else if (type === 'input') {
+    scene.pauseInputForTransition(transition);
     return () => {
+      scene.unpauseInputForTransition(transition);
     };
   } else if (type === 'physics') {
+    scene.pausePhysicsForTransition(transition);
     return () => {
+      scene.unpausePhysicsForTransition(transition);
     };
   } else if (type === 'everything') {
+    scene.pauseEverythingForTransition(transition);
     return () => {
+      scene.unpauseEverythingForTransition(transition);
     };
   } else {
     // eslint-disable-next-line no-console

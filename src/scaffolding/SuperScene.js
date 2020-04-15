@@ -1888,6 +1888,30 @@ export default class SuperScene extends Phaser.Scene {
     }
   }
 
+  pauseInputForTransition(transition) {
+    this.command.ignoreAll(this, '_transition', true);
+  }
+
+  unpauseInputForTransition(transition) {
+    this.command.ignoreAll(this, '_transition', false);
+  }
+
+  pausePhysicsForTransition(transition) {
+    this.pauseInputForTransition(transition);
+  }
+
+  unpausePhysicsForTransition(transition) {
+    this.unpauseInputForTransition(transition);
+  }
+
+  pauseEverythingForTransition(transition) {
+    this.pausePhysicsForTransition(transition);
+  }
+
+  unpauseEverythingForTransition(transition) {
+    this.unpausePhysicsForTransition(transition);
+  }
+
   destroy() {
     this.command.detachScene(this);
   }
