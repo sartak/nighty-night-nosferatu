@@ -636,7 +636,7 @@ export default class SuperScene extends Phaser.Scene {
         oldScene.camera.alpha = 1;
 
         animate = () => {
-          this.tweenInOut(
+          const tween = this.tweenInOut(
             duration / 2,
             duration / 2,
             (factor, firstHalf) => {
@@ -651,7 +651,10 @@ export default class SuperScene extends Phaser.Scene {
                 onUpdate(percent, oldScene, newScene, transition);
               }
             },
-            cutoverPrimary,
+            (followupTween) => {
+              followupTween.ignoresScenePause = true;
+              cutoverPrimary();
+            },
             () => {
               newScene.camera.alpha = 1;
               oldScene.camera.alpha = 0;
@@ -660,6 +663,7 @@ export default class SuperScene extends Phaser.Scene {
             0,
             ease,
           );
+          tween.ignoresScenePause = true;
         };
       } else if (animation === 'crossFade') {
         // crossfade doesn't really care about scene order, so help the
@@ -678,7 +682,7 @@ export default class SuperScene extends Phaser.Scene {
         oldScene.camera.alpha = 1;
 
         animate = () => {
-          this.tweenPercent(
+          const tween = this.tweenPercent(
             duration,
             (factor) => {
               newScene.camera.alpha = factor;
@@ -705,6 +709,7 @@ export default class SuperScene extends Phaser.Scene {
             0,
             ease,
           );
+          tween.ignoresScenePause = true;
         };
       } else if (animation === 'pushRight' || animation === 'pushLeft' || animation === 'pushUp' || animation === 'pushDown') {
         const {height, width} = this.game.config;
@@ -732,7 +737,7 @@ export default class SuperScene extends Phaser.Scene {
         }
 
         animate = () => {
-          this.tweenPercent(
+          const tween = this.tweenPercent(
             duration,
             (factor) => {
               newScene.camera.x = dx * (factor - 1) * width;
@@ -756,6 +761,7 @@ export default class SuperScene extends Phaser.Scene {
             0,
             ease,
           );
+          tween.ignoresScenePause = true;
         };
       } else if (animation === 'wipeRight' || animation === 'wipeLeft' || animation === 'wipeUp' || animation === 'wipeDown') {
         const {height, width} = this.game.config;
@@ -796,7 +802,7 @@ export default class SuperScene extends Phaser.Scene {
         let firstCall = true;
 
         animate = () => {
-          this.tweenPercent(
+          const tween = this.tweenPercent(
             duration,
             (factor) => {
               if (newCamera && firstCall) {
@@ -848,6 +854,7 @@ export default class SuperScene extends Phaser.Scene {
             0,
             ease,
           );
+          tween.ignoresScenePause = true;
         };
       } else {
         // eslint-disable-next-line no-console
