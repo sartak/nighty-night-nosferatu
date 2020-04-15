@@ -543,7 +543,9 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   _sceneTransition(oldScene, newScene, transition) {
-    const {animation, ease, duration, onUpdate, oldPauseTime, newUnpauseTime} = transition || {};
+    const {
+      animation, ease, duration, onUpdate, oldPauseTime, newUnpauseTime,
+    } = transition || {};
 
     let newUnpauseFn = () => {
       // eslint-disable-next-line no-console
@@ -875,8 +877,7 @@ export default class SuperScene extends Phaser.Scene {
 
       if (transition.delay) {
         this.timer(animate, transition.delay);
-      }
-      else {
+      } else {
         animate();
       }
     } else {
