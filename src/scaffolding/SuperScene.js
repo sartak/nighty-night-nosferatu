@@ -30,6 +30,7 @@ export default class SuperScene extends Phaser.Scene {
     this.performanceAcceptable = true;
     this.scene_time = 0;
     this.shockwave_time = 0;
+    this._paused = {};
   }
 
   init(config) {
@@ -105,13 +106,19 @@ export default class SuperScene extends Phaser.Scene {
               return;
             }
 
-            originalStep.call(world, delta);
+            if (!this._paused.physics) {
+              originalStep.call(world, delta);
+            }
+
             this.command.processInput(this, time, dt);
             if (this.game.updateReplayCursor) {
               this.game.updateReplayCursor(this.command.replayTicks, this._replay);
             }
 
-            this.fixedUpdate(time, dt);
+            if (!this._paused.physics) {
+              this.fixedUpdate(time, dt);
+            }
+
             this.updateTimers(time, dt);
 
             if (this.performanceProps && this.performanceProps.length) {
@@ -1898,10 +1905,14 @@ export default class SuperScene extends Phaser.Scene {
 
   pausePhysicsForTransition(transition) {
     this.pauseInputForTransition(transition);
+    this.anims.pauseAll();
+    this._paused.physics = true;
   }
 
   unpausePhysicsForTransition(transition) {
     this.unpauseInputForTransition(transition);
+    this.anims.resumeAll();
+    delete this._paused.physics;
   }
 
   pauseEverythingForTransition(transition) {
