@@ -887,7 +887,8 @@ export default class SuperScene extends Phaser.Scene {
       };
 
       if (transition.delay) {
-        this.timer(animate, transition.delay);
+        const delayTimer = this.timer(animate, transition.delay);
+        delayTimer.ignoresPause = true;
       } else {
         animate();
       }
@@ -1702,14 +1703,16 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   updateTimers(time, dt) {
-    if (this._paused.timers) {
-      return;
-    }
-
     const {timers} = this;
     const newTimers = this.timers = [];
+    const isPaused = this._paused.timers;
 
     timers.forEach((timer) => {
+      if (isPaused && !timer.ignoresPause) {
+        newTimers.push(timer);
+        return;
+      }
+
       if (timer.time) {
         timer.time -= dt;
         if (timer.time > 0) {
