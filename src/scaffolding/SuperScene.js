@@ -5,6 +5,7 @@ import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, particlePropFromProp} from './lib/particles';
 import massageTransitionProps, {applyPause} from './lib/transitions';
 import {injectAddSpriteTimeScale} from './lib/sprites';
+import {injectAnimationUpdate} from './lib/anims';
 import massageTweenProps, {injectTweenManagerAdd} from './lib/tweens';
 import {shaderTypeMeta, propNamesForUniform} from './lib/props';
 import {saveField, loadField} from './lib/store';
@@ -1967,7 +1968,7 @@ export default class SuperScene extends Phaser.Scene {
 
     this._paused.physics = true;
 
-    this.anims.pauseAll();
+    this.pauseAllAnimations();
   }
 
   unpausePhysicsForTransition(transition) {
@@ -1975,7 +1976,7 @@ export default class SuperScene extends Phaser.Scene {
 
     this._paused.physics = false;
 
-    this.anims.resumeAll();
+    this.resumeAllAnimations();
   }
 
   pauseEverythingForTransition(transition) {
@@ -2006,6 +2007,24 @@ export default class SuperScene extends Phaser.Scene {
     this._paused.tweens = true;
   }
 
+  pauseAllAnimations() {
+    this._paused.anims = true;
+
+    if (this._injectedAnimsUpdate) {
+      return;
+    }
+
+    if (this.physics && this.physics.world && this.physics.world.bodies && this.physics.world.bodies.entries) {
+      this.physics.world.bodies.entries.forEach((body) => {
+        if (body.gameObject && body.gameObject.anims) {
+          if (injectAnimationUpdate(body.gameObject.anims)) {
+            this._injectedAnimsUpdate = true;
+          }
+        }
+      });
+    }
+  }
+
   resumeAllParticleSystems() {
     this._paused.particles = false;
 
@@ -2016,6 +2035,10 @@ export default class SuperScene extends Phaser.Scene {
 
   resumeAllTweens() {
     this._paused.tweens = false;
+  }
+
+  resumeAllAnimations() {
+    this._paused.anims = false;
   }
 
   destroy() {

@@ -13,6 +13,7 @@ export function injectAddSpriteTimeScale(scene) {
     const sprite = origAdd.call(this, ...args);
     if (sprite && sprite.anims) {
       sprite.anims.setTimeScale(sprite.scene.timeScale);
+      sprite.anims.ignoresScenePause = false;
     }
     return sprite;
   };
