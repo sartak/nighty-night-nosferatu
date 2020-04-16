@@ -7,14 +7,14 @@ const loaderMethod = {
 
 const unloadFunction = {
   imageAssets: (scene, key) => {
-  },
-  spriteAssets: (scene, key) => {
+    scene.load.textureManager.remove(key);
   },
   musicAssets: (scene, key) => {
     scene.cache.audio.remove(key);
   },
 };
 
+unloadFunction.spriteAssets = unloadFunction.imageAssets;
 unloadFunction.soundAssets = unloadFunction.musicAssets;
 
 function massageInput(type, game, input) {

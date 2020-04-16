@@ -2195,6 +2195,18 @@ if (module.hot) {
             if (changed[currentMusicName]) {
               game.playMusic(currentMusicName, true);
             }
+          } else if (type === 'imageAssets' || type === 'spriteAssets') {
+            Object.entries(changed).forEach(([key, texture]) => {
+              scene.add.displayList.list.forEach((object) => {
+                if (object.texture && object.texture.key === key) {
+                  if (object.setTexture) {
+                    object.setTexture(key);
+                  } else {
+                    object.texture = texture;
+                  }
+                }
+              });
+            });
           }
         });
 
