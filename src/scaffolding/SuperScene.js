@@ -521,7 +521,12 @@ export default class SuperScene extends Phaser.Scene {
 
         const [, , setter] = shaderTypeMeta[type];
 
-        shaderUpdate.push(`  shader.${setter}('${name}', this['${name}']);`);
+        if (type === 'bool') {
+          shaderUpdate.push(`  shader.${setter}('${name}', this['${name}'] ? 1.0 : 0.0);`);
+        }
+        else {
+          shaderUpdate.push(`  shader.${setter}('${name}', this['${name}']);`);
+        }
       });
     });
 

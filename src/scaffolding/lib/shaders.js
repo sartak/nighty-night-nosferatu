@@ -68,6 +68,7 @@ export const builtinColorFragments = [
 
 export const shaderTypeMeta = {
   float: [1, 'float', 'setFloat1'],
+  bool: [1, 'float', 'setFloat1'],
   vec2: [2, 'vec2', 'setFloat2v', 'x', 'y'],
   vec3: [3, 'vec3', 'setFloat3v', 'x', 'y', 'z'],
   vec4: [4, 'vec4', 'setFloat4v', 'x', 'y', 'z', 'w'],
@@ -243,6 +244,14 @@ export function shaderProps(coordFragments, colorFragments) {
         colorConfig[0] = colorConfig[0].map((c) => c * 255.0);
         props[`shader.${fragmentName}.${uniformName}_color`] = colorConfig;
         props[`shader.${fragmentName}.${uniformName}_alpha`] = alphaConfig;
+      } else if (type === 'bool') {
+        if (config[1] === null) {
+          config.push((scene) => scene[name]);
+        } else if (typeof config[config.length - 1] !== 'function') {
+          config.push((value, scene) => scene.shader && scene.shader[setter](name, value ? 1.0 : 0.0));
+        }
+
+        props[`shader.${fragmentName}.${uniformName}`] = config;
       } else if (count === 1) {
         if (config[1] === null) {
           config.push((scene) => scene[name]);
