@@ -30,7 +30,7 @@ export const transitionPauseTimes = [
   'waitEnd',
 ];
 
-const defaultTransitionProps = {
+export const defaultTransitionProps = {
   animation: ['fadeInOut', transitionAnimations],
 
   delay_enabled: [true],
@@ -51,6 +51,11 @@ const defaultTransitionProps = {
 
   animated: [true],
 };
+
+export const baseTransitionProps = {};
+Object.entries(defaultTransitionProps).forEach(([key, [value]]) => {
+  baseTransitionProps[key] = value;
+});
 
 export function expandTransitionProps(props) {
   Object.entries(props).forEach(([name, spec]) => {

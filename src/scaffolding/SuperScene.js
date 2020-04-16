@@ -3,7 +3,7 @@ import deepEqual from 'deep-equal';
 import prop, {propsWithPrefix, manageableProps, propSpecs} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, particlePropFromProp} from './lib/particles';
-import massageTransitionProps, {applyPause} from './lib/transitions';
+import massageTransitionProps, {baseTransitionProps, applyPause} from './lib/transitions';
 import {injectAddSpriteTimeScale} from './lib/sprites';
 import {injectAnimationUpdate} from './lib/anims';
 import massageTweenProps, {injectTweenManagerAdd} from './lib/tweens';
@@ -1572,13 +1572,22 @@ export default class SuperScene extends Phaser.Scene {
     const prefix = typeof input === 'object' ? input.name : input;
     const options = typeof input === 'object' ? input : {};
 
-    // throws error if invalid
-    prop(`${prefix}.animation`);
+    let props;
 
-    const props = {
-      ...propsWithPrefix(`${prefix}.`),
-      ...options,
-    };
+    if (prefix) {
+      // throws error if invalid
+      prop(`${prefix}.animation`);
+
+      props = {
+        ...propsWithPrefix(`${prefix}.`),
+        ...options,
+      };
+    } else {
+      props = {
+        ...baseTransitionProps,
+        ...options,
+      };
+    }
 
     return massageTransitionProps(props, options);
   }
