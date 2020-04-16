@@ -189,6 +189,12 @@ export default class SuperGame extends Phaser.Game {
       this.scene.remove(BootScene.key());
       this.launch();
 
+      const scene = this.topScene();
+      if (scene) {
+        scene.willTransitionFrom();
+        scene.didTransitionFrom();
+      }
+
       this._activatedGame.forEach((callback) => {
         callback();
       });
