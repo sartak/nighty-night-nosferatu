@@ -12,6 +12,7 @@ import {saveField, loadField} from './lib/store';
 
 import {parseMaps, parseLevelLines} from './lib/level-parser';
 import mapsFile from '../assets/maps.txt';
+import {imageAssets, spriteAssets, musicAssets, soundAssets} from '../assets';
 
 const baseConfig = {
 };
@@ -295,7 +296,30 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   preload() {
+    const {tileWidth, tileHeight} = this.game.config;
+
     this.load.text('_mapsFile', mapsFile);
+
+    Object.entries(imageAssets).forEach(([key, file]) => {
+      this.load.image(key, file);
+    });
+
+    Object.entries(spriteAssets).forEach(([key, props]) => {
+      if (typeof props === 'string') {
+        this.load.spritesheet(key, props, {frameWidth: tileWidth, frameHeight: tileHeight});
+      } else {
+        const {file} = props;
+        this.load.spritesheet(key, file, props);
+      }
+    });
+
+    Object.entries(musicAssets).forEach(([key, file]) => {
+      this.load.audio(key, file);
+    });
+
+    Object.entries(soundAssets).forEach(([key, file]) => {
+      this.load.audio(key, file);
+    });
   }
 
   levelIds() {
