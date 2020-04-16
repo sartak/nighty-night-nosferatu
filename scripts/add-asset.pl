@@ -10,6 +10,8 @@ use File::Spec;
 my ($name, $type, $path) = @ARGV;
 my $auto = $name eq 'auto' && @ARGV == 1;
 
+die "malformed name $name, expected identifier-style" unless $name =~ /^[A-Za-z_][A-Za-z_0-9]*$/;
+
 if (!$auto) {
   $type = canonicalize_asset_type($type);
 }
