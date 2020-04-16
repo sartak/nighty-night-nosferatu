@@ -5,12 +5,12 @@ export function particlePropFromProp(prop) {
   return ParticleProps.find((p) => prop.startsWith(p));
 }
 
-let injected = false;
+let injectedEmitterOpSeededRandom = false;
 export function injectEmitterOpSeededRandom(emitter, seed) {
   emitter.seed = seed;
   emitter.rnd = new Phaser.Math.RandomDataGenerator([seed]);
 
-  if (injected) {
+  if (injectedEmitterOpSeededRandom) {
     return;
   }
 
@@ -33,7 +33,38 @@ export function injectEmitterOpSeededRandom(emitter, seed) {
   };
 
 
-  injected = true;
+  injectedEmitterOpSeededRandom = true;
+}
+
+let injectedParticleEmitterManagerPreUpdate = false;
+export function injectParticleEmitterManagerPreUpdate(manager) {
+  if (injectedParticleEmitterManagerPreUpdate || !manager) {
+    return injectedParticleEmitterManagerPreUpdate;
+  }
+
+  // eslint-disable-next-line no-proto
+  const proto = manager.__proto__;
+
+  proto.preUpdate = function(time, origDelta) {
+    const {scene} = this;
+    const isPaused = scene._paused.particles;
+
+    // Scale the delta
+    const delta = origDelta * this.timeScale;
+
+    const emitters = this.emitters.list;
+
+    for (let i = 0; i < emitters.length; i += 1) {
+      const emitter = emitters[i];
+      if (!isPaused && emitter.active) {
+        emitter.preUpdate(time, delta);
+      }
+    }
+  };
+
+  injectedParticleEmitterManagerPreUpdate = true;
+
+  return injectedParticleEmitterManagerPreUpdate;
 }
 
 const defaultParticleProps = {

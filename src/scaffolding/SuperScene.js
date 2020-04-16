@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import deepEqual from 'deep-equal';
 import prop, {propsWithPrefix, manageableProps, propSpecs} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
-import massageParticleProps, {injectEmitterOpSeededRandom, particlePropFromProp} from './lib/particles';
+import massageParticleProps, {injectEmitterOpSeededRandom, injectParticleEmitterManagerPreUpdate, particlePropFromProp} from './lib/particles';
 import massageTransitionProps, {baseTransitionProps, applyPause} from './lib/transitions';
 import {injectAddSpriteTimeScale} from './lib/sprites';
 import {injectAnimationUpdate} from './lib/anims';
@@ -1536,11 +1536,6 @@ export default class SuperScene extends Phaser.Scene {
 
     if (props.preemit || (reloadSeed && props.preemitOnReload)) {
       this.preemitEmitter(emitter);
-      if (this._paused.particles) {
-        this.timer(() => particles.pause()).ignoresScenePause = true;
-      }
-    } else if (this._paused.particles) {
-      particles.pause();
     }
 
     this.particleSystems.push({
@@ -2011,9 +2006,9 @@ export default class SuperScene extends Phaser.Scene {
   pauseAllParticleSystems() {
     this._paused.particles = true;
 
-    this.particleSystems.forEach((p) => {
-      p.particles.pause();
-    });
+    if (this.particleSystems.length) {
+      injectParticleEmitterManagerPreUpdate(this.particleSystems[0].particles);
+    }
   }
 
   pauseAllTweens() {
