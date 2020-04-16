@@ -192,7 +192,7 @@ export default class SuperGame extends Phaser.Game {
       const scene = this.topScene();
       if (scene) {
         scene.willTransitionFrom();
-        scene.didTransitionFrom();
+        scene.timer(() => scene.didTransitionFrom()).ignoresScenePause = true;
       }
 
       this._activatedGame.forEach((callback) => {
