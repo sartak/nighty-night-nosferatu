@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use DateTime;
 use File::Slurp 'slurp';
 use Term::ReadKey;
 use Time::HiRes 'time';
@@ -10,25 +9,11 @@ $| = 1;
 ReadMode 3;
 END { ReadMode 0 }
 
-my $start = DateTime->new(
-  year => 2019,
-  month => 4,
-  day => 26,
-  hour => 21,
-  minute => 0,
-  second => 0,
-  time_zone => 'America/New_York',
-)->epoch;
+@ARGV == 2 || @ARGV == 3 or die "usage: startEpoch endEpoch [screenshotDir]\n";
 
-my $end = DateTime->new(
-  year => 2019,
-  month => 4,
-  day => 28,
-  hour => 22,
-  minute => 0,
-  second => 0,
-  time_zone => 'America/New_York',
-)->epoch;
+my $start = shift;
+my $end = shift;
+my $screenshot_dir = shift;
 
 my $duration = $end - $start;
 my $devtime = r() || 0;
@@ -66,8 +51,8 @@ while (1) {
   $back = 0 if $back < 0;
   print "\e[${back}D";
 
-  if ($now >= $start && $now <= $end) {
-    system("/usr/sbin/screencapture -x /dev/null /Volumes/hakeim/shawn/ld44/@{[int $now]}.png 2>/dev/null");
+  if ($screenshot_dir && $now >= $start && $now <= $end) {
+    system("/usr/sbin/screencapture -x /dev/null $screenshot_dir/@{[int $now]}.png 2>/dev/null");
   }
   sleep 10 - (time - $now);
 }
