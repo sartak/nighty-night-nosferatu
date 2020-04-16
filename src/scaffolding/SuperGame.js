@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import BootScene from './boot-scene';
 import prop, {commands, shaderCoordFragments, shaderColorFragments} from '../props';
 import {updatePropsFromStep} from './lib/manage-gui';
-import {shaderTypeMeta} from './lib/props';
+import {shaderTypeMeta} from './lib/shaders';
 import {name as project} from '../../package.json';
 import analytics from './lib/analytics';
 import CommandManager from './CommandManager';

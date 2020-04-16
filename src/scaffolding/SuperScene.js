@@ -7,7 +7,7 @@ import massageTransitionProps, {baseTransitionProps, applyPause} from './lib/tra
 import {injectAddSpriteTimeScale} from './lib/sprites';
 import {injectAnimationUpdate} from './lib/anims';
 import massageTweenProps, {injectTweenManagerAdd} from './lib/tweens';
-import {shaderTypeMeta, propNamesForUniform} from './lib/props';
+import {shaderTypeMeta, propNamesForUniform} from './lib/shaders';
 import {saveField, loadField} from './lib/store';
 
 import {parseMaps, parseLevelLines} from './lib/level-parser';
