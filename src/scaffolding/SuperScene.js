@@ -2180,8 +2180,12 @@ if (module.hot) {
       const {game} = window;
 
       reloadAssets(game.topScene(), next).then(([changedAssets, changesByType]) => {
+        const scene = game.topScene();
+        let sawChanges = false;
+
         Object.entries(changedAssets).forEach(([type, changed]) => {
           if (changesByType[type] && changesByType[type].length) {
+            sawChanges = true;
             // eslint-disable-next-line no-console
             console.info(`Hot-loading ${type}: ${changesByType[type].join(', ')}`);
           }
@@ -2193,6 +2197,17 @@ if (module.hot) {
             }
           }
         });
+
+        if (!sawChanges) {
+          return;
+        }
+
+        if (scene._builtinHot) {
+          scene._builtinHot();
+        }
+        if (scene._hot) {
+          scene._hot();
+        }
       });
     } catch (e) {
       // eslint-disable-next-line no-console
