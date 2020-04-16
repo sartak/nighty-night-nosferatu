@@ -1538,6 +1538,9 @@ export default class SuperScene extends Phaser.Scene {
       this.preemitEmitter(emitter);
     }
 
+    emitter.ignoresScenePause = emitterProps.ignoresScenePause;
+    emitter.updatesOnceOnPause = emitterProps.updatesOnceOnPause;
+
     this.particleSystems.push({
       particles, emitter, name, options,
     });

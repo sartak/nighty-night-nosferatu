@@ -56,8 +56,11 @@ export function injectParticleEmitterManagerPreUpdate(manager) {
 
     for (let i = 0; i < emitters.length; i += 1) {
       const emitter = emitters[i];
-      if (!isPaused && emitter.active) {
+      if ((!isPaused || this.ignoresScenePause || emitter.ignoresScenePause || emitter.updatesOnceOnPause) && emitter.active) {
         emitter.preUpdate(time, delta);
+        if (isPaused) {
+          emitter.updatesOnceOnPause = false;
+        }
       }
     }
   };
@@ -128,6 +131,8 @@ const defaultParticleProps = {
   tint_enabled: [false],
   x: [0, -1000, 1000],
   y: [0, -1000, 1000],
+  ignoresScenePause: [false],
+  updatesOnceOnPause: [false],
   visible: [true],
 
   preemit: [false],
