@@ -405,7 +405,7 @@ export default class SuperGame extends Phaser.Game {
   playMusic(name, forceRestart) {
     if (forceRestart || this.currentMusicName !== name) {
       this.currentMusicName = name;
-      if (this.currentMusicPlayer) {
+      if (this.currentMusicPlayer && this.currentMusicPlayer.key) {
         this.currentMusicPlayer.destroy();
       }
 
