@@ -12,7 +12,7 @@ import {saveField, loadField} from './lib/store';
 
 import {parseMaps, parseLevelLines} from './lib/level-parser';
 import mapsFile from '../assets/maps.txt';
-import {imageAssets, spriteAssets, musicAssets, soundAssets} from '../assets';
+import * as assets from '../assets';
 import {preloadAssets} from './lib/assets';
 
 const baseConfig = {
@@ -299,12 +299,7 @@ export default class SuperScene extends Phaser.Scene {
   preload() {
     this.load.text('_mapsFile', mapsFile);
 
-    preloadAssets(this, this.game, {
-      imageAssets,
-      spriteAssets,
-      musicAssets,
-      soundAssets,
-    });
+    preloadAssets(this, assets);
   }
 
   levelIds() {

@@ -35,8 +35,20 @@ export function loadAsset(scene, type, key, input) {
   game.assets[type][key] = input;
 }
 
-export function preloadAssets(scene, game, assets) {
+export function preloadAssets(scene, assets) {
+  const {game} = scene;
+
   Object.entries(assets).forEach(([type, entries]) => {
+    if (!loaderMethod[type]) {
+      // eslint-disable-next-line no-console
+      console.error(`No loader for assets of type ${type}`);
+      return;
+    }
+
+    if (!game.assets[type]) {
+      game.assets[type] = {};
+    }
+
     Object.entries(entries).forEach(([key, input]) => {
       loadAsset(scene, type, key, input);
     });

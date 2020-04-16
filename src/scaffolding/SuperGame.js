@@ -48,12 +48,8 @@ export default class SuperGame extends Phaser.Game {
     this._onDisableDebugUI = [];
 
     this._sceneInitCallbacks = {};
-    this.assets = {
-      'imageAssets': {},
-      'spriteAssets': {},
-      'musicAssets': {},
-      'soundAssets': {},
-    };
+
+    this.assets = {};
 
     this.command = new CommandManager(commands);
 
