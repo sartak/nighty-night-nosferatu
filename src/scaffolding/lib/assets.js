@@ -31,6 +31,8 @@ export function loadAsset(scene, type, key, input) {
   const params = massageInput(type, game, input);
 
   scene.load[method](key, ...params);
+
+  game.assets[type][key] = input;
 }
 
 export function preloadAssets(scene, game, assets) {
