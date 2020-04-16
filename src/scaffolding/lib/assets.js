@@ -67,8 +67,14 @@ export function preloadAssets(scene, assets) {
   });
 }
 
+let isLoading = false;
 export function assetReloader(scene) {
   const {game} = scene;
+
+  if (isLoading) {
+    throw new Error('assetReloader does not yet support concurrency');
+  }
+  isLoading = true;
 
   const assets = {
   };
@@ -134,6 +140,8 @@ export function assetReloader(scene) {
 
         proto.keyExists = origKeyExists;
         proto.fileProcessComplete = origFileProcessComplete;
+
+        isLoading = false;
 
         resolve([assets, ...args]);
       };
