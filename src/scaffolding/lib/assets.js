@@ -141,6 +141,13 @@ export function assetReloader(scene) {
 
     scene.load.start();
 
+    // we didn't load anything
+    if (scene.load.isReady()) {
+      if (completeResolve) {
+        completeResolve();
+      }
+    }
+
     return promise;
   };
 
