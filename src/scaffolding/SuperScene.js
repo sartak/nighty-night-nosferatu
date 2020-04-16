@@ -592,6 +592,8 @@ export default class SuperScene extends Phaser.Scene {
         newUnpauseFn();
       }
 
+      newScene.playMusicIfSet();
+
       if (swapScenes) {
         newScene.game.scene.bringToTop(newScene.scene.key);
       }
@@ -1732,8 +1734,18 @@ export default class SuperScene extends Phaser.Scene {
     sounds.forEach((sound) => sound.setVolume(sound.requestedVolume * multiplier));
   }
 
-  playMusic(name, forceRestart) {
+  playMusic(name = this.musicName(), forceRestart = false) {
     this.game.playMusic(name, forceRestart);
+  }
+
+  playMusicIfSet(name = this.musicName(), forceRestart = false) {
+    if (name) {
+      return this.playMusic(name, forceRestart);
+    }
+  }
+
+  musicName() {
+    return null;
   }
 
   timer(callback, time) {
@@ -1967,6 +1979,8 @@ export default class SuperScene extends Phaser.Scene {
     if (transition && transition.delayNewSceneShader) {
       this._setupShader();
     }
+
+    this.playMusic();
   }
 
   pauseInputForTransition(transition) {
