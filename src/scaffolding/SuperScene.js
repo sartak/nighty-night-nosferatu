@@ -12,7 +12,7 @@ import {saveField, loadField} from './lib/store';
 
 import {parseMaps, parseLevelLines} from './lib/level-parser';
 import mapsFile from '../assets/maps.txt';
-import * as assets from '../assets';
+import * as assets from '../assets/index';
 import {preloadAssets, reloadAssets} from './lib/assets';
 
 const baseConfig = {
@@ -2174,9 +2174,9 @@ if (module.hot) {
     }
   });
 
-  module.hot.accept('../assets', () => {
+  module.hot.accept('../assets/index', () => {
     try {
-      const next = require('../assets');
+      const next = require('../assets/index');
       const {game} = window;
 
       reloadAssets(game.topScene(), next).then(([changedAssets, changesByType]) => {
