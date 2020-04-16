@@ -409,10 +409,12 @@ export default class SuperGame extends Phaser.Game {
         this.currentMusicPlayer.destroy();
       }
 
-      const music = this.sound.add(name);
-      music.play('', {loop: true});
-      music.setVolume(this.volume * prop('scene.musicVolume'));
-      this.currentMusicPlayer = music;
+      if (name) {
+        const music = this.sound.add(name);
+        music.play('', {loop: true});
+        music.setVolume(this.volume * prop('scene.musicVolume'));
+        this.currentMusicPlayer = music;
+      }
     }
   }
 
