@@ -3,7 +3,7 @@ import {expandParticleProps} from './particles';
 import {expandTweenProps} from './tweens';
 import {expandTransitionProps} from './transitions';
 import {freezeStorage, removeAllFields, loadField} from './store';
-import {builtinCoordFragments, builtinColorFragments, shaderProps} from './shaders.js';
+import {shaderProps} from './shaders.js';
 
 const savedChangedProps = loadField('changedProps', {});
 export {savedChangedProps};

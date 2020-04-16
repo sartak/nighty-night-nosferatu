@@ -235,7 +235,7 @@ export function shaderProps(coordFragments, colorFragments) {
             scene.shader[setter](name, [
               ...game.prop(`shader.${fragmentName}.${uniformName}_color`).map((c) => c / 255.0),
               game.prop(`shader.${fragmentName}.${uniformName}_alpha`),
-            ])
+            ]);
           };
           colorConfig.push(cb);
           alphaConfig.push(cb);
@@ -294,4 +294,3 @@ export function shaderProps(coordFragments, colorFragments) {
 
   return props;
 }
-
