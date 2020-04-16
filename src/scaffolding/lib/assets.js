@@ -76,6 +76,19 @@ export function assetReloader(scene) {
   const typeForKey = {
   };
 
+  // eslint-disable-next-line no-proto
+  const proto = scene.load.__proto__;
+
+  const origKeyExists = proto.keyExists;
+  proto.keyExists = () => false;
+
+  const origFileProcessComplete = proto.fileProcessComplete;
+  proto.fileProcessComplete = (file) => {
+    const type = typeForKey[file.key];
+    unloadFunction[type](scene, file.key);
+    return origFileProcessComplete.call(scene.load, file);
+  };
+
   const reload = (type, key, value, isNew) => {
     if (!assets[type]) {
       assets[type] = {};
@@ -83,7 +96,6 @@ export function assetReloader(scene) {
 
     typeForKey[key] = type;
     assets[type][key] = undefined;
-    unloadFunction[type](scene, key);
     loadAsset(scene, type, key, value);
   };
 
@@ -112,16 +124,24 @@ export function assetReloader(scene) {
     let completeResolve;
     scene.load.on('complete', () => {
       if (completeResolve) {
-        completeResolve([assets, ...args]);
-        completeResolve = null;
+        completeResolve();
       }
+    });
+
+    const promise = new Promise((resolve, reject) => {
+      completeResolve = () => {
+        completeResolve = null;
+
+        proto.keyExists = origKeyExists;
+        proto.fileProcessComplete = origFileProcessComplete;
+
+        resolve([assets, ...args]);
+      };
     });
 
     scene.load.start();
 
-    return new Promise((resolve, reject) => {
-      completeResolve = resolve;
-    });
+    return promise;
   };
 
   return [reload, remove, done];
