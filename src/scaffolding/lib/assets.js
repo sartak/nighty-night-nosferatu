@@ -5,6 +5,18 @@ const loaderMethod = {
   soundAssets: 'audio',
 };
 
+const unloadFunction = {
+  imageAssets: (scene, key) => {
+  },
+  spriteAssets: (scene, key) => {
+  },
+  musicAssets: (scene, key) => {
+    scene.cache.audio.remove(key);
+  },
+};
+
+unloadFunction.soundAssets = unloadFunction.musicAssets;
+
 function massageInput(type, game, input) {
   if (type === 'spriteAssets') {
     if (typeof input === 'string') {
@@ -53,4 +65,99 @@ export function preloadAssets(scene, assets) {
       loadAsset(scene, type, key, input);
     });
   });
+}
+
+export function assetReloader(scene) {
+  const {game} = scene;
+
+  const assets = {
+  };
+
+  const typeForKey = {
+  };
+
+  const reload = (type, key, value, isNew) => {
+    if (!assets[type]) {
+      assets[type] = {};
+    }
+
+    typeForKey[key] = type;
+    assets[type][key] = undefined;
+    unloadFunction[type](scene, key);
+    loadAsset(scene, type, key, value);
+  };
+
+  const remove = (type, key) => {
+    if (!assets[type]) {
+      assets[type] = {};
+    }
+
+    typeForKey[key] = type;
+    assets[type][key] = null;
+    unloadFunction[type](scene, key);
+    delete game.assets[type][key];
+  };
+
+  const done = (...args) => {
+    scene.load.on('filecomplete', (key, _, object) => {
+      const type = typeForKey[key];
+
+      if (!assets[type]) {
+        assets[type] = {};
+      }
+
+      assets[type][key] = object;
+    });
+
+    let completeResolve;
+    scene.load.on('complete', () => {
+      if (completeResolve) {
+        completeResolve([assets, ...args]);
+        completeResolve = null;
+      }
+    });
+
+    scene.load.start();
+
+    return new Promise((resolve, reject) => {
+      completeResolve = resolve;
+    });
+  };
+
+  return [reload, remove, done];
+}
+
+export function reloadAssets(scene, assets) {
+  const {game} = scene;
+  const [reloadAsset, removeAsset, startReload] = assetReloader(scene);
+  const changesByType = {};
+
+  ['imageAssets', 'spriteAssets', 'musicAssets', 'soundAssets'].forEach((type) => {
+    const gameAssets = game.assets[type];
+    const leftover = {...gameAssets};
+    const changes = changesByType[type] = [];
+
+    Object.entries(assets[type]).forEach(([key, value]) => {
+      if (!gameAssets[key]) {
+        changes.push(`+${key}`);
+        reloadAsset(type, key, value, true);
+      } else {
+        delete leftover[key];
+
+        if (JSON.stringify(gameAssets[key]) === JSON.stringify(value)) {
+          return;
+        }
+
+        changes.push(`Δ${key}`);
+        reloadAsset(type, key, value, false);
+      }
+    });
+
+    Object.entries(leftover).forEach(([key, value]) => {
+      changes.push(`-${key}`);
+      removeAsset(type, key);
+    });
+  });
+
+  return startReload(changesByType);
 }

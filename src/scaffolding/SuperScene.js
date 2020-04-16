@@ -13,7 +13,7 @@ import {saveField, loadField} from './lib/store';
 import {parseMaps, parseLevelLines} from './lib/level-parser';
 import mapsFile from '../assets/maps.txt';
 import * as assets from '../assets';
-import {preloadAssets} from './lib/assets';
+import {preloadAssets, reloadAssets} from './lib/assets';
 
 const baseConfig = {
 };
@@ -2162,10 +2162,35 @@ if (module.hot) {
             }
 
             scene._hotReloadCurrentLevel();
-
           } catch (e) {
             // eslint-disable-next-line no-console
             console.error(e);
+          }
+        });
+      });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  });
+
+  module.hot.accept('../assets', () => {
+    try {
+      const next = require('../assets');
+      const {game} = window;
+
+      reloadAssets(game.topScene(), next).then(([changedAssets, changesByType]) => {
+        Object.entries(changedAssets).forEach(([type, changed]) => {
+          if (changesByType[type] && changesByType[type].length) {
+            // eslint-disable-next-line no-console
+            console.info(`Hot-loading ${type}: ${changesByType[type].join(', ')}`);
+          }
+
+          if (type === 'musicAssets') {
+            const {currentMusicName} = game;
+            if (changed[currentMusicName]) {
+              game.playMusic(currentMusicName, true);
+            }
           }
         });
       });
