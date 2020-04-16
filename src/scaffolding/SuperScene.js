@@ -1474,6 +1474,8 @@ export default class SuperScene extends Phaser.Scene {
     }
 
     this.game.recompileMainShaders();
+
+    this.playMusic();
   }
 
   _hotReloadCurrentLevel(...args) {
