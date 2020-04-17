@@ -13,6 +13,8 @@ my $assets = parse_assets($assets_file);
 die "no asset named $name" if !$assets->{$name};
 die "$name already expanded" if $assets->{$name}{extra};
 
-$assets->{$name}{extra} = [];
+$assets->{$name}{extra} = [
+  "    file: ${name},",
+];
 
 emit_and_diff_assets($assets_file, $assets);
