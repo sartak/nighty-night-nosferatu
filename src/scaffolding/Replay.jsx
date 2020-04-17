@@ -170,6 +170,8 @@ export default class Replay extends React.Component {
 
   beginRecording(options) {
     const {activateGame} = this.props;
+    this.setEditing(null);
+
     activateGame(() => {
       window.game.beginRecording(options);
     });
