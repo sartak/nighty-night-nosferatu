@@ -35,7 +35,7 @@ export const defaultTransitionProps = {
 
   delay_enabled: [true],
   delay: [0, 0, 10000],
-  duration: [0, 0, 10000],
+  duration: [1000, 0, 10000],
   ease: ['Linear', tweenEases],
   wait_enabled: [true],
   wait: [0, 0, 10000],
