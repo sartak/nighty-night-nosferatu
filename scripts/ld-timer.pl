@@ -32,6 +32,17 @@ while (1) {
     w($devtime);
   }
 
+  render($now);
+
+  if ($screenshot_dir && $now >= $start && $now <= $end) {
+    system("/usr/sbin/screencapture -x /dev/null $screenshot_dir/@{[int $now]}.png 2>/dev/null");
+  }
+  sleep 10 - (time - $now);
+}
+
+sub render {
+  my $now = shift;
+
   print "\e[2J\e[0;0H";
   my $progress = ($now - $start) / ($end - $start);
   my $column = int(49 * $progress);
@@ -51,10 +62,6 @@ while (1) {
   $back = 0 if $back < 0;
   print "\e[${back}D";
 
-  if ($screenshot_dir && $now >= $start && $now <= $end) {
-    system("/usr/sbin/screencapture -x /dev/null $screenshot_dir/@{[int $now]}.png 2>/dev/null");
-  }
-  sleep 10 - (time - $now);
 }
 
 sub fmt {
