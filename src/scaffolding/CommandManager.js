@@ -49,17 +49,23 @@ export default class CommandManager {
   }
 
   freezeCommandState() {
-    const state = {};
+    const state = {
+      inputs: {},
+      ignoreAlls: {...this._ignoreAlls},
+    };
+
     Object.keys(this._spec).forEach((name) => {
-      state[name] = {...this[name]};
+      state.inputs[name] = {...this[name]};
     });
+
     return state;
   }
 
   thawCommandState(state) {
     Object.keys(this._spec).forEach((name) => {
-      this[name] = {...state[name]};
+      this[name] = {...state.inputs[name]};
     });
+    this._ignoreAlls = {...state.ignoreAlls};
   }
 
   getManager(scene) {
