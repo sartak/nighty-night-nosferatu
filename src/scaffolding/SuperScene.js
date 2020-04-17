@@ -1034,7 +1034,7 @@ export default class SuperScene extends Phaser.Scene {
     this._replay = replay;
     this._replayOptions = replayOptions;
     this._replayLatestTransition = replayOptions.startFromTransition;
-    const startTick = this._replayLatestTransition ? (this._replayLatestTransition.tickCount || 0) : 0;
+    const startTick = replayOptions.startTick || (this._replayLatestTransition ? (this._replayLatestTransition.tickCount || 0) : 0);
 
     command.beginReplay(replay, {
       ...replayOptions,
@@ -1340,7 +1340,7 @@ export default class SuperScene extends Phaser.Scene {
         preflightCutoff,
       }, {
         startFromTransition: this._replayLatestTransition,
-        startTick: 0,
+        startTick: -1, // TODO
       });
     });
   }
