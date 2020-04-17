@@ -184,9 +184,9 @@ export default class SuperScene extends Phaser.Scene {
         sceneName: this.constructor.name,
         initData: this.scene.settings.data,
         sceneSaveState: JSON.parse(JSON.stringify(this._initialSave)),
-
         parentSceneId: config.parentSceneId,
         sceneId: this.sceneId,
+        commandState: this.command.freezeCommandState(),
       });
     }
 

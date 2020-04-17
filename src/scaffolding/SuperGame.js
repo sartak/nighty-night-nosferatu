@@ -308,6 +308,7 @@ export default class SuperGame extends Phaser.Game {
       initData: scene.scene.settings.data,
       sceneName: scene.constructor.name,
       name: this.renderDateTime(now),
+      commandState: this.command.freezeCommandState(),
       ...options,
     };
 
@@ -373,13 +374,14 @@ export default class SuperGame extends Phaser.Game {
     const sceneKey = `scene-${Math.random() * Date.now()}`;
 
     const {
-      sceneSaveState, sceneName, initData,
+      sceneSaveState, sceneName, initData, commandState,
     } = startFromTransition || replay;
     const save = JSON.parse(JSON.stringify(sceneSaveState));
     const {seed} = (startFromTransition || replay).initData;
 
     const returnPromise = new Promise((resolve, reject) => {
       this.onSceneInit(sceneKey, (newScene) => {
+        this.command.thawCommandState(commandState);
         newScene.willTransitionFrom(null, null);
         oldScene._sceneTransition(oldScene, newScene, null);
         resolve(newScene, null);

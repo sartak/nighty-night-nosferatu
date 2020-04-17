@@ -47,6 +47,20 @@ export default class CommandManager {
     });
   }
 
+  freezeCommandState() {
+    const state = {};
+    Object.keys(this._spec).forEach((name) => {
+      state[name] = {...this[name]};
+    });
+    return state;
+  }
+
+  thawCommandState(state) {
+    Object.keys(this._spec).forEach((name) => {
+      this[name] = {...state[name]};
+    });
+  }
+
   getManager(scene) {
     return this._scenes.get(scene);
   }
