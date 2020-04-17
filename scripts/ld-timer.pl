@@ -9,7 +9,7 @@ $| = 1;
 ReadMode 3;
 END { ReadMode 0 }
 
-@ARGV == 2 || @ARGV == 3 or die "usage: startEpoch endEpoch [screenshotDir]\n";
+@ARGV == 2 || @ARGV == 3 or die "usage: startEpoch endEpochIncludingUploadHour [screenshotDir]\n";
 
 my $start = shift;
 my $end = shift;
