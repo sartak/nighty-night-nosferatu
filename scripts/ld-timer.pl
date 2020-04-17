@@ -19,17 +19,40 @@ my $duration = $end - $start;
 my $devtime = r() || 0;
 my $running = 1;
 my $last_screenshot = time;
+my $last_unpaused = time;
+my $is_first = 1;
 
 while (1) {
-  my $now = time;
-  while (1) {
-    my $key = ReadKey(-1);
-    last if !defined $key;
-    $running = !$running if $key eq ' ';
+  my $key = ReadKey($is_first ? -1 : 10);
+  if (defined $key) {
+    while (1) {
+      if ($key eq ' ') {
+        $running = !$running;
+        last;
+      }
+      last if !defined $key;
+      $key = ReadKey(-1);
+    }
   }
+  $is_first = 0;
+  my $now = time;
 
   if ($now >= $start && $running) {
-    $devtime += 10;
+    if (!$last_unpaused) {
+      $last_unpaused = $now;
+    }
+  }
+  else {
+    if ($now >= $start && $last_unpaused) {
+      $devtime += $now - $last_unpaused;
+      w($devtime);
+    }
+    $last_unpaused = undef;
+  }
+
+  if ($now >= $start && $running && $last_unpaused) {
+    $devtime += $now - $last_unpaused;
+    $last_unpaused = $now;
     w($devtime);
   }
 
@@ -39,7 +62,6 @@ while (1) {
     $last_screenshot = $now;
     system("/usr/sbin/screencapture -x /dev/null $screenshot_dir/@{[int $now]}.png 2>/dev/null");
   }
-  sleep 10 - (time - $now);
 }
 
 sub render {
