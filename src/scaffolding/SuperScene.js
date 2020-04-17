@@ -114,8 +114,12 @@ export default class SuperScene extends Phaser.Scene {
           }
 
           try {
+            const isTopScene = this.isTopScene();
+
             if (this.timeSightFrozen) {
-              this.command.processInput(this, time, dt, true);
+              if (isTopScene) {
+                this.command.processInput(this, time, dt, true);
+              }
               this.updateTweens(time, dt);
               this.timeSightMouseDrag();
               return;
@@ -125,7 +129,10 @@ export default class SuperScene extends Phaser.Scene {
               originalStep.call(world, delta);
             }
 
-            this.command.processInput(this, time, dt);
+            if (isTopScene) {
+              this.command.processInput(this, time, dt);
+            }
+
             if (this.game.updateReplayCursor) {
               this.game.updateReplayCursor(this.command.replayTicks, this._replay);
             }
@@ -246,6 +253,10 @@ export default class SuperScene extends Phaser.Scene {
 
   saveState() {
     saveField(this.saveStateFieldName(), this.save);
+  }
+
+  isTopScene() {
+    return this.game.topScene() === this;
   }
 
   vendRNG(name) {
@@ -415,7 +426,7 @@ export default class SuperScene extends Phaser.Scene {
       this._firstUpdated = true;
     }
 
-    if (this.physics && this.physics.world.isPaused && !this.timeSightFrozen) {
+    if (this.physics && this.physics.world.isPaused && !this.timeSightFrozen && this.isTopScene()) {
       this.command.processInput(this, time, dt, true);
     }
 
