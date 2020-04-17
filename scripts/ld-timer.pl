@@ -18,6 +18,7 @@ my $screenshot_dir = shift;
 my $duration = $end - $start;
 my $devtime = r() || 0;
 my $running = 1;
+my $last_screenshot = time;
 
 while (1) {
   my $now = time;
@@ -34,7 +35,8 @@ while (1) {
 
   render($now);
 
-  if ($screenshot_dir) {
+  if ($screenshot_dir && $now - $last_screenshot > 10) {
+    $last_screenshot = $now;
     system("/usr/sbin/screencapture -x /dev/null $screenshot_dir/@{[int $now]}.png 2>/dev/null");
   }
   sleep 10 - (time - $now);
