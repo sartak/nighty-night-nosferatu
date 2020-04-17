@@ -36,7 +36,7 @@ while (1) {
   my $progress = ($now - $start) / ($end - $start);
   my $column = int(49 * $progress);
 
-  printf " devtime: %s    %s    realtime: %s / 49:00\n", fmt($devtime), $running ? '…' : '*', fmt($now - $start);
+  printf " devtime: %s    %s    realtime: %s / %s\n", fmt($devtime), $running ? '…' : '*', fmt($now - $start), fmt($end - $start, 1);
 
   for my $i (0..48) {
     if ($progress > $i/49) {
@@ -59,7 +59,10 @@ while (1) {
 
 sub fmt {
   my $s = shift;
+  my $skipSign = shift;
   my $sign = $s < 0 ? "-" : " ";
+  $sign = "" if $skipSign;
+
   $s = abs($s);
 
   my $m = int($s / 60);
