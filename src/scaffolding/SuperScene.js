@@ -26,6 +26,7 @@ export default class SuperScene extends Phaser.Scene {
     };
     super(config);
 
+    this.rnd = {};
     this.timeScale = 1;
     this.sounds = [];
     this.timers = [];
@@ -47,13 +48,17 @@ export default class SuperScene extends Phaser.Scene {
       throw new Error(`You must provide a "seed" (e.g. Date.now()) to ${this.constructor.name}`);
     }
 
+    if (!config.sceneId) {
+      throw new Error(`You must provide a "sceneId" (e.g. Date.now()) to ${this.constructor.name}`);
+    }
+
+    this.sceneId = config.sceneId;
+
     this.command = this.game.command;
     this.command.attachScene(this, config._timeSightTarget);
 
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0);
-
-    this.rnd = {};
 
     if (config.save) {
       this.save = config.save;
@@ -172,6 +177,9 @@ export default class SuperScene extends Phaser.Scene {
         sceneName: this.constructor.name,
         initData: this.scene.settings.data,
         sceneSaveState: JSON.parse(JSON.stringify(this._initialSave)),
+
+        parentSceneId: config.parentSceneId,
+        sceneId: this.sceneId,
       });
     }
 
@@ -553,13 +561,22 @@ export default class SuperScene extends Phaser.Scene {
       seed = reseed;
     }
 
-    const id = this.randFloat('sceneId') * Date.now();
-    const target = `scene-${id}`;
+    let sceneId;
 
-    if (this.scene.settings.data._timeSightTarget) {
-      this.endedReplay();
-      return;
+    if (this._replay) {
+      (this._replay.sceneTransitions || []).forEach((t) => {
+        if (t.parentSceneId === this.sceneId) {
+          // eslint-disable-next-line prefer-destructuring
+          sceneId = t.sceneId;
+        }
+      });
     }
+
+    if (!sceneId) {
+      sceneId = this.randFloat('sceneId');
+    }
+
+    const target = `scene-${this.randFloat('sceneId') * Date.now()}`;
 
     if (this._isTransitioning) {
       // eslint-disable-next-line no-console
@@ -593,6 +610,8 @@ export default class SuperScene extends Phaser.Scene {
           _replay,
           _replayOptions,
           _recording,
+          sceneId,
+          parentSceneId: this.sceneId,
         },
         ...config,
         transition,
@@ -1458,6 +1477,8 @@ export default class SuperScene extends Phaser.Scene {
     this._recording = recording;
     recording.sceneSaveState = JSON.parse(JSON.stringify(this._initialSave));
     recording.sceneTransitions = [];
+    recording.sceneId = this.sceneId;
+
     this.command.beginRecording(this, recording);
   }
 

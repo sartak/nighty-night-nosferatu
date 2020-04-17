@@ -33,7 +33,7 @@ export default class SuperGame extends Phaser.Game {
 
     this.debug = config.debug;
 
-    this.scene.add('BootScene', BootScene, true, {seed: Date.now()});
+    this.scene.add('BootScene', BootScene, true, {seed: Date.now(), sceneId: Math.random()});
 
     this.preloadScenes = preloadScenes;
 

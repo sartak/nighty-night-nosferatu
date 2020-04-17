@@ -50,6 +50,8 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
     'scene.count': ['', null, 'scene.scenes.length'],
     'scene.commandScenes': ['', null, (scene) => scene.command._scenes.size],
     'scene.class': ['', null, (scene) => scene.constructor.name],
+    'scene.sceneId': ['', null, 'sceneId'],
+    'scene.parentSceneId': ['', null, 'scene.settings.data.parentSceneId'],
     'scene.key': ['', null, 'scene.key'],
     'scene.seed': ['', null, 'scene.settings.data.seed'],
     'scene.scene_time': [0.01, null, 'scene_time'],
