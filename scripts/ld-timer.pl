@@ -47,7 +47,7 @@ sub render {
   my $progress = ($now - $start) / ($end - $start);
   my $column = int(49 * $progress);
 
-  printf " devtime: %s    %s    realtime: %s / %s\n", fmt($devtime), $running ? '…' : '*', fmt($now - $start), fmt($end - $start, 1);
+  printf " devtime: %s  %s  realtime: %s / %s\n", fmt($devtime), $running ? '  …  ' : 'PAUSE', fmt($now - $start), fmt($end - $start, 1);
 
   for my $i (0..48) {
     if ($progress > $i/49) {
