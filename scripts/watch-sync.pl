@@ -12,8 +12,8 @@ my $verbose = shift;
 
 my @excludes = (
   "build/",
-  "node_modules/",
-  ".git/",
+  #  "node_modules/",
+  #  ".git/",
 );
 
 my $watcher = Filesys::Notify::Simple->new([$source]);
