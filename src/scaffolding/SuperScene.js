@@ -588,7 +588,7 @@ export default class SuperScene extends Phaser.Scene {
     }
 
     if (!sceneId) {
-      sceneId = this.randFloat('sceneId');
+      sceneId = String(this.randFloat('sceneId'));
     }
 
     const target = `scene-${this.randFloat('sceneId') * Date.now()}`;
