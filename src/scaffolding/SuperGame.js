@@ -349,17 +349,11 @@ export default class SuperGame extends Phaser.Game {
       }
     }
 
-    const transition = startFromTransition;
-
-    const {sceneSaveState, sceneName, initData} = transition || replay;
-    const save = JSON.parse(JSON.stringify(sceneSaveState));
-    const {seed} = (transition || replay).initData;
-
-    this.topScene().replaceWithSceneNamed(sceneName, seed, {...initData, save}).then((newScene) => {
+    this.transitionToSceneToBeginReplay(replay, startFromTransition).then((newScene) => {
       newScene.beginReplay(replay, {
         ...options,
-        startFromTransition: transition,
-        preflightCutoff: (transition && transition.tickCount ? (transition.tickCount + 1) : 0),
+        startFromTransition,
+        preflightCutoff: (startFromTransition && startFromTransition.tickCount ? (startFromTransition.tickCount + 1) : 0),
         onEnd: () => {
           this.endedReplay();
         },
@@ -372,6 +366,39 @@ export default class SuperGame extends Phaser.Game {
         this.onReplayBegin(replay);
       }
     });
+  }
+
+  transitionToSceneToBeginReplay(replay, startFromTransition) {
+    const oldScene = this.topScene();
+    const sceneKey = `scene-${Math.random() * Date.now()}`;
+
+    const {
+      sceneSaveState, sceneName, initData,
+    } = startFromTransition || replay;
+    const save = JSON.parse(JSON.stringify(sceneSaveState));
+    const {seed} = (startFromTransition || replay).initData;
+
+    const returnPromise = new Promise((resolve, reject) => {
+      this.onSceneInit(sceneKey, (newScene) => {
+        newScene.willTransitionFrom(null, null);
+        oldScene._sceneTransition(oldScene, newScene, null);
+        resolve(newScene, null);
+      });
+    });
+
+    oldScene.scene.add(
+      sceneKey,
+      this._sceneConstructors[sceneName],
+      true,
+      {
+        ...initData,
+        save,
+        seed,
+        transition: null,
+      },
+    );
+
+    return returnPromise;
   }
 
   endedReplay() {
