@@ -1327,14 +1327,20 @@ export default class SuperScene extends Phaser.Scene {
 
       const replay = this._replay;
 
+      const {commands} = activeObject._timeSightFrame;
+      const preflightCutoff = commands.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0);
+
       this.game.stopReplay();
       this.game.beginReplay({
         ...replay,
         ...(this._replayLatestTransition || {}),
         timeSight: false,
         snapshot: true,
-        commands: activeObject._timeSightFrame.commands,
-        preflightCutoff: activeObject._timeSightFrame.commands.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0),
+        commands,
+        preflightCutoff,
+      }, {
+        startFromTransition: this._replayLatestTransition,
+        startTick: 0,
       });
     });
   }
