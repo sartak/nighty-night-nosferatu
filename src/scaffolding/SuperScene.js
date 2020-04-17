@@ -2073,11 +2073,11 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   pauseInputForTransition(transition) {
-    this.command.ignoreAll(this, '_transition', true);
+    this.command.ignoreAll('_transition', true);
   }
 
   unpauseInputForTransition(transition) {
-    this.command.ignoreAll(this, '_transition', false);
+    this.command.ignoreAll('_transition', false);
   }
 
   pausePhysicsForTransition(transition) {

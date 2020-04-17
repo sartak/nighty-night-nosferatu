@@ -28,6 +28,7 @@ export default class CommandManager {
     this.gamepad = {};
     this.pointerEvents = [];
     this.executedProps = [];
+    this._ignoreAlls = {};
 
     Object.keys(spec).forEach((name) => {
       if (this[name]) {
@@ -72,7 +73,6 @@ export default class CommandManager {
   attachScene(scene, suppressRepeatFrames) {
     this._scenes.set(scene, {
       scene,
-      ignoreAlls: {},
       commands: scene.game.debug ? [] : null,
       tickCount: 0,
       suppressRepeatFrames,
@@ -335,13 +335,12 @@ export default class CommandManager {
     list.push(frame);
   }
 
-  ignoreAll(scene, type, newValue) {
-    const manager = this.getManager(scene);
-    const {ignoreAlls} = manager;
+  ignoreAll(type, newValue) {
+    const {_ignoreAlls} = this;
 
     if (type === undefined) {
       let ignoreAny = false;
-      Object.values(ignoreAlls).forEach((ignore) => {
+      Object.values(_ignoreAlls).forEach((ignore) => {
         if (ignore) {
           ignoreAny = true;
         }
@@ -350,18 +349,18 @@ export default class CommandManager {
     }
 
     if (newValue === undefined) {
-      return ignoreAlls[type];
+      return _ignoreAlls[type];
     }
 
-    ignoreAlls[type] = !!newValue;
-    return ignoreAlls[type];
+    _ignoreAlls[type] = !!newValue;
+    return _ignoreAlls[type];
   }
 
   processCommands(manager, frame, dt) {
     const spec = this._spec;
     const {scene} = manager;
 
-    const ignoreAll = this.ignoreAll(scene);
+    const ignoreAll = this.ignoreAll();
 
     Object.entries(spec).forEach(([name, config]) => {
       const command = this[name];

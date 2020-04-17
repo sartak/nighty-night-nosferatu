@@ -137,8 +137,8 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
     'command.gamepad.RSTICKX': [0.01, null],
     'command.gamepad.RSTICKY': [0.01, null],
 
-    'command.ignore_all.any': [false, null, (scene) => scene.command.ignoreAll(scene)],
-    'command.ignore_all._transition': [false, null, (scene) => scene.command.ignoreAll(scene, '_transition')],
+    'command.ignore_all.any': [false, null, (scene) => scene.command.ignoreAll()],
+    'command.ignore_all._transition': [false, null, (scene) => scene.command.ignoreAll('_transition')],
 
     ...commandProps(commands),
     ...shaderProps(shaderCoordFragments, shaderColorFragments),
