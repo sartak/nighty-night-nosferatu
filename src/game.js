@@ -19,7 +19,7 @@ export default class Game extends SuperGame {
   }
 
   launch() {
-    this.scene.add('play', PlayScene, true, {seed: Date.now()});
+    this.scene.add(`scene-${Date.now()}`, PlayScene, true, {seed: Date.now()});
   }
 }
 
