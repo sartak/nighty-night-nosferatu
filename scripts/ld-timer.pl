@@ -34,7 +34,7 @@ while (1) {
 
   render($now);
 
-  if ($screenshot_dir && $now >= $start && $now <= $end) {
+  if ($screenshot_dir) {
     system("/usr/sbin/screencapture -x /dev/null $screenshot_dir/@{[int $now]}.png 2>/dev/null");
   }
   sleep 10 - (time - $now);
