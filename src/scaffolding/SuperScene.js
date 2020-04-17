@@ -531,8 +531,7 @@ export default class SuperScene extends Phaser.Scene {
 
         if (type === 'bool') {
           shaderUpdate.push(`  shader.${setter}('${name}', this['${name}'] ? 1.0 : 0.0);`);
-        }
-        else {
+        } else {
           shaderUpdate.push(`  shader.${setter}('${name}', this['${name}']);`);
         }
       });
@@ -551,6 +550,11 @@ export default class SuperScene extends Phaser.Scene {
       // this can happen when HMR happens during timeSight; SuperScene's
       // builtinHot causes the top scene to get replaced out of the scene
       // graph, but proxy.js still calls _hot on it
+      return;
+    }
+
+    if (this.scene.settings.data._timeSightTarget) {
+      this.endedReplay();
       return;
     }
 
