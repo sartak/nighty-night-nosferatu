@@ -1034,10 +1034,11 @@ export default class SuperScene extends Phaser.Scene {
     this._replay = replay;
     this._replayOptions = replayOptions;
     this._replayLatestTransition = replayOptions.startFromTransition;
+    const startTick = this._replayLatestTransition ? (this._replayLatestTransition.tickCount || 0) : 0;
 
     command.beginReplay(replay, {
       ...replayOptions,
-      startTick: replay.startTick,
+      startTick,
       onEnd: () => {
         this.game.topScene().endedReplay();
       },

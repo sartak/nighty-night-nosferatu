@@ -512,8 +512,9 @@ export default class CommandManager {
     this.replayTicks = 0;
     this.replayOptions = replayOptions;
 
-    if (replay.startTick) {
-      for (let i = 0; i < replay.startTick; i += 1) {
+    const startTick = replayOptions.startTick || replay.startTick || 0;
+    if (startTick) {
+      for (let i = 0; i < startTick; i += 1) {
         this.injectReplayFrame();
       }
     }

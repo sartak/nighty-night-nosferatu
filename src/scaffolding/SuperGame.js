@@ -352,7 +352,7 @@ export default class SuperGame extends Phaser.Game {
 
     const preflightCutoff = Math.max(
       replay.preflightCutoff,
-      (startFromTransition && startFromTransition.tickCount ? (startFromTransition.tickCount + 1) : 0),
+      startFromTransition ? (startFromTransition.tickCount || 0) : 0,
     );
 
     this.transitionToSceneToBeginReplay(replay, startFromTransition).then((newScene) => {
