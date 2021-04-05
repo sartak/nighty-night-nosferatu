@@ -1797,7 +1797,7 @@ export default class SuperScene extends Phaser.Scene {
 
   playSound(baseName, variants, volume = 1.0) {
     // preflight etc
-    if (!this.scene.isVisible() || game._replayPreflight) {
+    if (!this.scene.isVisible() || this.game._replayPreflight) {
       return;
     }
 
