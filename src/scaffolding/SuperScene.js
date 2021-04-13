@@ -1833,17 +1833,17 @@ export default class SuperScene extends Phaser.Scene {
 
     const sound = this.sound.add(name);
 
-    sound.requestedVolume = volume;
-
-    sound.setVolume(volume * this.game.volume * prop('scene.soundVolume'));
-
-    this.sounds.push(sound);
+    if (sound) {
+      this.sounds.push(sound);
+    }
 
     sound.on('complete', () => {
       this.sounds = this.sounds.filter((s) => s !== sound);
     });
 
     try {
+      sound.requestedVolume = volume;
+      sound.setVolume(volume * this.game.volume * prop('scene.soundVolume'));
       sound.play();
     } catch (e) {
       // eslint-disable-next-line no-console
