@@ -1833,9 +1833,13 @@ export default class SuperScene extends Phaser.Scene {
 
     const sound = this.sound.add(name);
 
-    if (sound) {
-      this.sounds.push(sound);
+    if (!sound) {
+      // eslint-disable-next-line no-console
+      console.warn(`Could not load sound ${name}`);
+      return;
     }
+
+    this.sounds.push(sound);
 
     sound.on('complete', () => {
       this.sounds = this.sounds.filter((s) => s !== sound);
@@ -1847,7 +1851,7 @@ export default class SuperScene extends Phaser.Scene {
       sound.play();
     } catch (e) {
       // eslint-disable-next-line no-console
-      console.log(`Could not play sound ${name}: ${e}`);
+      console.warn(`Could not play sound ${name}: ${e}`);
     }
   }
 
