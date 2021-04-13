@@ -117,6 +117,20 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
       scene.setCameraBounds();
     }],
 
+    'scene.trauma.amount': [0.01, null, '_trauma'],
+    'scene.trauma.shakeAmount': [0.01, null, '_traumaShake'],
+    'scene.trauma.decay': [0.001, 0, 1],
+    'scene.trauma.exponent': [2.0, 0, 4],
+    'scene.trauma.dx': [30.0, 0, 100],
+    'scene.trauma.dy': [30.0, 0, 100],
+    'scene.trauma.dt': [0.17, 0, 1],
+    'scene.trauma.speed': [0.2, 0, 1],
+    'scene.trauma.legacy': [false],
+    'scene.trauma.mild': [(scene) => scene.trauma(0.2)],
+    'scene.trauma.minor': [(scene) => scene.trauma(0.5)],
+    'scene.trauma.major': [(scene) => scene.trauma(0.8)],
+    'scene.trauma.max': [(scene) => scene.trauma(100)],
+
     ...commandKeyProps(commands),
 
     'command.gamepad.total': [0, null],

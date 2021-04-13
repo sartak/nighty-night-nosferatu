@@ -6,6 +6,7 @@ import massageParticleProps, {injectEmitterOpSeededRandom, injectParticleEmitter
 import massageTransitionProps, {baseTransitionProps, applyPause} from './lib/transitions';
 import {injectAddSpriteTimeScale} from './lib/sprites';
 import {injectAnimationUpdate} from './lib/anims';
+import {injectCameraShake} from './lib/camera';
 import massageTweenProps, {injectTweenManagerAdd} from './lib/tweens';
 import {shaderTypeMeta, propNamesForUniform} from './lib/shaders';
 import {saveField, loadField} from './lib/store';
@@ -34,6 +35,8 @@ export default class SuperScene extends Phaser.Scene {
     this.performanceAcceptable = true;
     this.scene_time = 0;
     this.shockwave_time = 0;
+    this._trauma = 0;
+    this._traumaShake = 0;
     this._paused = {
       physics: false,
       particles: false,
@@ -59,6 +62,7 @@ export default class SuperScene extends Phaser.Scene {
 
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0);
+    injectCameraShake(this.camera);
 
     if (config.save) {
       this.save = config.save;
@@ -1795,6 +1799,23 @@ export default class SuperScene extends Phaser.Scene {
     return this[fieldName];
   }
 
+  trauma(amount) {
+    const newTrauma = Math.min(Math.max(this._trauma + amount, 0), 1);
+    const shake = newTrauma ** prop('scene.trauma.exponent');
+    this._trauma = newTrauma;
+    this._traumaShake = shake;
+
+    if (shake && prop('scene.trauma.legacy')) {
+      const {width, height} = this.game.config;
+      const duration = 100;
+      const intensity = new Phaser.Math.Vector2(
+        shake * prop('scene.trauma.dx') / width,
+        shake * prop('scene.trauma.dy') / height,
+      );
+      this.camera.shake(duration, intensity);
+    }
+  }
+
   playSound(baseName, variants, volume = 1.0) {
     // preflight etc
     if (!this.scene.isVisible() || this.game._replayPreflight) {
@@ -1853,6 +1874,10 @@ export default class SuperScene extends Phaser.Scene {
     const {timers} = this;
     const newTimers = this.timers = [];
     const isPaused = this._paused.timers;
+
+    if (!isPaused && this._trauma) {
+      this.trauma(prop('scene.trauma.decay') * dt * -1);
+    }
 
     timers.forEach((timer) => {
       if (isPaused && !timer.ignoresScenePause) {
