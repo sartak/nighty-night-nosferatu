@@ -1833,7 +1833,7 @@ export default class SuperScene extends Phaser.Scene {
 
     const sound = this.sound.add(name);
 
-    if (!sound) {
+    if (!sound || !sound.key) {
       // eslint-disable-next-line no-console
       console.warn(`Could not load sound ${name}`);
       return;

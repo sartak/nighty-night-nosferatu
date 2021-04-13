@@ -447,7 +447,7 @@ export default class SuperGame extends Phaser.Game {
       if (name) {
         try {
           const music = this.sound.add(name);
-          if (!music) {
+          if (!music || !music.key) {
             // eslint-disable-next-line no-console
             console.warn(`Could not load music ${name}`);
             return;
