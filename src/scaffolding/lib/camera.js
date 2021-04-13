@@ -24,18 +24,20 @@ export function injectCameraShake(camera) {
     }
 
     const {width, height, scene} = this;
-    const {_traumaShake, time} = scene;
+    const {
+      _traumaShake, time, timeScale, _traumaStart,
+    } = scene;
     const {now} = time;
 
     if (!_traumaShake) {
       return;
     }
 
-    const speed = prop('scene.trauma.speed');
+    const t = (now - _traumaStart) * prop('scene.trauma.speed') * timeScale ** 2;
 
-    const dx = _traumaShake * prop('scene.trauma.dx') * noiseX.noise2D(0, now * speed);
-    const dy = _traumaShake * prop('scene.trauma.dy') * noiseY.noise2D(0, now * speed);
-    const dt = _traumaShake * prop('scene.trauma.dt') * noiseT.noise2D(0, now * speed);
+    const dx = _traumaShake * prop('scene.trauma.dx') * noiseX.noise2D(_traumaStart, t);
+    const dy = _traumaShake * prop('scene.trauma.dy') * noiseY.noise2D(_traumaStart, t);
+    const dt = _traumaShake * prop('scene.trauma.dt') * noiseT.noise2D(_traumaStart, t);
 
     const halfWidth = width / 2;
     const halfHeight = height / 2;
