@@ -1839,7 +1839,12 @@ export default class SuperScene extends Phaser.Scene {
       this.sounds = this.sounds.filter((s) => s !== sound);
     });
 
-    sound.play();
+    try {
+      sound.play();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(`Could not play sound ${name}: ${e}`);
+    }
   }
 
   changeVolume(newVolume) {

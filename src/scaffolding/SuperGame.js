@@ -440,16 +440,23 @@ export default class SuperGame extends Phaser.Game {
 
   playMusic(name, forceRestart) {
     if (forceRestart || this.currentMusicName !== name) {
-      this.currentMusicName = name;
       if (this.currentMusicPlayer && this.currentMusicPlayer.key) {
         this.currentMusicPlayer.destroy();
       }
 
       if (name) {
-        const music = this.sound.add(name);
-        music.play('', {loop: true});
-        music.setVolume(this.volume * prop('scene.musicVolume'));
-        this.currentMusicPlayer = music;
+        try {
+          const music = this.sound.add(name);
+          music.play('', {loop: true});
+          music.setVolume(this.volume * prop('scene.musicVolume'));
+          this.currentMusicPlayer = music;
+          this.currentMusicName = name;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(`Could not play music ${name}: ${e}`);
+        }
+      } else {
+        this.currentMusicName = name;
       }
     }
   }
