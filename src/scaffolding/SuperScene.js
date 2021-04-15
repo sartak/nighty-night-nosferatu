@@ -479,12 +479,13 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   _shaderInitialize(initializeListeners) {
+    const {shaderInitialize} = this;
     this.game.shaderFragments.forEach(([fragmentName, uniforms]) => {
       Object.entries(uniforms).forEach(([uniformName, spec]) => {
         const name = `${fragmentName}_${uniformName}`;
         const [type, listenerInitial, listenerIfNull] = spec;
         if (listenerIfNull === null) {
-          if (initializeListeners || !(name in this)) {
+          if (!(shaderInitialize && shaderInitialize[name] && name in this) && (initializeListeners || !(name in this))) {
             this[name] = listenerInitial;
           }
         } else {
