@@ -173,6 +173,11 @@ function commandProps(commands) {
     props[`command.${name}.heldDuration`] = [0, null];
     props[`command.${name}.releasedDuration`] = [0, null];
 
+    if (config.joystick) {
+      props[`command.${name}.x`] = [0.01, null, (scene) => scene.command[name].held[0]];
+      props[`command.${name}.y`] = [0.01, null, (scene) => scene.command[name].held[1]];
+    }
+
     props[`command.${name}.enabled`] = [true];
 
     if (config.execute) {
