@@ -207,6 +207,8 @@ const knownInputs = [
   'gamepad.RSTICK.DOWN',
   'gamepad.RSTICK.LEFT',
   'gamepad.RSTICK.RIGHT',
+  'gamepad.LSTICK.RAW',
+  'gamepad.RSTICK.RAW',
 
   ...(Object.keys(Phaser.Input.Keyboard.KeyCodes).map((x) => `keyboard.${x}`)),
 ].reduce((a, b) => {

@@ -240,7 +240,11 @@ export default class CommandManager {
           let keyHeld;
 
           if (gamepad.total) {
-            if (path === 'gamepad.LSTICK.UP') {
+            if (path === 'gamepad.LSTICK.RAW' && (Math.abs(gamepad.LSTICKX) > 0.1 || Math.abs(gamepad.LSTICKY) > 0.1)) {
+              held = [gamepad.LSTICKX, gamepad.LSTICKY];
+            } else if (path === 'gamepad.RSTICK.RAW' && (Math.abs(gamepad.RSTICKX) > 0.1 || Math.abs(gamepad.RSTICKY) > 0.1)) {
+              held = [gamepad.RSTICKX, gamepad.RSTICKY];
+            } else if (path === 'gamepad.LSTICK.UP') {
               keyHeld = gamepad.LSTICKY < -0.2;
             } else if (path === 'gamepad.LSTICK.DOWN') {
               keyHeld = gamepad.LSTICKY > 0.2;
