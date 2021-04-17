@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import deepEqual from 'deep-equal';
-import prop, {propsWithPrefix, manageableProps, propSpecs} from '../props';
+import prop, {
+  propsWithPrefix, manageableProps, tileDefinitions, propSpecs,
+} from '../props';
 import {updatePropsFromStep, overrideProps, refreshUI} from './lib/manage-gui';
 import massageParticleProps, {injectEmitterOpSeededRandom, injectParticleEmitterManagerPreUpdate, particlePropFromProp} from './lib/particles';
 import massageTransitionProps, {baseTransitionProps, applyPause} from './lib/transitions';
@@ -382,6 +384,86 @@ export default class SuperScene extends Phaser.Scene {
       level.background = this.add.sprite(0, 0, level.background);
       level.background.setPosition(level.background.width * 0.5, level.background.height * 0.5);
     }
+
+    return level;
+  }
+
+  createLevel(id) {
+    const level = this.level = this.loadLevel(id);
+    this.addMap();
+    return level;
+  }
+
+  createTileForGroup(groupName, x, y) {
+    const {
+      level, tileWidth, tileHeight, halfWidth, halfHeight,
+    } = this;
+    const group = level.groups[groupName];
+
+    let object;
+
+    if (group.image) {
+      object = group.group.create(x, y, group.image);
+    } else {
+      object = this.add.rectangle(x, y, tileWidth, tileHeight);
+      group.group.add(object);
+    }
+    group.objects.push(object);
+
+    if (group.isCircle) {
+      const radius = (halfHeight + halfWidth) / 2;
+      object.setCircle(radius);
+    }
+
+    return object;
+  }
+
+  addMap() {
+    const {
+      level, tileWidth, tileHeight, halfWidth, halfHeight,
+    } = this;
+
+    const groups = level.groups = {};
+    Object.values(tileDefinitions).forEach((spec) => {
+      if (!spec) {
+        return;
+      }
+
+      if (spec.group) {
+        let group;
+        if (spec.isStatic) {
+          group = this.physics.add.staticGroup();
+        } else {
+          group = this.physics.add.group();
+        }
+
+        groups[spec.group] = {
+          tiles: [],
+          objects: [],
+          ...spec,
+          group,
+        };
+      }
+    });
+
+    level.map.forEach((row, y) => {
+      row.forEach((tile, x) => {
+        const {glyph, group} = tile;
+        const [xCoord, yCoord] = this.positionToScreenCoordinate(tile.x, tile.y);
+        tile.xCoord = xCoord;
+        tile.yCoord = yCoord;
+
+        if (group) {
+          const object = this.createTileForGroup(group, xCoord + halfWidth, yCoord + halfHeight);
+          object.tile = tile;
+          tile.object = object;
+        } else if (tile.image) {
+          const image = this.add.image(xCoord + halfWidth, yCoord + halfHeight, tile.image);
+          image.tile = tile;
+          tile.image = image;
+        }
+      });
+    });
 
     return level;
   }
