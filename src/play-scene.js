@@ -43,6 +43,11 @@ export default class PlayScene extends SuperScene {
 
   create(config) {
     super.create(config);
+
+    this.setupPhysics();
+  }
+
+  setupPhysics() {
   }
 
   setupAnimations() {
