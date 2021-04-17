@@ -44,6 +44,10 @@ export default class CommandManager {
         releasedFrames: 0,
         released: false,
         releasedDuration: 0,
+
+        cooldown: 0,
+        coolingDown: false,
+        coolingDownTime: null,
       };
     });
   }
@@ -377,6 +381,17 @@ export default class CommandManager {
 
       if (!prop(`command.${name}.enabled`) || (ignoreAll && !config.unignorable)) {
         command.held = false;
+      }
+
+      if (config.cooldown) {
+        command.coolingDownTime = Math.max(0, command.coolingDownTime - dt);
+        command.coolingDown = command.coolingDownTime > 0;
+        if (command.coolingDown) {
+          command.held = false;
+        }
+        if (command.held) {
+          command.coolingDownTime = prop(`command.${name}.cooldown`);
+        }
       }
 
       if (command.held) {
