@@ -1,7 +1,12 @@
 import React from 'react';
 import './Manage.css';
 import {saveField, loadField} from './lib/store';
-import {initializeManage, updateSearch, serializeChangedProps, resetChangedProps} from './lib/manage-gui';
+import {
+  initializeManage,
+  updateSearch,
+  serializeChangedProps,
+  resetChangedProps,
+} from './lib/manage-gui';
 
 export default class Manage extends React.Component {
   constructor(props) {

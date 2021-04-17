@@ -148,4 +148,3 @@ export function applyPause(scene, transition, type) {
     return () => {};
   }
 }
-

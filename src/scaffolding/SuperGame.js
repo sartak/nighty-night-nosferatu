@@ -629,7 +629,7 @@ export default class SuperGame extends Phaser.Game {
       const regex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
 
       if (!userShaderMain.match(regex)) {
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console, max-len
         console.error(`Shader program doesn't appear use uniform '${name}'. (If this is a false positive, try adding this to your program: // ${name}`);
       }
     });

@@ -170,6 +170,7 @@ export default class DoubleEnder extends React.Component {
                   }
                 };
 
+                // eslint-disable-next-line no-shadow
                 this._upListener = (e) => {
                   this._dragListener(e);
 

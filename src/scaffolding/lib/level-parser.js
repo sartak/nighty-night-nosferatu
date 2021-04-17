@@ -100,6 +100,7 @@ export function parseMaps(content) {
       if (mapLines.length && configLines.length) {
         const config = JSON.parse(configLines.join('\n'));
         if (!config.id) {
+          // eslint-disable-next-line no-console
           console.warn(`Config line ${i}: level is missing an 'id'`);
         }
         maps.push([[...mapLines], config]);
@@ -163,7 +164,7 @@ export function parseLevelLines(lines, isRectangular) {
     });
   }
 
-  const mapText = lines.join("\n");
+  const mapText = lines.join('\n');
 
   return {map, mapText, lookups};
 }

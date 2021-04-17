@@ -63,77 +63,14 @@ export default class Replay extends React.Component {
     }
   }
 
-  installGameCallbacks() {
-    const {game} = window;
-    if (!game || game.onRecordBegin) {
-      return;
-    }
-
-    game.onRecordBegin = (activeRecording) => {
-      this.setState({activeRecording});
-    };
-
-    game.onRecordStop = (replay) => {
-      this.setState({activeRecording: null});
-
-      if (this._trashNextRecording) {
-        delete this._trashNextRecording;
-        return;
-      }
-
-      this.setState(({replays}) => {
-        const newReplays = [replay, ...replays];
-
-        setTimeout(() => {
-          saveField('replays', newReplays);
-
-          if (!replay.snapshot) {
-            this.beginReplay(replay);
-          }
-        });
-
-        return {
-          replays: newReplays,
-        };
-      });
-    };
-
-    game.onReplayBegin = (replay) => {
-      if (!replay.snapshot) {
-        this.setActiveReplay(replay);
-      }
-    };
-
-    game.onReplayEnd = (replay) => {
-      const {repeat} = this.state;
-
-      if (repeat && !replay.snapshot) {
-        setTimeout(() => {
-          this.beginReplay(this.state.activeReplay);
-        });
-      } else {
-        this.setActiveReplay(null);
-      }
-    };
-
-    game.onReplayStop = (replay) => {
-      this.setActiveReplay(null);
-    };
+  setEditing(editing) {
+    this.setState({editing});
+    saveField('editing', editing);
   }
 
-  beginAutoReplay() {
-    const {activateGame} = this.props;
-    const {activeReplay} = this.state;
-
-    if (!activateGame) {
-      return;
-    }
-
-    if (!activeReplay) {
-      return;
-    }
-
-    this.beginReplay(activeReplay);
+  setActiveReplay(activeReplay) {
+    this.setState({activeReplay});
+    saveField('activeReplay', activeReplay);
   }
 
   beginReplay(replay, clearOtherEditing) {
@@ -220,14 +157,78 @@ export default class Replay extends React.Component {
     this.saveReplays();
   }
 
-  setEditing(editing) {
-    this.setState({editing});
-    saveField('editing', editing);
+  beginAutoReplay() {
+    const {activateGame} = this.props;
+    const {activeReplay} = this.state;
+
+    if (!activateGame) {
+      return;
+    }
+
+    if (!activeReplay) {
+      return;
+    }
+
+    this.beginReplay(activeReplay);
   }
 
-  setActiveReplay(activeReplay) {
-    this.setState({activeReplay});
-    saveField('activeReplay', activeReplay);
+  installGameCallbacks() {
+    const {game} = window;
+    if (!game || game.onRecordBegin) {
+      return;
+    }
+
+    game.onRecordBegin = (activeRecording) => {
+      this.setState({activeRecording});
+    };
+
+    game.onRecordStop = (replay) => {
+      this.setState({activeRecording: null});
+
+      if (this._trashNextRecording) {
+        delete this._trashNextRecording;
+        return;
+      }
+
+      this.setState(({replays}) => {
+        const newReplays = [replay, ...replays];
+
+        setTimeout(() => {
+          saveField('replays', newReplays);
+
+          if (!replay.snapshot) {
+            this.beginReplay(replay);
+          }
+        });
+
+        return {
+          replays: newReplays,
+        };
+      });
+    };
+
+    game.onReplayBegin = (replay) => {
+      if (!replay.snapshot) {
+        this.setActiveReplay(replay);
+      }
+    };
+
+    game.onReplayEnd = (replay) => {
+      const {repeat} = this.state;
+
+      if (repeat && !replay.snapshot) {
+        setTimeout(() => {
+          // eslint-disable-next-line react/destructuring-assignment
+          this.beginReplay(this.state.activeReplay);
+        });
+      } else {
+        this.setActiveReplay(null);
+      }
+    };
+
+    game.onReplayStop = (replay) => {
+      this.setActiveReplay(null);
+    };
   }
 
   updateReplay({timestamp}, changes, beginReplay) {
@@ -331,6 +332,90 @@ export default class Replay extends React.Component {
     window.game.cutoffTimeSightLeave();
   }
 
+  tweakReplay(replay) {
+    const metadata = {...replay};
+    const tweaking = {replay};
+    ReplayEditFields.forEach((field) => {
+      if (field !== 'metadata') {
+        tweaking[field] = JSON.stringify(metadata[field], null, 2);
+        delete metadata[field];
+      }
+    });
+    tweaking.metadata = JSON.stringify(metadata, null, 2);
+
+    ReplayEditFields.forEach((field) => {
+      tweaking[`${field}_original`] = tweaking[field];
+    });
+
+    this.setState({tweaking});
+    saveField('tweaking', tweaking);
+  }
+
+  updateTweak(field, value) {
+    this.setState(({tweaking}) => {
+      const t = {
+        ...tweaking,
+        [field]: value,
+        [`${field}_error`]: null,
+        [`${field}_changed`]: value !== tweaking[`${field}_original`],
+      };
+
+      setTimeout(() => saveField('tweaking', t));
+
+      return {tweaking: t};
+    });
+  }
+
+  revertTweak(field) {
+    // eslint-disable-next-line react/destructuring-assignment
+    this.updateTweak(field, this.state.tweaking[`${field}_original`]);
+  }
+
+  discardTweaks() {
+    setTimeout(() => { saveField('tweaking', null); });
+    this.setState({
+      tweaking: null,
+    });
+  }
+
+  saveTweaks() {
+    this.setState(({tweaking}) => {
+      let replay;
+      let sawError = false;
+      const newState = {...tweaking};
+
+      ReplayEditFields.forEach((field) => {
+        try {
+          const value = JSON.parse(tweaking[field]);
+          if (field === 'metadata') {
+            replay = value;
+          } else if (replay) {
+            replay[field] = value;
+          }
+
+          newState[`${field}_error`] = null;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e);
+          sawError = true;
+          newState[`${field}_error`] = e.toString();
+        }
+      });
+
+      if (sawError) {
+        setTimeout(() => { saveField('tweaking', newState); });
+        return {tweaking: newState};
+      } else {
+        setTimeout(() => {
+          this.updateReplay(tweaking.replay, replay, false);
+          setTimeout(() => { saveField('tweaking', null); });
+        });
+
+        return {tweaking: null};
+      }
+    });
+  }
+
   renderEditReplay(replay) {
     const {activeReplay} = this.state;
     let highlight1 = null;
@@ -403,7 +488,13 @@ export default class Replay extends React.Component {
           value={replay.name}
           onChange={(e) => this.editName(replay, e.target.value)}
         />
-        <span className="play button" title="Load snapshot (load state)" onClick={() => this.beginReplay({...replay, snapshot: true, commands: []})}>🎆</span>
+        <span
+          className="play button"
+          title="Load snapshot (load state)"
+          onClick={() => this.beginReplay({...replay, snapshot: true, commands: []})}
+        >
+          🎆
+        </span>
         <span className="tweak button" title="Tweak replay" onClick={() => this.tweakReplay(replay)}>ℹ</span>
         <span className="copy button" title="Copy replay" onClick={() => this.copyReplay(replay)}>🔃</span>
         <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
@@ -463,6 +554,7 @@ export default class Replay extends React.Component {
             this.editPreflightCutoff(replay, Math.floor(preflight));
             if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
               setTimeout(() => {
+                // eslint-disable-next-line react/destructuring-assignment
                 this.cutoffTimeSightChanged(Math.floor(preflight), this.state.activeReplay.postflightCutoff);
               });
             }
@@ -471,6 +563,7 @@ export default class Replay extends React.Component {
             this.editPostflightCutoff(replay, Math.floor(postflight));
             if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
               setTimeout(() => {
+                // eslint-disable-next-line react/destructuring-assignment
                 this.cutoffTimeSightChanged(this.state.activeReplay.preflightCutoff, Math.floor(postflight));
               });
             }
@@ -490,92 +583,6 @@ export default class Replay extends React.Component {
     );
   }
 
-  tweakReplay(replay) {
-    const metadata = {...replay};
-    const tweaking = {replay};
-    ReplayEditFields.forEach((field) => {
-      if (field !== 'metadata') {
-        tweaking[field] = JSON.stringify(metadata[field], null, 2);
-        delete metadata[field];
-      }
-    });
-    tweaking.metadata = JSON.stringify(metadata, null, 2);
-
-    ReplayEditFields.forEach((field) => {
-      tweaking[`${field}_original`] = tweaking[field];
-    });
-
-    this.setState({tweaking});
-    saveField('tweaking', tweaking);
-  }
-
-  updateTweak(field, value) {
-    this.setState(({tweaking}) => {
-      const t = {
-        ...tweaking,
-        [field]: value,
-        [`${field}_error`]: null,
-        [`${field}_changed`]: value !== tweaking[`${field}_original`],
-      };
-
-      setTimeout(() => saveField('tweaking', t));
-
-      return {tweaking: t};
-    });
-  }
-
-  revertTweak(field) {
-    // eslint-disable-next-line react/destructuring-assignment
-    this.updateTweak(field, this.state.tweaking[`${field}_original`]);
-  }
-
-  discardTweaks() {
-    setTimeout(() => { saveField('tweaking', null); });
-    this.setState({
-      tweaking: null,
-    });
-  }
-
-  saveTweaks() {
-    this.setState(({tweaking}) => {
-      let replay;
-      let sawError = false;
-      const newState = {...tweaking};
-
-      ReplayEditFields.forEach((field) => {
-        try {
-          const value = JSON.parse(tweaking[field]);
-          if (field === 'metadata') {
-            replay = value;
-          } else {
-            if (replay) {
-              replay[field] = value;
-            }
-          }
-
-          newState[`${field}_error`] = null;
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error(e);
-          sawError = true;
-          newState[`${field}_error`] = e.toString();
-        }
-      });
-
-      if (sawError) {
-        setTimeout(() => { saveField('tweaking', newState); });
-        return {tweaking: newState};
-      } else {
-        setTimeout(() => {
-          this.updateReplay(tweaking.replay, replay, false);
-          setTimeout(() => { saveField('tweaking', null); });
-        });
-
-        return {tweaking: null};
-      }
-    });
-  }
-
   renderTweaking() {
     const {tweaking} = this.state;
 
@@ -587,11 +594,21 @@ export default class Replay extends React.Component {
         </div>
         <div className="fields">
           {ReplayEditFields.map((field) => (
-            <div key={field} className={`field ${tweaking[`${field}_error`] ? 'error' : ''} ${tweaking[`${field}_changed`] ? 'changed' : ''}`}>
+            <div
+              key={field}
+              className={`field ${tweaking[`${field}_error`] ? 'error' : ''} ${tweaking[`${field}_changed`] ? 'changed' : ''}`}
+            >
               <label>
                 {field}
                 {' '}
-                <span style={{visibility: tweaking[`${field}_changed`] ? 'visible' : 'hidden'}} className="button" title="Discard these tweaks" onClick={() => this.revertTweak(field)}>🚮</span>
+                <span
+                  style={{visibility: tweaking[`${field}_changed`] ? 'visible' : 'hidden'}}
+                  className="button"
+                  title="Discard these tweaks"
+                  onClick={() => this.revertTweak(field)}
+                >
+                  🚮
+                </span>
               </label>
               {tweaking[`${field}_error`] && (
                 <span className="info">{tweaking[`${field}_error`]}</span>

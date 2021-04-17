@@ -639,11 +639,8 @@ export function updateSearch(query, isStarted) {
         if (node.classList.contains('changed')) {
           isFiltered = false;
         }
-      } else {
-        const {prop} = node.dataset;
-        if (prop.match(queryRegex)) {
-          isFiltered = false;
-        }
+      } else if (node.dataset.prop.match(queryRegex)) {
+        isFiltered = false;
       }
 
       if (isFiltered) {

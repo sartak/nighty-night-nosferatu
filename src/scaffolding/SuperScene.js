@@ -1094,7 +1094,7 @@ export default class SuperScene extends Phaser.Scene {
 
       let postflightCutoff;
       if ('postflightCutoff' in replay) {
-        postflightCutoff = replay.postflightCutoff;
+        ({postflightCutoff} = replay.postflightCutoff);
         delete replay.postflightCutoff;
       }
 
