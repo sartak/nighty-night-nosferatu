@@ -446,6 +446,8 @@ export default class SuperScene extends Phaser.Scene {
       }
     });
 
+    const combine = {};
+
     level.map.forEach((row, y) => {
       row.forEach((tile, x) => {
         const {glyph, group} = tile;
@@ -454,14 +456,122 @@ export default class SuperScene extends Phaser.Scene {
         tile.yCoord = yCoord;
 
         if (group) {
+          if (tile.combine) {
+            if (!combine[glyph]) {
+              combine[glyph] = [];
+            }
+
+            combine[glyph].push(tile);
+            return;
+          }
+
           const object = this.createTileForGroup(group, xCoord + halfWidth, yCoord + halfHeight);
-          object.tile = tile;
+          object.tiles = [tile];
           tile.object = object;
         } else if (tile.image) {
           const image = this.add.image(xCoord + halfWidth, yCoord + halfHeight, tile.image);
           image.tile = tile;
           tile.image = image;
         }
+
+        if (tile.combine) {
+          // eslint-disable-next-line no-console
+          console.warn(`Cannot combine tile of type ${tile.glyph}; needs a group`);
+        }
+      });
+    });
+
+    Object.values(combine).forEach((tiles) => {
+      const {preferCombineVertical} = tiles[0];
+      const dxPrimary = preferCombineVertical ? 0 : 1;
+      const dyPrimary = preferCombineVertical ? 1 : 0;
+      const dxSecondary = preferCombineVertical ? 1 : 0;
+      const dySecondary = preferCombineVertical ? 0 : 1;
+
+      const group = level.groups[tiles[0].group];
+
+      if (preferCombineVertical) {
+        tiles.sort((a, b) => a.x - b.x || a.y - b.y);
+      } else {
+        tiles.sort((a, b) => a.y - b.y || a.x - b.x);
+      }
+
+      const m = this.level.map[0].map((row) => []);
+      // fake autovivify for last row
+      m.push([]);
+
+      tiles.forEach((tile) => {
+        const {x, y} = tile;
+        m[x][y] = tile;
+      });
+
+      const chains = {};
+
+      // This starts at the top left and greedily scans down/right for
+      // chaining; this could be improved by looking for the "best"
+      // at each scanline, e.g. when preferring horizontal this should
+      // create one one-tile chain and one three-tile chain
+      //   *
+      //   ***
+      // but instead it creates two two-tile chains
+
+      tiles.forEach((tile) => {
+        const {x, y, combineWith} = tile;
+
+        const id = `${x}/${y}`;
+
+        // Start a new chain
+        if (!combineWith) {
+          const primary = m[x + dxPrimary][y + dyPrimary];
+          if (primary && !primary.combineWith) {
+            primary.combineWith = id;
+            primary.dxNext = dxPrimary;
+            primary.dyNext = dyPrimary;
+            chains[id] = [tile, primary];
+          } else {
+            const secondary = m[x + dxSecondary][y + dySecondary];
+            if (secondary && !secondary.combineWith) {
+              secondary.combineWith = id;
+              secondary.dxNext = dxSecondary;
+              secondary.dyNext = dySecondary;
+              chains[id] = [tile, secondary];
+            } else {
+              chains[id] = [tile];
+            }
+          }
+        } else {
+          const {dxNext, dyNext} = tile;
+          // Continue existing chain
+          const next = m[x + dxNext][y + dyNext];
+          if (next && !next.combineWith) {
+            next.combineWith = combineWith;
+            next.dxNext = dxNext;
+            next.dyNext = dyNext;
+            chains[combineWith].push(next);
+          }
+        }
+      });
+
+      Object.entries(chains).forEach(([id, chainTiles]) => {
+        const first = chainTiles[0];
+        const last = chainTiles[chainTiles.length - 1];
+        const [x0, y0] = this.positionToScreenCoordinate(first.x, first.y);
+        const [x1, y1] = this.positionToScreenCoordinate(last.x, last.y);
+        const w = x1 - x0 + tileWidth;
+        const h = y1 - y0 + tileHeight;
+        const object = this.add.rectangle(x0 + w * 0.5, y0 + h * 0.5, w, h);
+
+        group.group.add(object);
+        group.objects.push(object);
+        object.tiles = chainTiles;
+
+        chainTiles.forEach((tile) => {
+          const image = this.add.image(tile.xCoord + halfWidth, tile.yCoord + halfHeight, tile.image);
+          image.tile = tile;
+          image.alpha = 0.5;
+          tile.image = image;
+          tile.object = object;
+        });
       });
     });
 
