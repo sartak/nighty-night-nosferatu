@@ -47,6 +47,14 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   init(config) {
+    const {
+      tileWidth, tileHeight, width, height,
+    } = this.game.config;
+    this.tileWidth = tileWidth;
+    this.tileHeight = tileHeight;
+    this.halfWidth = tileWidth / 2;
+    this.halfHeight = tileWidth / 2;
+
     if (!config.seed) {
       throw new Error(`You must provide a "seed" (e.g. Date.now()) to ${this.constructor.name}`);
     }
@@ -206,9 +214,6 @@ export default class SuperScene extends Phaser.Scene {
       }
     }
 
-    const {
-      width, height, tileWidth, tileHeight,
-    } = this.game.config;
     const mapWidth = Math.floor(width / (tileWidth + 2));
     const mapHeight = Math.floor(height / (tileHeight + 3));
 
@@ -355,7 +360,7 @@ export default class SuperScene extends Phaser.Scene {
     const [lines, config] = spec;
     const {map, mapText, lookups} = parseLevelLines(lines, this.mapsAreRectangular);
 
-    const {tileWidth, tileHeight} = this.game.config;
+    const {tileWidth, tileHeight} = this;
     const heightInTiles = map.length;
     const height = tileHeight * heightInTiles;
     const widthInTiles = Math.max(...map.map((a) => a.length));
@@ -2075,8 +2080,17 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   positionToScreenCoordinate(x, y) {
-    const {tileWidth, tileHeight} = this.game.config;
-    return [x * tileWidth + this.xBorder, y * tileHeight + this.yBorder];
+    const {
+      xBorder, yBorder, tileWidth, tileHeight,
+    } = this;
+    return [x * tileWidth + xBorder, y * tileHeight + yBorder];
+  }
+
+  positionToScreenCoordinateHalf(x, y) {
+    const {
+      xBorder, yBorder, tileWidth, tileHeight, halfWidth, halfHeight,
+    } = this;
+    return [x * tileWidth + xBorder + halfWidth, y * tileHeight + yBorder + halfHeight];
   }
 
   timeSightMouseDrag() {
