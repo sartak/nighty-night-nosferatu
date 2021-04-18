@@ -483,7 +483,7 @@ export default class SuperScene extends Phaser.Scene {
     lines.forEach((line, i) => {
       const {
         duration, inTime, outTime, text, extraDelay,
-        dx, dy, noOut, follow,
+        dx, dy, ox, oy, noOut, follow,
       } = {
         inTime: 200,
         outTime: 200,
@@ -491,6 +491,8 @@ export default class SuperScene extends Phaser.Scene {
         extraDelay: 200,
         dy: null,
         dx: null,
+        ox: 0,
+        oy: 0,
         noOut: false,
         follow: true,
         ...options,
@@ -521,6 +523,9 @@ export default class SuperScene extends Phaser.Scene {
           }
         }
 
+        xl += ox;
+        yl += oy;
+
         const label = this.text(xl, yl, text);
         const halfWidth = label.width / 2;
         const halfHeight = label.height / 2;
@@ -546,8 +551,8 @@ export default class SuperScene extends Phaser.Scene {
               ly = label.y;
             }
 
-            label.x = lx - dx1 * (1.0 - factor);
-            label.y = ly - dy1 * (1.0 - factor);
+            label.x = lx - dx1 * (1.0 - factor) + ox;
+            label.y = ly - dy1 * (1.0 - factor) + oy;
           },
           null,
           0,
@@ -560,10 +565,15 @@ export default class SuperScene extends Phaser.Scene {
             (factor) => {
               if (xo) {
                 label.x = (xo.xCoord === undefined ? xo.x : xo.xCoord) - halfWidth + dx1;
+                lx = label.x;
               }
               if (yo) {
                 label.y = (yo.yCoord === undefined ? yo.y : yo.yCoord) - halfHeight + dy1;
+                ly = label.y;
               }
+
+              label.x = lx + ox;
+              label.y = ly + oy;
             },
             null,
             0,
@@ -591,8 +601,8 @@ export default class SuperScene extends Phaser.Scene {
                 ly = label.y;
               }
 
-              label.x = lx - dx1 * factor;
-              label.y = ly - dy1 * factor;
+              label.x = lx - dx1 * factor + ox;
+              label.y = ly - dy1 * factor + oy;
             },
             () => {
               label.destroy();
