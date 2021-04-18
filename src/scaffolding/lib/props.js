@@ -125,6 +125,7 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
     'scene.trauma.dy': [30.0, 0, 100],
     'scene.trauma.dt': [0.17, 0, 1],
     'scene.trauma.speed': [0.2, 0, 1],
+    'scene.trauma.easeIn': [100, 0, 1000],
     'scene.trauma.legacy': [false],
     'scene.trauma.mild': [(scene) => scene.trauma(0.2)],
     'scene.trauma.minor': [(scene) => scene.trauma(0.5)],
