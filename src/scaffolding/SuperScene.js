@@ -2417,7 +2417,7 @@ export default class SuperScene extends Phaser.Scene {
     this._trauma = newTrauma;
     this._traumaShake = shake;
 
-    if (shake && prop('scene.trauma.legacy')) {
+    if (shake && prop('scene.trauma.legacy') && prop('scene.trauma.enabled')) {
       const {width, height} = this.game.config;
       const duration = 100;
       const intensity = new Phaser.Math.Vector2(

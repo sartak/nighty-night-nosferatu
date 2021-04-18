@@ -19,7 +19,7 @@ export function injectCameraShake(camera) {
   proto.preRender = function(...args) {
     origPreRender.call(this, ...args);
 
-    if (prop('scene.trauma.legacy')) {
+    if (prop('scene.trauma.legacy') || !prop('scene.trauma.enabled')) {
       return;
     }
 

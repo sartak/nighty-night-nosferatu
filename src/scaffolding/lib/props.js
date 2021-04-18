@@ -132,6 +132,7 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
     'scene.trauma.minor': [(scene) => scene.trauma(0.5)],
     'scene.trauma.major': [(scene) => scene.trauma(0.8)],
     'scene.trauma.max': [(scene) => scene.trauma(100)],
+    'scene.trauma.enabled': [true],
 
     ...commandKeyProps(commands),
 
