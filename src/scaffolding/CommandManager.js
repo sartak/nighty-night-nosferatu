@@ -370,6 +370,13 @@ export default class CommandManager {
     return _ignoreAlls[type];
   }
 
+  clearIgnoreAlls() {
+    const {_ignoreAlls} = this;
+    Object.keys(_ignoreAlls).forEach((key) => {
+      _ignoreAlls[key] = false;
+    });
+  }
+
   processCommands(manager, frame, dt) {
     const spec = this._spec;
     const {scene} = manager;
