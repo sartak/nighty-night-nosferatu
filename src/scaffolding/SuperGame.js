@@ -632,7 +632,7 @@ export default class SuperGame extends Phaser.Game {
 
         ${shaderCoordSource}
 
-        vec4 c = texture2D(u_texture, uv);
+        vec4 c = texture2D(uMainSampler, uv);
 
         ${shaderColorSource}
 
@@ -656,7 +656,7 @@ export default class SuperGame extends Phaser.Game {
     `;
 
     const builtinUniforms = `
-      uniform sampler2D u_texture;
+      uniform sampler2D uMainSampler;
       varying vec2      outTexCoord;
 
       uniform vec2 resolution;

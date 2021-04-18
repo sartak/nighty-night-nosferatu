@@ -31,14 +31,14 @@ export const builtinColorFragments = [
       if (blur_amount > 0.0) {
         float b = blur_amount / resolution.x;
         c *= 0.2270270270;
-        c += texture2D(u_texture, vec2(uv.x - 4.0*b, uv.y - 4.0*b)) * 0.0162162162;
-        c += texture2D(u_texture, vec2(uv.x - 3.0*b, uv.y - 3.0*b)) * 0.0540540541;
-        c += texture2D(u_texture, vec2(uv.x - 2.0*b, uv.y - 2.0*b)) * 0.1216216216;
-        c += texture2D(u_texture, vec2(uv.x - 1.0*b, uv.y - 1.0*b)) * 0.1945945946;
-        c += texture2D(u_texture, vec2(uv.x + 1.0*b, uv.y + 1.0*b)) * 0.1945945946;
-        c += texture2D(u_texture, vec2(uv.x + 2.0*b, uv.y + 2.0*b)) * 0.1216216216;
-        c += texture2D(u_texture, vec2(uv.x + 3.0*b, uv.y + 3.0*b)) * 0.0540540541;
-        c += texture2D(u_texture, vec2(uv.x + 4.0*b, uv.y + 4.0*b)) * 0.0162162162;
+        c += texture2D(uMainSampler, vec2(uv.x - 4.0*b, uv.y - 4.0*b)) * 0.0162162162;
+        c += texture2D(uMainSampler, vec2(uv.x - 3.0*b, uv.y - 3.0*b)) * 0.0540540541;
+        c += texture2D(uMainSampler, vec2(uv.x - 2.0*b, uv.y - 2.0*b)) * 0.1216216216;
+        c += texture2D(uMainSampler, vec2(uv.x - 1.0*b, uv.y - 1.0*b)) * 0.1945945946;
+        c += texture2D(uMainSampler, vec2(uv.x + 1.0*b, uv.y + 1.0*b)) * 0.1945945946;
+        c += texture2D(uMainSampler, vec2(uv.x + 2.0*b, uv.y + 2.0*b)) * 0.1216216216;
+        c += texture2D(uMainSampler, vec2(uv.x + 3.0*b, uv.y + 3.0*b)) * 0.0540540541;
+        c += texture2D(uMainSampler, vec2(uv.x + 4.0*b, uv.y + 4.0*b)) * 0.0162162162;
       }
   `],
 
@@ -47,14 +47,14 @@ export const builtinColorFragments = [
     green: ['vec2', [0, 0], null],
     blue: ['vec2', [0, 0], null],
   }, `
-    c.r += texture2D(u_texture, vec2(uv.x - aberration_red.x, uv.y - aberration_red.y)).r;
-    c.r -= texture2D(u_texture, vec2(uv.x + aberration_red.x, uv.y + aberration_red.y)).r;
+    c.r += texture2D(uMainSampler, vec2(uv.x - aberration_red.x, uv.y - aberration_red.y)).r;
+    c.r -= texture2D(uMainSampler, vec2(uv.x + aberration_red.x, uv.y + aberration_red.y)).r;
 
-    c.g += texture2D(u_texture, vec2(uv.x - aberration_green.x, uv.y - aberration_green.y)).g;
-    c.g -= texture2D(u_texture, vec2(uv.x + aberration_green.x, uv.y + aberration_green.y)).g;
+    c.g += texture2D(uMainSampler, vec2(uv.x - aberration_green.x, uv.y - aberration_green.y)).g;
+    c.g -= texture2D(uMainSampler, vec2(uv.x + aberration_green.x, uv.y + aberration_green.y)).g;
 
-    c.b += texture2D(u_texture, vec2(uv.x - aberration_blue.x, uv.y - aberration_blue.y)).b;
-    c.b -= texture2D(u_texture, vec2(uv.x + aberration_blue.x, uv.y + aberration_blue.y)).b;
+    c.b += texture2D(uMainSampler, vec2(uv.x - aberration_blue.x, uv.y - aberration_blue.y)).b;
+    c.b -= texture2D(uMainSampler, vec2(uv.x + aberration_blue.x, uv.y + aberration_blue.y)).b;
   `],
 
   ['tint', {
