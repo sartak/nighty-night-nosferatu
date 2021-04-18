@@ -636,11 +636,7 @@ export default class SuperGame extends Phaser.Game {
 
         ${shaderColorSource}
 
-        c.r *= c.a;
-        c.g *= c.a;
-        c.b *= c.a;
-
-        gl_FragColor = vec4(c.r, c.g, c.b, 1.0);
+        gl_FragColor = vec4(c.rgb * c.a, c.a);
       }
     `;
   }
