@@ -156,7 +156,7 @@ export function shaderProps(coordFragments, colorFragments) {
   injectBuiltinFragment(colorFragments, false);
 
   [...(coordFragments || []), ...(colorFragments || [])].forEach(([fragmentName, uniforms]) => {
-    props[`shader.${fragmentName}.enabled`] = [true, (value, scene, game) => game.recompileMainShaders()];
+    props[`shader.${fragmentName}.enabled`] = [true, (value, scene, game) => game.recompileShaders()];
 
     Object.entries(uniforms).forEach(([uniformName, spec]) => {
       // eslint-disable-next-line prefer-const

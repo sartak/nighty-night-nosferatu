@@ -25,7 +25,7 @@ export default class BootScene extends SuperScene {
   create() {
     super.create();
 
-    this.game.initializeMainShaders();
+    this.game.initializeShaders();
 
     setTimeout(() => {
       this.game.preloadComplete();

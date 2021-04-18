@@ -691,7 +691,7 @@ if (module.hot) {
       const {game} = window;
       game.command.updateCommandsFromReload(next.commands);
 
-      game.updateShaderFragments(next.shaderCoordFragments, next.shaderColorFragments);
+      game.updateShaderFragments(next.shaderCoordFragments, next.shaderColorFragments, next.shaderPipelines);
 
       regenerateListenPropsCache();
 

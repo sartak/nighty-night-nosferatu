@@ -967,7 +967,7 @@ export default class SuperScene extends Phaser.Scene {
 
   _shaderInitialize(initializeListeners) {
     const {shaderInitialize} = this;
-    this.game.shaderFragments.forEach(([fragmentName, uniforms]) => {
+    this.game.shaderFragments(this.shaderName).forEach(([fragmentName, uniforms]) => {
       Object.entries(uniforms).forEach(([uniformName, spec]) => {
         const name = `${fragmentName}_${uniformName}`;
         const [type, listenerInitial, listenerIfNull] = spec;
@@ -1019,7 +1019,7 @@ export default class SuperScene extends Phaser.Scene {
       '  shader.setFloat1(\'scene_time\', this.scene_time);',
     ];
 
-    this.game.shaderFragments.forEach(([fragmentName, uniforms]) => {
+    this.game.shaderFragments(this.shaderName).forEach(([fragmentName, uniforms]) => {
       if (!prop(`shader.${fragmentName}.enabled`)) {
         return;
       }
@@ -2073,7 +2073,7 @@ export default class SuperScene extends Phaser.Scene {
       this.removeAnimations();
     }
 
-    this.game.recompileMainShaders();
+    this.game.recompileShaders();
 
     this.playMusic();
   }
@@ -2604,8 +2604,8 @@ export default class SuperScene extends Phaser.Scene {
 
       changes.forEach((change) => {
         if (typeof change === 'string') {
-          if (change === 'disableMainShaders') {
-            this.game.disableMainShaders();
+          if (change === 'disableShaders') {
+            this.game.disableShaders();
           } else {
             setProp(change, !prop(change));
           }

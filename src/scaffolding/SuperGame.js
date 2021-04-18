@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import BootScene from './boot-scene';
-import prop, {commands, shaderCoordFragments, shaderColorFragments} from '../props';
+import prop, {
+  commands, shaderCoordFragments, shaderColorFragments, shaderPipelines,
+} from '../props';
 import {updatePropsFromStep} from './lib/manage-gui';
 import {shaderTypeMeta} from './lib/shaders';
 import {name as project} from '../../package.json';
@@ -53,10 +55,7 @@ export default class SuperGame extends Phaser.Game {
 
     this.command = new CommandManager(commands);
 
-    this._shaderSource = {};
-    this._shaderCoordFragments = shaderCoordFragments;
-    this._shaderColorFragments = shaderColorFragments;
-    this.shaderFragments = [...(shaderCoordFragments || []), ...(shaderColorFragments || [])];
+    this._initializeShaderStructures(shaderCoordFragments, shaderColorFragments, shaderPipelines);
 
     this.focused = true;
 
@@ -100,6 +99,49 @@ export default class SuperGame extends Phaser.Game {
         }
       }
     });
+  }
+
+  shaderFragments(pipelineName) {
+    const bothFragmentTypes = this._shaderPipelines[pipelineName];
+    if (!bothFragmentTypes) {
+      return null;
+    }
+
+    return [...bothFragmentTypes[0], ...bothFragmentTypes[1]];
+  }
+
+  _initializeShaderStructures(coordFragments, colorFragments, pipelines) {
+    if (!this._shaderSource) {
+      this._shaderSource = {};
+    }
+
+    this._shaderPipelines = {};
+    Object.entries(pipelines).forEach(([pipelineName, fragmentNames]) => {
+      const coords = [];
+      const colors = [];
+
+      fragmentNames.forEach((fragmentName) => {
+        const coordFragment = coordFragments.find(([n]) => n === fragmentName);
+        if (coordFragment) {
+          coords.push(coordFragment);
+          return;
+        }
+
+        const colorFragment = colorFragments.find(([n]) => n === fragmentName);
+        if (colorFragment) {
+          colors.push(colorFragment);
+          return;
+        }
+
+        throw new Error(`Unable to find shader '(${fragmentName}' in shader pipeline '${pipelineName}'`);
+      });
+
+      this._shaderPipelines[pipelineName] = [coords, colors];
+    });
+
+    if (!this._shaderPipelines.main) {
+      this._shaderPipelines.main = [coordFragments || [], colorFragments || []];
+    }
   }
 
   changeVolume(newVolume) {
@@ -538,24 +580,24 @@ export default class SuperGame extends Phaser.Game {
     this._shaderSource[shaderName] = source;
   }
 
-  initializeMainShaders() {
-    this.initializeShader('main');
+  initializeShaders() {
+    Object.keys(this._shaderPipelines).forEach((name) => {
+      this.initializeShader(name);
+    });
   }
 
-  updateShaderFragments(nextCoord, nextColor) {
-    this._shaderCoordFragments = nextCoord;
-    this._shaderColorFragments = nextColor;
-    this.shaderFragments = [...(nextCoord || []), ...(nextColor || [])];
-
-    this.recompileMainShaders();
+  updateShaderFragments(nextCoord, nextColor, nextPipelines) {
+    this._initializeShaderStructures(nextCoord, nextColor, nextPipelines);
+    this.recompileShaders();
   }
 
   generateShaderSourceInternal(shaderName) {
-    if (shaderName !== 'main') {
-      throw new Error('Multi-shader support not yet available');
+    const bothFragmentTypes = this._shaderPipelines[shaderName];
+    if (!bothFragmentTypes) {
+      throw new Error(`No definition found for shader pipeline ${shaderName}; do you need to add it to shaderPipelines in props.js?`);
     }
 
-    const [shaderCoordSource, shaderColorSource] = [this._shaderCoordFragments, this._shaderColorFragments].map((fragments) => {
+    const [shaderCoordSource, shaderColorSource] = bothFragmentTypes.map((fragments) => {
       if (!fragments) {
         return '';
       }
@@ -587,8 +629,9 @@ export default class SuperGame extends Phaser.Game {
   }
 
   generateShaderSource(shaderName) {
-    if (shaderName !== 'main') {
-      throw new Error('Multi-shader support not yet available');
+    const bothFragmentTypes = this._shaderPipelines[shaderName];
+    if (!bothFragmentTypes) {
+      throw new Error(`No definition found for shader pipeline ${shaderName}; do you need to add it to shaderPipelines in props.js?`);
     }
 
     const builtinDeclarations = `
@@ -607,7 +650,7 @@ export default class SuperGame extends Phaser.Game {
     const uniformNames = [];
     const uniformDeclarations = [];
 
-    this.shaderFragments.forEach(([fragmentName, uniforms]) => {
+    [...bothFragmentTypes[0], ...bothFragmentTypes[1]].forEach(([fragmentName, uniforms]) => {
       if (!prop(`shader.${fragmentName}.enabled`)) {
         return;
       }
@@ -620,17 +663,17 @@ export default class SuperGame extends Phaser.Game {
       });
     });
 
-    const userShaderMain = this.generateShaderSourceInternal(shaderName);
-    if (!userShaderMain) {
-      return userShaderMain;
+    const userShaderBody = this.generateShaderSourceInternal(shaderName);
+    if (!userShaderBody) {
+      return userShaderBody;
     }
 
     uniformNames.forEach((name) => {
       const regex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
 
-      if (!userShaderMain.match(regex)) {
+      if (!userShaderBody.match(regex)) {
         // eslint-disable-next-line no-console, max-len
-        console.error(`Shader program doesn't appear use uniform '${name}'. (If this is a false positive, try adding this to your program: // ${name}`);
+        console.error(`Shader program ${shaderName} doesn't appear use uniform '${name}'. (If this is a false positive, try adding this to your program: // ${name}`);
       }
     });
 
@@ -638,7 +681,7 @@ export default class SuperGame extends Phaser.Game {
       ${builtinDeclarations}
       ${builtinUniforms}
       ${uniformDeclarations.join('')}
-      ${userShaderMain}
+      ${userShaderBody}
     `;
   }
 
@@ -683,8 +726,10 @@ export default class SuperGame extends Phaser.Game {
     });
   }
 
-  recompileMainShaders() {
-    this.recompileShader('main');
+  recompileShaders() {
+    Object.keys(this._shaderPipelines).forEach((name) => {
+      this.recompileShader(name);
+    });
   }
 
   disableShader(shaderName) {
@@ -708,8 +753,10 @@ export default class SuperGame extends Phaser.Game {
     });
   }
 
-  disableMainShaders() {
-    this.disableShader('main');
+  disableShaders() {
+    Object.keys(this._shaderPipelines).forEach((name) => {
+      this.disableShader(name);
+    });
   }
 
   shaderInstantiation(fragShader) {
