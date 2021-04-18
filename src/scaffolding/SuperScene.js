@@ -955,7 +955,7 @@ export default class SuperScene extends Phaser.Scene {
 
   positionUnderground() {
     const {
-      underground, camera, tileWidth, tileHeight
+      underground, camera, tileWidth, tileHeight,
     } = this;
     if (underground) {
       underground.x = camera.scrollX + underground.width / 2 - tileWidth * 5;
@@ -2351,7 +2351,18 @@ export default class SuperScene extends Phaser.Scene {
     return tween;
   }
 
-  tweenSustainExclusive(fieldName, inDuration, sustainDuration, outDuration, update, onSustain, onOut, onComplete, inEase = 'Linear', outEase = inEase) {
+  tweenSustainExclusive(
+    fieldName,
+    inDuration,
+    sustainDuration,
+    outDuration,
+    update,
+    onSustain,
+    onOut,
+    onComplete,
+    inEase = 'Linear',
+    outEase = inEase,
+  ) {
     let startPoint = 0;
     if (this[fieldName]) {
       startPoint = this[fieldName].getValue();
