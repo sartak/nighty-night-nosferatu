@@ -388,6 +388,26 @@ export default class SuperScene extends Phaser.Scene {
     return level;
   }
 
+  executeScript(script) {
+    const {execute, delay} = script;
+
+    if (delay) {
+      this.timer(() => {
+        this.executeScript({...script, delay: 0});
+      }, delay);
+      return;
+    }
+
+    if (execute) {
+      if (typeof execute === 'object') {
+        const [method, ...args] = execute;
+        this[method](...args);
+      } else {
+        this[execute]();
+      }
+    }
+  }
+
   createLevel(id) {
     const level = this.level = this.loadLevel(id);
     this.addMap();
@@ -621,6 +641,16 @@ export default class SuperScene extends Phaser.Scene {
     this.setCameraBounds();
     this.setCameraDeadzone();
     this.setCameraLerp();
+
+    if (this.level && this.level.scripts) {
+      let delay = 0;
+      this.level.scripts.forEach((script) => {
+        if (script.delay) {
+          delay += script.delay;
+        }
+        this.executeScript({...script, delay});
+      });
+    }
   }
 
   update(time, dt) {
