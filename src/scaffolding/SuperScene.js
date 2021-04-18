@@ -310,6 +310,11 @@ export default class SuperScene extends Phaser.Scene {
     }
   }
 
+  setShader(shaderName) {
+    this.shaderName = shaderName;
+    this._setupShader();
+  }
+
   _setupShader() {
     if (!('shaderName' in this)) {
       this.shaderName = 'main';
