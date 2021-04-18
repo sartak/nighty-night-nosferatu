@@ -385,7 +385,39 @@ export default class SuperScene extends Phaser.Scene {
       level.background.setPosition(level.background.width * 0.5, level.background.height * 0.5);
     }
 
+    if (level.underground) {
+      this.createUnderground(level.underground);
+    }
+
     return level;
+  }
+
+  createUnderground(name) {
+    if (this.game.debug) {
+      const template = this.add.image(0, 0, name);
+      const {width, height} = template;
+      template.destroy();
+
+      // eslint-disable-next-line no-bitwise
+      const isPowerOfTwo = (x) => x && !(x & (x - 1));
+      if (!isPowerOfTwo(width) || !isPowerOfTwo(height)) {
+        // eslint-disable-next-line no-console
+        console.error(`Underground ${name} is ${width}x${height}; please use an image having powers-of-two dimensions for best rendering`);
+      }
+    }
+
+    const {
+      width, height, tileWidth, tileHeight,
+    } = this.game.config;
+
+    // Add some fudge because even with late updates to underground position
+    // we still see the background peek through
+    const w = width + 4 * tileWidth;
+    const h = height + 4 * tileHeight;
+    const underground = this.add.tileSprite(w / 2, h / 2, w, h, name);
+    underground.tilePositionX = 0;
+    underground.tilePositionY = 0;
+    this.underground = underground;
   }
 
   executeScript(script) {
@@ -884,6 +916,7 @@ export default class SuperScene extends Phaser.Scene {
     }
 
     this.positionBackground();
+    this.positionUnderground();
   }
 
   positionBackground() {
@@ -917,6 +950,18 @@ export default class SuperScene extends Phaser.Scene {
     } else {
       const yFactor = scrollY / yDivisor;
       background.y = yBorder + backgroundHeight * 0.5 + yFactor * (levelHeight - backgroundHeight);
+    }
+  }
+
+  positionUnderground() {
+    const {
+      underground, camera, tileWidth, tileHeight
+    } = this;
+    if (underground) {
+      underground.x = camera.scrollX + underground.width / 2 - tileWidth * 2;
+      underground.y = camera.scrollY + underground.height / 2 - tileHeight * 2;
+      underground.tilePositionX = camera.scrollX % tileWidth;
+      underground.tilePositionY = camera.scrollY % tileHeight;
     }
   }
 
