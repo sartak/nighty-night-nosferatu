@@ -115,8 +115,13 @@ export default class SuperGame extends Phaser.Game {
       this._shaderSource = {};
     }
 
-    this._shaderPipelines = {};
-    Object.entries(pipelines).forEach(([pipelineName, fragmentNames]) => {
+    const allFragments = [
+      ...(coordFragments || []),
+      ...(colorFragments || []),
+    ];
+
+    const out = {};
+    const setupPipeline = (pipelineName, fragmentNames) => {
       const coords = [];
       const colors = [];
 
@@ -136,12 +141,24 @@ export default class SuperGame extends Phaser.Game {
         throw new Error(`Unable to find shader '(${fragmentName}' in shader pipeline '${pipelineName}'`);
       });
 
-      this._shaderPipelines[pipelineName] = [coords, colors];
+      out[pipelineName] = [coords, colors];
+    };
+
+    Object.entries(pipelines).forEach(([pipelineName, fragmentNames]) => {
+      setupPipeline(pipelineName, fragmentNames);
     });
 
-    if (!this._shaderPipelines.main) {
-      this._shaderPipelines.main = [coordFragments || [], colorFragments || []];
+    allFragments.forEach(([name]) => {
+      if (!out[name]) {
+        setupPipeline(name, [name]);
+      }
+    });
+
+    if (!out.main) {
+      setupPipeline('main', allFragments.map(([name]) => name));
     }
+
+    this._shaderPipelines = out;
   }
 
   changeVolume(newVolume) {
