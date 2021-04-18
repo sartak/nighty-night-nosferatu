@@ -1470,11 +1470,17 @@ export default class SuperScene extends Phaser.Scene {
     }
   }
 
-  sleep(duration) {
+  sleep(duration, ignoreTimeScale = false) {
     this.pauseEverythingForSleep(duration);
-    this.timer(() => {
+
+    const timer = this.timer(() => {
       this.unpauseEverythingForSleep(duration);
-    }, duration).ignoresScenePause = true;
+    }, duration);
+
+    timer.ignoresScenePause = true;
+    if (ignoreTimeScale) {
+      timer.ignoresTimeScale = true;
+    }
   }
 
   beginReplay(replay, replayOptions) {
@@ -2345,7 +2351,11 @@ export default class SuperScene extends Phaser.Scene {
       }
 
       if (timer.time) {
-        timer.time -= dt;
+        if (timer.ignoresTimeScale) {
+          timer.time -= dt / this.timeScale;
+        } else {
+          timer.time -= dt;
+        }
         if (timer.time > 0) {
           newTimers.push(timer);
           return;
