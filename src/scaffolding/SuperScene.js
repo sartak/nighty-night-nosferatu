@@ -412,8 +412,8 @@ export default class SuperScene extends Phaser.Scene {
 
     // Add some fudge because even with late updates to underground position
     // we still see the background peek through
-    const w = width + 4 * tileWidth;
-    const h = height + 4 * tileHeight;
+    const w = width + 10 * tileWidth;
+    const h = height + 10 * tileHeight;
     const underground = this.add.tileSprite(w / 2, h / 2, w, h, name);
     underground.tilePositionX = 0;
     underground.tilePositionY = 0;
@@ -958,8 +958,8 @@ export default class SuperScene extends Phaser.Scene {
       underground, camera, tileWidth, tileHeight
     } = this;
     if (underground) {
-      underground.x = camera.scrollX + underground.width / 2 - tileWidth * 2;
-      underground.y = camera.scrollY + underground.height / 2 - tileHeight * 2;
+      underground.x = camera.scrollX + underground.width / 2 - tileWidth * 5;
+      underground.y = camera.scrollY + underground.height / 2 - tileHeight * 5;
       underground.tilePositionX = camera.scrollX % tileWidth;
       underground.tilePositionY = camera.scrollY % tileHeight;
     }
