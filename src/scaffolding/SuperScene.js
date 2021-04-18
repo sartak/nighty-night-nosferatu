@@ -457,11 +457,13 @@ export default class SuperScene extends Phaser.Scene {
 
         if (group) {
           if (tile.combine) {
-            if (!combine[glyph]) {
-              combine[glyph] = [];
+            const combiner = tile.combine === true ? glyph : tile.combine;
+
+            if (!combine[combiner]) {
+              combine[combiner] = [];
             }
 
-            combine[glyph].push(tile);
+            combine[combiner].push(tile);
             return;
           }
 
