@@ -153,6 +153,7 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
 
     'command.ignore_all.any': [false, null, (scene) => scene.command.ignoreAll()],
     'command.ignore_all._transition': [false, null, (scene) => scene.command.ignoreAll('_transition')],
+    'command.ignore_all._sleep': [false, null, (scene) => scene.command.ignoreAll('_sleep')],
 
     ...commandProps(commands),
     ...shaderProps(shaderCoordFragments, shaderColorFragments),

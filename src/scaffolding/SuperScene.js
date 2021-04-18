@@ -1470,6 +1470,13 @@ export default class SuperScene extends Phaser.Scene {
     }
   }
 
+  sleep(duration) {
+    this.pauseEverythingForSleep(duration);
+    this.timer(() => {
+      this.unpauseEverythingForSleep(duration);
+    }, duration).ignoresScenePause = true;
+  }
+
   beginReplay(replay, replayOptions) {
     const {command, game} = this;
     const {loop} = game;
@@ -2572,6 +2579,14 @@ export default class SuperScene extends Phaser.Scene {
     this.command.ignoreAll('_transition', false);
   }
 
+  pauseInputForSleep(duration) {
+    this.command.ignoreAll('_sleep', true);
+  }
+
+  unpauseInputForSleep(duration) {
+    this.command.ignoreAll('_sleep', false);
+  }
+
   pausePhysicsForTransition(transition) {
     this.pauseInputForTransition(transition);
 
@@ -2580,8 +2595,24 @@ export default class SuperScene extends Phaser.Scene {
     this.pauseAllAnimations();
   }
 
+  pausePhysicsForSleep(duration) {
+    this.pauseInputForSleep(duration);
+
+    this._paused.physics = true;
+
+    this.pauseAllAnimations();
+  }
+
   unpausePhysicsForTransition(transition) {
     this.unpauseInputForTransition(transition);
+
+    this._paused.physics = false;
+
+    this.resumeAllAnimations();
+  }
+
+  unpausePhysicsForSleep(duration) {
+    this.unpauseInputForSleep(duration);
 
     this._paused.physics = false;
 
@@ -2598,6 +2629,22 @@ export default class SuperScene extends Phaser.Scene {
 
   unpauseEverythingForTransition(transition) {
     this.unpausePhysicsForTransition(transition);
+
+    this._paused.timers = false;
+    this.resumeAllParticleSystems();
+    this.resumeAllTweens();
+  }
+
+  pauseEverythingForSleep(duration) {
+    this.pausePhysicsForSleep(duration);
+
+    this._paused.timers = true;
+    this.pauseAllParticleSystems();
+    this.pauseAllTweens();
+  }
+
+  unpauseEverythingForSleep(duration) {
+    this.unpausePhysicsForSleep(duration);
 
     this._paused.timers = false;
     this.resumeAllParticleSystems();
