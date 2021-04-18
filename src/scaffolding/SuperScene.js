@@ -1189,6 +1189,8 @@ export default class SuperScene extends Phaser.Scene {
       } else if (animation === 'fadeInOut') {
         swapScenes = true;
 
+        newScene.camera.setBackgroundColor(0);
+        oldScene.camera.setBackgroundColor(0);
         newScene.camera.alpha = 0;
         oldScene.camera.alpha = 1;
 
