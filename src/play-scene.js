@@ -103,6 +103,26 @@ export default class PlayScene extends SuperScene {
     this.processInput(time, dt);
   }
 
+  textSize(options) {
+    return '24px';
+  }
+
+  textColor(options) {
+    return 'rgb(255, 0, 0)';
+  }
+
+  strokeColor(options) {
+    return 'rgb(0, 0, 0)';
+  }
+
+  strokeWidth(options) {
+    return 6;
+  }
+
+  cameraColor() {
+    return 0x000000;
+  }
+
   launchTimeSight() {
     super.launchTimeSight();
   }

@@ -71,7 +71,7 @@ export default class SuperScene extends Phaser.Scene {
     this.command.attachScene(this, config._timeSightTarget);
 
     this.camera = this.cameras.main;
-    this.camera.setBackgroundColor(0);
+    this.camera.setBackgroundColor(this.cameraColor());
     injectCameraShake(this.camera);
 
     if (config.save) {
@@ -422,6 +422,10 @@ export default class SuperScene extends Phaser.Scene {
 
   strokeWidth() {
     return 6;
+  }
+
+  cameraColor() {
+    return 0x000000;
   }
 
   text(x, y, text, options = {}) {
@@ -1329,7 +1333,7 @@ export default class SuperScene extends Phaser.Scene {
           newScene.camera.alpha = 0;
 
           newCamera = newScene.cameras.add(0, 0, width, height);
-          newCamera.setBackgroundColor(0);
+          newCamera.setBackgroundColor(newScene.cameraColor());
           newCamera.scrollX = newScene.camera.scrollX;
           newCamera.scrollY = newScene.camera.scrollY;
 
@@ -1343,7 +1347,7 @@ export default class SuperScene extends Phaser.Scene {
           oldScene.camera.alpha = 0;
 
           oldCamera = oldScene.cameras.add(0, 0, width, height);
-          oldCamera.setBackgroundColor(0);
+          oldCamera.setBackgroundColor(oldScene.cameraColor());
           oldCamera.scrollX = oldScene.camera.scrollX;
           oldCamera.scrollY = oldScene.camera.scrollY;
 
