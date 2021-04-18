@@ -2257,6 +2257,95 @@ export default class SuperScene extends Phaser.Scene {
     return this[fieldName];
   }
 
+  tweenSustain(inDuration, sustainDuration, outDuration, update, onSustain, onOut, onComplete, startPoint = 0, inEase = 'Linear', outEase = inEase) {
+    let tween;
+
+    tween = this.tweens.addCounter({
+      from: startPoint,
+      to: 100,
+      ease: inEase,
+      duration: inDuration,
+      onUpdate: () => {
+        const factor = tween.getValue() / 100.0;
+        update(factor, 'in');
+      },
+      onComplete: () => {
+        tween = this.tweens.addCounter({
+          from: 0,
+          to: 100,
+          duration: sustainDuration,
+          onUpdate: () => {
+            const factor = tween.getValue() / 100.0;
+            update(1, 'sustain', factor);
+          },
+          onComplete: () => {
+            tween = this.tweens.addCounter({
+              from: 100,
+              to: 0,
+              ease: outEase,
+              duration: outDuration,
+              onUpdate: () => {
+                const factor = tween.getValue() / 100.0;
+                update(factor, 'out');
+              },
+              onComplete,
+            });
+
+            if (onOut) {
+              onOut(tween);
+            }
+          },
+        });
+
+        if (onSustain) {
+          onSustain(tween);
+        }
+      },
+    });
+
+    return tween;
+  }
+
+  tweenSustainExclusive(fieldName, inDuration, sustainDuration, outDuration, update, onSustain, onOut, onComplete, inEase = 'Linear', outEase = inEase) {
+    let startPoint = 0;
+    if (this[fieldName]) {
+      startPoint = this[fieldName].getValue();
+      this[fieldName].stop();
+    }
+
+    this[fieldName] = this.tweenSustain(
+      inDuration * (1 - startPoint / 100.0),
+      sustainDuration,
+      outDuration,
+      update,
+      (tween, ...args) => {
+        if (onSustain) {
+          onSustain(tween, ...args);
+        }
+
+        this[fieldName] = tween;
+      },
+      (tween, ...args) => {
+        if (onOut) {
+          onOut(tween, ...args);
+        }
+
+        this[fieldName] = tween;
+      },
+      (...args) => {
+        if (onComplete) {
+          onComplete(...args);
+        }
+        delete this[fieldName];
+      },
+      startPoint,
+      inEase,
+      outEase,
+    );
+
+    return this[fieldName];
+  }
+
   trauma(amount) {
     if (amount && !this._trauma) {
       this._traumaStart = this.time.now;
