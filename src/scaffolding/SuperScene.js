@@ -115,7 +115,7 @@ export default class SuperScene extends Phaser.Scene {
         let time = 0;
         physics.time = physics.dt = 0;
         world.step = (originalDelta) => {
-          const delta = originalDelta * world.timeScale * world.timeScale;
+          const delta = originalDelta / world.timeScale;
 
           const dt = delta * 1000;
           time += dt;
@@ -2352,7 +2352,7 @@ export default class SuperScene extends Phaser.Scene {
 
       if (timer.time) {
         if (timer.ignoresTimeScale) {
-          timer.time -= dt / this.timeScale;
+          timer.time -= dt * this.timeScale;
         } else {
           timer.time -= dt;
         }
@@ -2371,7 +2371,7 @@ export default class SuperScene extends Phaser.Scene {
     const isPaused = this._paused.tweens;
 
     // taken from Phaser TweenManager.update
-    const dt = origDt * tweens.timeScale;
+    const dt = origDt / tweens.timeScale;
 
     tweens._active.forEach((tween) => {
       if (isPaused && !tween.ignoresScenePause) {

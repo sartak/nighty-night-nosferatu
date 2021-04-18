@@ -50,7 +50,7 @@ export function injectParticleEmitterManagerPreUpdate(manager) {
     const isPaused = scene._paused.particles;
 
     // Scale the delta
-    const delta = origDelta * this.timeScale;
+    const delta = origDelta / this.timeScale;
 
     const emitters = this.emitters.list;
 

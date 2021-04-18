@@ -33,7 +33,7 @@ export function injectCameraShake(camera) {
       return;
     }
 
-    const t = (now - _traumaStart) * prop('scene.trauma.speed') * timeScale ** 2;
+    const t = (now - _traumaStart) * prop('scene.trauma.speed') / timeScale ** 2;
 
     const dx = _traumaShake * prop('scene.trauma.dx') * noiseX.noise2D(_traumaStart, t);
     const dy = _traumaShake * prop('scene.trauma.dy') * noiseY.noise2D(_traumaStart, t);
