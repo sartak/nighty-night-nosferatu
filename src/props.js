@@ -74,6 +74,8 @@ export const commands = {
 
 export const shaderCoordFragments = null;
 export const shaderColorFragments = null;
+export const shaderPipelines = {
+};
 
 export const propSpecs = {
   ...builtinPropSpecs(commands, shaderCoordFragments, shaderColorFragments),
