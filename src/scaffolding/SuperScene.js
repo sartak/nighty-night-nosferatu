@@ -408,6 +408,205 @@ export default class SuperScene extends Phaser.Scene {
     }
   }
 
+  textSize() {
+    return '24px';
+  }
+
+  textColor() {
+    return 'rgb(255, 0, 0)';
+  }
+
+  strokeColor() {
+    return 'rgb(0, 0, 0)';
+  }
+
+  strokeWidth() {
+    return 6;
+  }
+
+  text(x, y, text, options = {}) {
+    const label = this.add.text(
+      x,
+      y,
+      text,
+      {
+        fontFamily: '"Avenir Next", "Avenir", "Helvetica Neue", "Helvetica", "Arial"',
+        fontWeight: 'bold',
+        fontSize: this.textSize(options),
+        color: this.textColor(options),
+        ...options,
+      },
+    );
+
+    if (options.stroke !== null) {
+      if (options.stroke === undefined) {
+        label.setStroke(this.strokeColor(options), this.strokeWidth(options));
+      } else {
+        label.setStroke(...options.stroke);
+      }
+    }
+
+    return label;
+  }
+
+  speak(...args) {
+    let delay = 0;
+
+    let xc = args.shift();
+    let yc;
+
+    if (xc && !Number.isInteger(xc)) {
+      const lookups = this.level.mapLookups[xc];
+      xc = yc = lookups.map((t) => t.object).find((o) => o);
+      if (xc === undefined) {
+        xc = lookups[0].xCoord;
+        yc = lookups[0].yCoord;
+      }
+    } else {
+      yc = args.shift();
+    }
+
+    if (xc === null || xc === undefined) {
+      xc = this.game.config.width / 2;
+    }
+    if (yc === null || yc === undefined) {
+      yc = this.game.config.height / 2;
+    }
+
+    let lines = args.shift();
+    if (!Array.isArray(lines)) {
+      lines = [lines];
+    }
+
+    const options = args.shift() || {};
+
+    lines.forEach((line, i) => {
+      const {
+        duration, inTime, outTime, text, extraDelay,
+        dx, dy, noOut, follow,
+      } = {
+        inTime: 200,
+        outTime: 200,
+        duration: null,
+        extraDelay: 200,
+        dy: null,
+        dx: null,
+        noOut: false,
+        follow: true,
+        ...options,
+        ...(typeof line === 'object' ? line : {text: line}),
+      };
+
+      const d = duration === null ? text.length * 100 : duration;
+      const dx1 = dx === null ? 0 : dx;
+      const dy1 = dy === null ? -this.game.config.tileHeight : dy;
+
+      this.timer(() => {
+        let xl = xc;
+        let yl = yc;
+
+        let xo = typeof xl === 'object' ? xl : null;
+        let yo = typeof yl === 'object' ? yl : null;
+
+        if (xo) {
+          xl = xo.x;
+          if (!follow) {
+            xo = null;
+          }
+        }
+        if (yo) {
+          yl = yo.y;
+          if (!follow) {
+            yo = null;
+          }
+        }
+
+        const label = this.text(xl, yl, text);
+        const halfWidth = label.width / 2;
+        const halfHeight = label.height / 2;
+        label.x -= halfWidth;
+        label.y -= halfHeight;
+
+        let lx = label.x;
+        let ly = label.y;
+        label.alpha = 0;
+
+        this.tweenPercent(
+          inTime,
+          (factor) => {
+            label.alpha = factor;
+
+            if (xo) {
+              label.x = (xo.xCoord === undefined ? xo.x : xo.xCoord) - halfWidth + dx1;
+              lx = label.x;
+            }
+
+            if (yo) {
+              label.y = (yo.yCoord === undefined ? yo.y : yo.yCoord) - halfHeight + dy1;
+              ly = label.y;
+            }
+
+            label.x = lx - dx1 * (1.0 - factor);
+            label.y = ly - dy1 * (1.0 - factor);
+          },
+          null,
+          0,
+          'Cubic.easeOut',
+        );
+
+        this.timer(() => {
+          this.tweenPercent(
+            d,
+            (factor) => {
+              if (xo) {
+                label.x = (xo.xCoord === undefined ? xo.x : xo.xCoord) - halfWidth + dx1;
+              }
+              if (yo) {
+                label.y = (yo.yCoord === undefined ? yo.y : yo.yCoord) - halfHeight + dy1;
+              }
+            },
+            null,
+            0,
+            'Cubic.easeOut',
+          );
+        }, inTime);
+
+        if (noOut) {
+          return;
+        }
+
+        this.timer(() => {
+          this.tweenPercent(
+            outTime,
+            (factor) => {
+              label.alpha = 1.0 - factor;
+
+              if (xo) {
+                label.x = (xo.xCoord === undefined ? xo.x : xo.xCoord) - halfWidth + dx1;
+                lx = label.x;
+              }
+
+              if (yo) {
+                label.y = (yo.yCoord === undefined ? yo.y : yo.yCoord) - halfHeight + dy1;
+                ly = label.y;
+              }
+
+              label.x = lx - dx1 * factor;
+              label.y = ly - dy1 * factor;
+            },
+            () => {
+              label.destroy();
+            },
+            0,
+            'Cubic.easeOut',
+          );
+        }, inTime + d);
+      }, extraDelay + delay);
+
+      delay += extraDelay + d + inTime + outTime;
+    });
+  }
+
   createLevel(id) {
     const level = this.level = this.loadLevel(id);
     this.addMap();
