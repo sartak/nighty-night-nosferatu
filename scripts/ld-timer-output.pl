@@ -295,7 +295,7 @@ for my $h (0..48) {
   }
 }
 
-@m = map { $cats[rand @cats] } @m;
+#@m = map { $cats[rand @cats] } @m;
 
 #for my $key (@m) {
 #  print qq[<div class="minute $key"></div>];
