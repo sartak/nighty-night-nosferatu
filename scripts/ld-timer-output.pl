@@ -12,16 +12,21 @@ my $skipUnknown = shift;
 my $end = $start + 60 * 60 * 49;
 
 my @categories = (
-  ['d', 'design', 'rgb(44, 160, 44)'],
-  ['c', 'code', 'rgb(214, 39, 40)'],
-  ['a', 'art', 'rgb(255, 194, 14)'],
-  #['a', 'art', 'rgb(255, 127, 14)'],
-  ['s', 'sound', 'rgb(130, 185, 223)'],
-  #['s', 'sound', 'rgb(31, 119, 180)'],
-  ['m', 'music', 'rgb(193, 154, 229)'],
-  #['m', 'music', 'rgb(148, 103, 189)'],
+  ['d', 'design', 'rgb(142, 234, 131)'],
+  ['c', 'code', 'rgb(236, 91, 85)'],
+  ['a', 'art', 'rgb(246, 196, 86)'],
+  ['s', 'sound', 'rgb(67, 151, 247)'],
+  ['m', 'music', 'rgb(204, 75, 228)'],
   ['p', 'pause', 'rgb(200, 200, 200)'],
-  ['u', 'unknown', 'rgb(64, 64, 64)'],
+  ['u', 'unknown', 'rgb(96, 96, 96)'],
+
+  #['d', 'design', 'rgb(44, 160, 44)'],
+  #['c', 'code', 'rgb(214, 39, 40)'],
+  #['a', 'art', 'rgb(255, 127, 14)'],
+  #['s', 'sound', 'rgb(31, 119, 180)'],
+  #['m', 'music', 'rgb(148, 103, 189)'],
+  #['p', 'pause', 'rgb(200, 200, 200)'],
+  #['u', 'unknown', 'rgb(64, 64, 64)'],
 );
 pop @categories if $skipUnknown;
 
@@ -66,7 +71,8 @@ print << "START";
   width: calc((2vw - 4px) / 3 - 2px);
   height: calc((2vw - 4px) / 3 - 2px);
   border: 1px solid black;
-  background: rgb(64, 64, 64);
+  /* background: rgb(64, 64, 64); */
+  background: rgb(96, 96, 96);
 }
 
 ul {
@@ -130,10 +136,20 @@ START
 
 for (@categories) {
   my ($key, $name, $color) = @$_;
+
+  # for (1..49) {
+  #   my $n = sprintf '%.03f', 2 * ($_ / 49);
+  #   print qq[
+  #     .hour:nth-child($_) .$key {
+  #       transition-delay: ${n}s;
+  #     }
+  #   ];
+  # }
+
   print qq[
   .$key {
     background: $color;
-    filter: brightness(100%) @{[$key eq 'u' ? "!important" : ""]};
+    filter: brightness(85%) @{[$key eq 'u' ? "!important" : ""]};
     transition: filter 0.5s linear, transform 0.5s ease-in-out;
   }
 
@@ -151,12 +167,14 @@ for (@categories) {
   }
 
   body[data-hilight="$key"] .$key {
-    filter: brightness(100%);
+    filter: brightness(85%);
   }
 
   body[data-hilight="$key"] .blocks .$key {
-    transform: translateX(-1px) translateY(-2px);
-    filter: brightness(110%);
+    transform: translateX(-1px) translateY(-3px);
+    filter: brightness(100%);
+    border-top-color: rgb(64, 64, 64);
+    border-left-color: rgb(64, 64, 64);
   }
 
   body[data-hilight="$key"] .label-$key {
@@ -173,10 +191,14 @@ for (@categories) {
 print <<"START";
 </style>
 <script>
-function hilight(type) {
+function hilight(type, toggle) {
   var b = document.body;
   if (type) {
-    b.setAttribute('data-hilight', type);
+    if (toggle && type === b.getAttribute('data-hilight')) {
+      b.removeAttribute('data-hilight');
+    } else {
+      b.setAttribute('data-hilight', type);
+    }
   } else {
     b.removeAttribute('data-hilight');
   }
@@ -291,6 +313,7 @@ for (@categories) {
     @{[$key eq 'u' ? "" : qq[
       onmouseenter="hilight('$key')"
       onmouseleave="hilight()"
+      ontouchstart="hilight('$key', true)"
     ]]}><div class="minute $key"></div> <label class="label-$key">$name</label></li>\n];
 }
 
