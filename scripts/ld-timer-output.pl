@@ -134,23 +134,28 @@ li .minute {
 }
 START
 
+for (1..49) {
+  my $n = sprintf '%.03f', 2 + 5 * ($_ / 49);
+  print qq[
+    .hour:nth-child($_) .minute {
+      transition-delay: ${n}s;
+    }
+  ];
+}
+
 for (@categories) {
   my ($key, $name, $color) = @$_;
-
-  # for (1..49) {
-  #   my $n = sprintf '%.03f', 2 * ($_ / 49);
-  #   print qq[
-  #     .hour:nth-child($_) .$key {
-  #       transition-delay: ${n}s;
-  #     }
-  #   ];
-  # }
 
   print qq[
   .$key {
     background: $color;
     filter: brightness(85%) @{[$key eq 'u' ? "!important" : ""]};
-    transition: filter 0.5s linear, transform 0.5s ease-in-out;
+    will-change: filter, transform, border-top-color, border-left-color;
+    transition:
+      filter 0.25s linear,
+      transform 0.25s ease-in-out,
+      border-top-color 0.25s linear,
+      border-left-color 0.25s linear;
   }
 
   .label-$key {
@@ -159,7 +164,7 @@ for (@categories) {
   }
 
   body[data-hilight="$key"] .minute {
-    filter: brightness(40%);
+    filter: brightness(55%);
   }
 
   body[data-hilight="$key"] label {
@@ -191,17 +196,34 @@ for (@categories) {
 print <<"START";
 </style>
 <script>
+var desiredHilight;
+var debounce = false;
 function hilight(type, toggle) {
   var b = document.body;
-  if (type) {
-    if (toggle && type === b.getAttribute('data-hilight')) {
+  if (!type || (toggle && type === b.getAttribute('data-hilight'))) {
+    if (debounce) {
+      desiredHilight = null;
+    } else {
       b.removeAttribute('data-hilight');
+    }
+  }
+  else {
+    if (debounce) {
+      desiredHilight = type;
     } else {
       b.setAttribute('data-hilight', type);
     }
-  } else {
-    b.removeAttribute('data-hilight');
   }
+
+  if (debounce) {
+    return;
+  }
+
+  debounce = true;
+  setTimeout(() => {
+    debounce = false;
+    hilight(desiredHilight);
+  }, 8000);
 }
 </script>
 </head>
@@ -298,7 +320,6 @@ for my $h (0..48) {
         onmouseenter="hilight('$key')"
         onmouseleave="hilight()"
         ]]}
-        title="${h}h ${k}m"
       ></div>];
     }
   }
