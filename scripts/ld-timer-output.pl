@@ -165,7 +165,7 @@ START
 
 my $handle;
 open $handle, '<', $logFile
-  or die;
+  or die $!;
 
 my @buf;
 my $bufd;
