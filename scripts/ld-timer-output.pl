@@ -115,7 +115,6 @@ li {
     height: 10px;
   }
 }
-
 START
 
 for (@categories) {
@@ -123,11 +122,43 @@ for (@categories) {
   print qq[
   .$key {
     background: $color;
+    filter: brightness(100%) @{[$key eq 'u' ? "!important" : ""]};
+    transition: filter 0.5s linear, transform 0.5s ease-in-out;
+  }
+
+  body[data-hilight="$key"] .minute {
+    filter: brightness(40%);
+  }
+
+  body[data-hilight="$key"] .$key {
+    filter: brightness(100%);
+  }
+
+  body[data-hilight="$key"] .blocks .$key {
+    transform: translateX(-1px) translateY(-2px);
+    filter: brightness(110%);
+  }
+
+  \@media (max-width: 1050px) {
+    body[data-hilight="$key"] .blocks .$key {
+      transform: none;
+    }
   }
 ];
 }
 print <<"START";
 </style>
+<script>
+function hilight(type) {
+  var b = document.body;
+  if (type) {
+    b.setAttribute('data-hilight', type);
+  } else {
+    b.removeAttribute('data-hilight');
+  }
+}
+</script>
+</head>
 <body>
 <div class="blocks">
 START
@@ -212,7 +243,17 @@ for my $h (0..48) {
 
   for my $i (0..19) {
     for my $j (0..2) {
-      print qq[<div title="@{[$h]}h @{[$j*20+$i]}m" class="minute $m[$j*20+$i]"></div>];
+      my $k = $j*20+$i;
+      my $key = $m[$k];
+      #$key = $cats[rand @cats];
+      print qq[<div
+        class="minute $key"
+        @{[1 || $key eq 'u' ? "" : qq[
+        onmouseenter="hilight('$key')"
+        onmouseleave="hilight()"
+        ]]}
+        title="${h}h ${k}m"
+      ></div>];
     }
   }
 
@@ -222,7 +263,11 @@ print "</div>\n";
 print "<ul>\n";
 for (@categories) {
   my ($key, $name, $color) = @$_;
-  print qq[<li><div class="minute $key"></div> $name</li>\n];
+  print qq[<li
+    @{[$key eq 'u' ? "" : qq[
+      onmouseenter="hilight('$key')"
+      onmouseleave="hilight()"
+    ]]}><div class="minute $key"></div> $name</li>\n];
 }
 
 print << "START";
