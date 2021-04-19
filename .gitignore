@@ -22,4 +22,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-/.ld-time
+/.ld-timer-state
+/.ld-timer-log
