@@ -38,41 +38,68 @@ my $last_time = $start;
 my $last_mode = 'd';
 my %t;
 
+sub sizes {
+  my ($width, $border, $hourMargin) = @_;
+
+  my $out = << "START";
+.blocks {
+  width: ${width}vw;
+  height: calc(2 * ${hourMargin}px + (${width}vw - 50 * ${hourMargin}px) / (49 * 3) * 20);
+}
+
+.minute {
+  width: calc((${width}vw - 50 * ${hourMargin}px - 49 * 3 * ${border}px) / (49 * 3));
+  height: calc((${width}vw - 50 * ${hourMargin}px - 49 * 3 * ${border}px) / (49 * 3));
+}
+
+li .minute {
+  border: calc(${border}px*0.5) solid black;
+}
+START
+
+  for my $x (0 .. 3 * 60) {
+    my $hour = 1 + int($x / 3);
+    $out .= qq[
+      .x-$x {
+        left: calc($hour * ${hourMargin}px + ${x} * (${width}vw - 50 * ${hourMargin}px) / (49 * 3) + ${border}*.5px);
+      }
+    ];
+  }
+
+  for my $y (0 .. 20) {
+    $out .= qq[
+      .y-$y {
+        top: calc(${hourMargin}px + ${y} * (${width}vw - 50 * ${hourMargin}px) / (49 * 3) + ${border}*.5px);
+      }
+    ];
+  }
+
+  return $out;
+}
+
 print << "START";
 <html>
 <head>
 <style>
+@{[sizes(98, 2, 4)]}
+
 .blocks {
-  text-align: center;
-  background: white;
-}
-
-.hour {
-  display: inline-block;
-  width: calc(2vw - 4px);
-  text-align: center;
+  position: relative;
   background: black;
-  border-top: 2px solid black;
-  border-bottom: 2px solid black;
-}
-.hour + .hour {
-  padding-left: 2px;
 }
 
-.hour:nth-child(1) {
-  border-left: 2px solid black;
+.minutes {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
-.hour:nth-child(49) {
-  border-right: 2px solid black;
+
+.minutes .minute {
+  position: absolute;
 }
 
 .minute {
-  display: inline-block;
-  width: calc((2vw - 4px) / 3 - 2px);
-  height: calc((2vw - 4px) / 3 - 2px);
-  border: 1px solid black;
-  /* background: rgb(64, 64, 64); */
-  background: rgb(96, 96, 96);
+  display: block;
 }
 
 ul {
@@ -99,29 +126,12 @@ li .minute {
   margin-top: 2px;
 }
 
-\@media (max-width: 1050px) {
-  .hour {
-    width: 1.8vw;
-    border-top: 1px solid black;
-    border-bottom 1px solid black;
-  }
+\@media (max-width: 1200px) {
+  @{[sizes(98, 0, 4)]}
+}
 
-  .hour + .hour {
-    padding-left: 0;
-  }
-
-  .hour:nth-child(1) {
-    border-left: 1px solid black;
-  }
-  .hour:nth-child(49) {
-    border-right: 1px solid black;
-  }
-
-  .minute {
-    width: calc((1.8vw - 1px) / 3);
-    height: calc((1.8vw - 1px) / 3);
-    border: none;
-  }
+\@media (max-width: 950px) {
+  @{[sizes(98, 0, 0)]}
 
   li {
     margin: 0 1em;
@@ -134,60 +144,57 @@ li .minute {
 }
 START
 
-for (1..49) {
-  my $n = sprintf '%.03f', 2 + 5 * ($_ / 49);
-  print qq[
-    .hour:nth-child($_) .minute {
-      transition-delay: ${n}s;
-    }
-  ];
-}
-
 for (@categories) {
   my ($key, $name, $color) = @$_;
 
   print qq[
-  .$key {
+  .$key .minute, li .minute.$key {
     background: $color;
+  }
+
+  .$key {
+    z-index: 0;
     filter: brightness(85%) @{[$key eq 'u' ? "!important" : ""]};
-    will-change: filter, transform, border-top-color, border-left-color;
-    transition:
-      filter 0.25s linear,
-      transform 0.25s ease-in-out,
-      border-top-color 0.25s linear,
-      border-left-color 0.25s linear;
+    transition: filter 0.3s linear, transform 0.3s linear;
   }
 
   .label-$key {
-    opacity: 1;
-    transition: opacity 0.5s linear;
+    opacity: 1 @{[$key eq 'u' ? "!important" : ""]};
+    transition: opacity 0.3s linear;
   }
 
-  body[data-hilight="$key"] .minute {
-    filter: brightness(55%);
+  body[data-hilight="$key"] .minutes,
+  body[data-hilight="$key"] li .minute {
+    filter: brightness(45%);
   }
 
   body[data-hilight="$key"] label {
     opacity: 0.3;
   }
 
-  body[data-hilight="$key"] .$key {
+  body[data-hilight="$key"] .minutes.$key,
+  body[data-hilight="$key"] li .minute.$key {
     filter: brightness(85%);
   }
 
-  body[data-hilight="$key"] .blocks .$key {
-    transform: translateX(-1px) translateY(-3px);
+  body[data-hilight="$key"] .minutes.$key {
+    transform: translateX(-1.5px) translateY(-3px);
+    z-index: 1;
     filter: brightness(100%);
-    border-top-color: rgb(64, 64, 64);
-    border-left-color: rgb(64, 64, 64);
+    transition: filter 0.3s linear, transform 0.9s cubic-bezier(.5,3.04,.49,.47);
   }
 
   body[data-hilight="$key"] .label-$key {
     opacity: 1;
   }
 
-  \@media (max-width: 1050px) {
-    body[data-hilight="$key"] .blocks .$key {
+  \@media (max-width: 1200px) {
+    body[data-hilight="$key"] .minutes,
+    body[data-hilight="$key"] li .minute {
+      filter: brightness(35%);
+    }
+
+    body[data-hilight="$key"] .minutes.$key {
       transform: none;
     }
   }
@@ -197,33 +204,14 @@ print <<"START";
 </style>
 <script>
 var desiredHilight;
-var debounce = false;
 function hilight(type, toggle) {
   var b = document.body;
   if (!type || (toggle && type === b.getAttribute('data-hilight'))) {
-    if (debounce) {
-      desiredHilight = null;
-    } else {
-      b.removeAttribute('data-hilight');
-    }
+    b.removeAttribute('data-hilight');
   }
   else {
-    if (debounce) {
-      desiredHilight = type;
-    } else {
-      b.setAttribute('data-hilight', type);
-    }
+    b.setAttribute('data-hilight', type);
   }
-
-  if (debounce) {
-    return;
-  }
-
-  debounce = true;
-  setTimeout(() => {
-    debounce = false;
-    hilight(desiredHilight);
-  }, 8000);
 }
 </script>
 </head>
@@ -253,9 +241,10 @@ sub unget { unshift @buf, [@_] }
 
 my $s = $start;
 my $key = 'd';
+
+my @m;
+
 for my $h (0..48) {
-  print q[<div class="hour">];
-  my @m;
   for my $m (0..59) {
     $s += 60;
     my $e = $s + 60;
@@ -304,28 +293,33 @@ for my $h (0..48) {
 
     push @m, $key;
   }
+}
 
-  #for my $key (@m) {
-  #  print qq[<div class="minute $key"></div>];
-  #}
+@m = map { $cats[rand @cats] } @m;
 
-  for my $i (0..19) {
-    for my $j (0..2) {
-      my $k = $j*20+$i;
-      my $key = $m[$k];
-      #$key = $cats[rand @cats];
-      print qq[<div
-        class="minute $key"
-        @{[1 || $key eq 'u' ? "" : qq[
-        onmouseenter="hilight('$key')"
-        onmouseleave="hilight()"
-        ]]}
-      ></div>];
+#for my $key (@m) {
+#  print qq[<div class="minute $key"></div>];
+#}
+
+for my $cat (@cats) {
+  print qq[<div class="minutes $cat">];
+
+  for my $h (0..48) {
+    for my $i (0..19) {
+      for my $j (0..2) {
+        my $k = $h*60+$j*20+$i;
+        my $key = $m[$k];
+        my $x = $h*3 + $j;
+        my $y = $i;
+        next if $key ne $cat;
+        print qq[<div class="minute x-$x y-$y"></div>];
+      }
     }
   }
 
-  print q[</div>];
+  print qq[</div>];
 }
+
 print "</div>\n";
 print "<ul>\n";
 for (@categories) {
