@@ -45,6 +45,8 @@ sub sizes {
 .blocks {
   width: ${width}vw;
   height: calc(2 * ${hourMargin}px + (${width}vw - 50 * ${hourMargin}px) / (49 * 3) * 20);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .minute {
@@ -86,6 +88,8 @@ print << "START";
 .blocks {
   position: relative;
   background: black;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .minutes {
@@ -127,11 +131,16 @@ li .minute {
 }
 
 \@media (max-width: 1200px) {
-  @{[sizes(98, 0, 4)]}
+  body {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  @{[sizes(100, 0, 4)]}
 }
 
 \@media (max-width: 950px) {
-  @{[sizes(98, 0, 0)]}
+  @{[sizes(100, 0, 0)]}
 
   li {
     margin: 0 1em;
