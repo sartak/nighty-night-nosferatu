@@ -80,6 +80,14 @@ li {
   margin: 0 2em;
   font-family: "Open Sans", verdana, arial, sans-serif;
   font-size: 13px;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+li .minute {
+  margin-right: 4px;
+  margin-top: 2px;
 }
 
 \@media (max-width: 1050px) {
@@ -126,8 +134,17 @@ for (@categories) {
     transition: filter 0.5s linear, transform 0.5s ease-in-out;
   }
 
+  .label-$key {
+    opacity: 1;
+    transition: opacity 0.5s linear;
+  }
+
   body[data-hilight="$key"] .minute {
     filter: brightness(40%);
+  }
+
+  body[data-hilight="$key"] label {
+    opacity: 0.3;
   }
 
   body[data-hilight="$key"] .$key {
@@ -137,6 +154,10 @@ for (@categories) {
   body[data-hilight="$key"] .blocks .$key {
     transform: translateX(-1px) translateY(-2px);
     filter: brightness(110%);
+  }
+
+  body[data-hilight="$key"] .label-$key {
+    opacity: 1;
   }
 
   \@media (max-width: 1050px) {
@@ -267,7 +288,7 @@ for (@categories) {
     @{[$key eq 'u' ? "" : qq[
       onmouseenter="hilight('$key')"
       onmouseleave="hilight()"
-    ]]}><div class="minute $key"></div> $name</li>\n];
+    ]]}><div class="minute $key"></div> <label class="label-$key">$name</label></li>\n];
 }
 
 print << "START";
