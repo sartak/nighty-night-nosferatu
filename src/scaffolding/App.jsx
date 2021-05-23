@@ -2,13 +2,20 @@ import {hot} from 'react-hot-loader/root';
 import React from 'react';
 import Development from './Development';
 import Production from './Production';
+import Embed from './Embed';
+import {productionDisplay} from '../../package.json';
 
 class App extends React.Component {
   render() {
     const {debug} = this.props;
-    const Layout = debug ? Development : Production;
 
-    return <Layout />;
+    if (productionDisplay.embed) {
+      return <Embed />;
+    } else if (debug) {
+      return <Development />;
+    } else {
+      return <Production />;
+    }
   }
 }
 

@@ -39,13 +39,13 @@
 }
 
 .Replay .controls .recording.button {
-  animation-name: recording;
+  animation-name: lds-recording;
   animation-duration: 4s;
   animation-direction: alternate;
   animation-iteration-count: infinite;
 }
 
-@keyframes recording {
+@keyframes lds-recording {
   0% {
     filter: sepia(100%) hue-rotate(290deg);
   }

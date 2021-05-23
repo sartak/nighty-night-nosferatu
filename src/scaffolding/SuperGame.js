@@ -187,7 +187,7 @@ export default class SuperGame extends Phaser.Game {
   }
 
   preloadComplete() {
-    const spinner = document.getElementById('spinner');
+    const spinner = document.getElementById('lds-spinner');
     if (spinner && spinner.parentNode) {
       spinner.parentNode.removeChild(spinner);
     }

@@ -1,4 +1,4 @@
-body.scaled {
+body.ld-slate.scaled {
   background-color: #000000;
   overflow: hidden;
 }
@@ -51,12 +51,12 @@ body.natural #engine-container canvas {
   opacity: 0.5;
 }
 
-#engine-container.activated #spinner {
+#engine-container.activated #lds-spinner {
   opacity: 1;
 }
 
-#engine-container.activate #spinner {
-  animation: 1s linear 0s 1 delaySpinner;
+#engine-container.activate #lds-spinner {
+  animation: 1s linear 0s 1 lds-delaySpinner;
 }
 
 #engine-container {
@@ -67,7 +67,7 @@ body.natural #engine-container canvas {
   /* filter: brightness(50%); */
 }
 
-@keyframes delaySpinner {
+@keyframes lds-delaySpinner {
   0% {
     opacity: 0;
   }

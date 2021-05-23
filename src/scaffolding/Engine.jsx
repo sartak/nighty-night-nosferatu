@@ -17,6 +17,7 @@ export default class Engine extends React.Component {
       volume: loadField('volume', 0.66),
       scale: null,
     };
+    this.controls = React.createRef();
   }
 
   componentDidMount() {
@@ -115,10 +116,9 @@ export default class Engine extends React.Component {
     this.moveTimeout = null;
 
     if (instant) {
-      const controls = document.querySelector('#controls');
-      controls.style.transition = 'none';
+      this.controls.current.style.transition = 'none';
       setTimeout(() => {
-        controls.style.transition = '';
+        this.controls.current.style.transition = '';
       });
     }
 
@@ -211,6 +211,7 @@ export default class Engine extends React.Component {
     const {
       activating, scale, volume, focused,
     } = this.state;
+    const { disableFullscreen } = this.props;
 
     const classes = [];
     classes.push(activating ? 'activated' : 'activate');
@@ -235,9 +236,11 @@ export default class Engine extends React.Component {
           <Spinner />
         </div>
         <Controls
+          ref={this.controls}
           onMouseMove={() => this.onMouseMove()}
           volume={volume}
           onVolumeChange={(v) => this.setVolume(v)}
+          disableFullscreen={disableFullscreen}
           isFullscreen={scale}
           enterFullscreen={() => this.enterFullscreen()}
           exitFullscreen={() => this.exitFullscreen()}

@@ -1,10 +1,10 @@
-body.natural .development #engine-container {
+body.ld-slate.natural .development #engine-container {
   margin-top: 16px;
   margin-left: 16px;
   position: absolute;
 }
 
-.development .sidebar {
+body.ld-slate .development .sidebar {
   margin-left: 840px;
   overflow: scroll;
   box-sizing: border-box;
@@ -12,27 +12,27 @@ body.natural .development #engine-container {
   height: 100vh;
 }
 
-.development .sidebar > ul {
+body.ld-slate .development .sidebar > ul {
   list-style-type: none;
   padding: 0;
   text-align: center;
 }
 
-.development .links {
+body.ld-slate .development .links {
   margin-bottom: 0;
 }
 
-.development .links li {
+body.ld-slate .development .links li {
   display: inline-block;
   margin-right: 0.5em;
 }
 
-.development .links li a {
+body.ld-slate .development .links li a {
   text-decoration: none;
   color: blue;
 }
 
-body.scaled .development .sidebar,
-body.scaled .development .Logging {
+body.ld-slate.scaled .development .sidebar,
+body.ld-slate.scaled .development .Logging {
   display: none;
 }

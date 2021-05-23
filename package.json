@@ -3,6 +3,7 @@
   "homepage": "/",
   "version": "0.1.0",
   "productionDisplay": {
+    "embed": false,
     "displayName": "ld-slate",
     "analyticsId": "",
     "authorName": "",

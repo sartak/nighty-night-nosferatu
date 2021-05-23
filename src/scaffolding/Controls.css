@@ -1,4 +1,4 @@
-#engine-container #controls {
+#engine-container .Controls {
   opacity: 0;
   transition: opacity 1s linear;
   position: absolute;
@@ -14,20 +14,20 @@
   padding: 8px 16px;
 }
 
-body.scaled {
+body.ld-slate.scaled {
   cursor: none;
 }
 
-body.mouseMoved.scaled {
+body.ld-slate.mouseMoved.scaled {
   cursor: default;
 }
 
-body.mouseMoved #engine-container #controls {
+body.mouseMoved #engine-container .Controls {
   opacity: 1;
   transition: opacity 0.25s linear;
 }
 
-body.scaled #engine-container #controls {
+body.scaled #engine-container .Controls {
   position: fixed;
   background-color: #191919;
   bottom: 20px;
@@ -35,22 +35,22 @@ body.scaled #engine-container #controls {
   border-radius: 16px;
 }
 
-#engine-container #controls .volume,
-#engine-container #controls .fullscreen {
+#engine-container .Controls .volume,
+#engine-container .Controls .fullscreen {
   display: inline-flex;
   vertical-align: middle;
   color: white;
 }
 
-#engine-container #controls .volume input {
+#engine-container .Controls .volume input {
   cursor: pointer;
 }
 
-#engine-container #controls div + div {
+#engine-container .Controls div + div {
   margin-left: 20px;
 }
 
-#engine-container #controls .fullscreen .button {
+#engine-container .Controls .fullscreen .button {
   cursor: pointer;
   border: 1px solid white;
   padding: 0px 4px;
@@ -60,21 +60,118 @@ body.scaled #engine-container #controls {
   border-radius: 4px;
 }
 
-#engine-container #controls .fullscreen .button:hover {
+#engine-container .Controls .fullscreen .button:hover {
   background-color: #303030;
 }
 
-#engine-container #controls .fullscreen .label {
+#engine-container .Controls .fullscreen .label {
   font-size: 18px;
   width: 100%;
 }
 
-#engine-container #controls .fullscreen .label.enter {
+#engine-container .Controls .fullscreen .label.enter {
   transform: rotate(-45deg);
   width: 14px;
   line-height: 24px;
 }
 
-#engine-container #controls .fullscreen .label.exit {
+#engine-container .Controls .fullscreen .label.exit {
   line-height: 22px;
+}
+
+#engine-container .Controls input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+#engine-container .Controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+
+#engine-container .Controls input[type="range"]:focus {
+  outline: none;
+}
+
+#engine-container .Controls input[type="range"]::-ms-track {
+  width: 100%;
+  cursor: pointer;
+
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+#engine-container .Controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border: 1px solid #000000;
+  height: 16px;
+  width: 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  cursor: pointer;
+  margin-top: -5px;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+
+#engine-container .Controls input[type="range"]::-moz-range-thumb {
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  border: 1px solid #000000;
+  height: 16px;
+  width: 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+#engine-container .Controls input[type="range"]::-ms-thumb {
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  border: 1px solid #000000;
+  height: 16px;
+  width: 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+#engine-container .Controls input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  background: #303030;
+  border-radius: 1.3px;
+  border: 0.2px solid #010101;
+}
+
+#engine-container .Controls input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  background: #303030;
+  border-radius: 1.3px;
+  border: 0.2px solid #010101;
+}
+
+#engine-container .Controls input[type="range"]::-ms-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  border-width: 16px 0;
+  color: transparent;
+}
+#engine-container .Controls input[type="range"]::-ms-fill-lower {
+  background: #303030;
+  border: 0.2px solid #010101;
+  border-radius: 2.6px;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+#engine-container .Controls input[type="range"]::-ms-fill-upper {
+  background: #303030;
+  border: 0.2px solid #010101;
+  border-radius: 2.6px;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
 }
