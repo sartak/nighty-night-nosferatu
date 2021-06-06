@@ -115,7 +115,7 @@ export default class Engine extends React.Component {
     clearTimeout(this.moveTimeout);
     this.moveTimeout = null;
 
-    if (instant) {
+    if (instant && this.controls.current && this.controls.current.style) {
       this.controls.current.style.transition = 'none';
       setTimeout(() => {
         this.controls.current.style.transition = '';
