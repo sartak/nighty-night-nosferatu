@@ -16,8 +16,7 @@ export function devAnalytics(event, value) {
       options,
     );
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error(e);
+    // don't worry about it
   }
 }
 
