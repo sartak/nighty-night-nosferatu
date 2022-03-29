@@ -79,8 +79,6 @@ function getClientEnvironment(publicUrl, packageJson) {
         PUBLIC_URL: publicUrl,
 
         GAME_NAME: packageJson.productionDisplay.displayName,
-
-        ANALYTICS_ID: packageJson.productionDisplay.analyticsId,
       }
     );
   // Stringify all values so we can feed into Webpack DefinePlugin

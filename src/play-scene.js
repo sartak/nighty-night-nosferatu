@@ -1,6 +1,5 @@
 import SuperScene from "./scaffolding/SuperScene";
 import prop from "./props";
-import analytics from "./scaffolding/lib/analytics";
 import { NormalizeVector } from "./scaffolding/lib/vector";
 
 export default class PlayScene extends SuperScene {

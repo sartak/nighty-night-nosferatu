@@ -6,7 +6,6 @@ import prop, {
 import {updatePropsFromStep} from './lib/manage-gui';
 import {shaderTypeMeta} from './lib/shaders';
 import {name as project} from '../../package.json';
-import analytics from './lib/analytics';
 import CommandManager from './CommandManager';
 
 const baseConfig = {
@@ -228,8 +227,6 @@ export default class SuperGame extends Phaser.Game {
     }
 
     this._launchingGame = true;
-
-    analytics('00 started game');
 
     // eslint-disable-next-line no-console
     console.warn(`Welcome to ${project}!`);

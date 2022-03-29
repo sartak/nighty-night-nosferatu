@@ -10,7 +10,7 @@ The primary game code is in `src/play-scene.js`, with `src/props.js` and
 
 # Deployment
 
-Update `package.json` as needed (e.g. for analytics, author name, etc).
+Update `package.json` as needed (e.g. for game name, author name, etc).
 
 Run `npm run build` then put the `build/` directory on a web server.
 
