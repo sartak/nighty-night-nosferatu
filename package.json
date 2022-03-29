@@ -1,24 +1,22 @@
 {
-  "name": "ld-slate",
+  "name": "ld50.shawn.dev",
   "homepage": "/",
   "version": "0.1.0",
   "productionDisplay": {
     "embed": false,
-    "displayName": "ld-slate",
-    "authorName": "",
-    "authorURL": "",
-    "authorTwitter": "",
-    "authorTwitch": "",
-    "eventDescription": "",
-    "eventNamePre": "",
-    "eventNameBold": "",
-    "eventNamePost": "",
-    "eventURL": "",
-    "themeDescription": "",
+    "displayName": "LD50",
+    "authorName": "@sartak",
+    "authorURL": "https://shawn.dev",
+    "eventDescription": "created solo in 48 hours as part of",
+    "eventNamePre": "the",
+    "eventNameBold": "Ludum Dare 50",
+    "eventNamePost": "compo",
+    "eventURL": "https://ldjam.com/events/ludum-dare/50/$280398",
+    "themeDescription": "for the theme",
     "themePre": "",
-    "themeItalic": "",
+    "themeItalic": "\"TBD\"",
     "themePost": "",
-    "repoURL": ""
+    "repoURL": "https://github.com/sartak/ld50.shawn.dev"
   },
   "developmentDisplay": {
     "links": [
