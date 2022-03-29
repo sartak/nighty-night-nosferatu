@@ -1,11 +1,12 @@
 import {
-  builtinPropSpecs, ManageableProps, PropLoader, makePropsWithPrefix,
+  builtinPropSpecs,
+  ManageableProps,
+  PropLoader,
+  makePropsWithPrefix,
   preprocessPropSpecs,
-} from './scaffolding/lib/props';
+} from "./scaffolding/lib/props";
 
-const particleImages = [
-  '',
-];
+const particleImages = [""];
 
 export const commands = {
   /*
@@ -15,53 +16,53 @@ export const commands = {
   */
 
   up: {
-    input: ['keyboard.UP', 'gamepad.UP'],
+    input: ["keyboard.UP", "gamepad.UP"],
   },
   down: {
-    input: ['keyboard.DOWN', 'gamepad.DOWN'],
+    input: ["keyboard.DOWN", "gamepad.DOWN"],
   },
   left: {
-    input: ['keyboard.LEFT', 'gamepad.LEFT'],
+    input: ["keyboard.LEFT", "gamepad.LEFT"],
   },
   right: {
-    input: ['keyboard.RIGHT', 'gamepad.RIGHT'],
+    input: ["keyboard.RIGHT", "gamepad.RIGHT"],
   },
   lstick: {
-    input: ['gamepad.LSTICK.RAW'],
+    input: ["gamepad.LSTICK.RAW"],
     joystick: true,
   },
   rstick: {
-    input: ['gamepad.RSTICK.RAW'],
+    input: ["gamepad.RSTICK.RAW"],
     joystick: true,
   },
 
   restart: {
-    input: ['keyboard.R'],
+    input: ["keyboard.R"],
     execute: (scene) => scene.replaceWithSelf(),
     debug: true,
     unignorable: true,
     unreplayable: true,
   },
   quit: {
-    input: ['keyboard.Q'],
-    execute: 'forceQuit',
+    input: ["keyboard.Q"],
+    execute: "forceQuit",
     debug: true,
     unignorable: true,
     unreplayable: true,
   },
   recordCycle: {
-    input: ['gamepad.R1'],
+    input: ["gamepad.R1"],
     unreplayable: true,
     debug: true,
     unignorable: true,
     execute: (scene, game) => {
-      const {_replay, _recording} = game;
+      const { _replay, _recording } = game;
       if (_replay && _replay.timeSight) {
         game.stopReplay();
       } else if (_replay) {
         setTimeout(() => {
           game.stopReplay();
-          game.beginReplay({..._replay, timeSight: true});
+          game.beginReplay({ ..._replay, timeSight: true });
         });
       } else if (_recording) {
         game.stopRecording();
@@ -74,16 +75,14 @@ export const commands = {
 
 export const shaderCoordFragments = null;
 export const shaderColorFragments = null;
-export const shaderPipelines = {
-};
+export const shaderPipelines = {};
 
 export const propSpecs = {
   ...builtinPropSpecs(commands, shaderCoordFragments, shaderColorFragments),
-
 };
 
 export const tileDefinitions = {
-  '.': null, // background
+  ".": null, // background
 };
 
 preprocessPropSpecs(propSpecs, particleImages);

@@ -121,13 +121,14 @@
       "react-hot-loader/babel"
     ]
   },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
   "devDependencies": {
+    "@types/react": "^17.0.43",
     "eslint": "^5.16.0",
-    "eslint-config-stripe": "^1.2.1",
+    "eslint-config-react-app": "^4.0.1",
     "eslint-loader": "^2.1.2",
-    "eslint-plugin-import": "^2.17.2",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-only-warn": "^1.0.1",
     "eslint-plugin-react": "^7.13.0",
     "prettier": "^1.17.1",
     "react-hot-loader": "^4.8.5"

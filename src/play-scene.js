@@ -1,7 +1,7 @@
-import SuperScene from './scaffolding/SuperScene';
-import prop from './props';
-import analytics from './scaffolding/lib/analytics';
-import {NormalizeVector} from './scaffolding/lib/vector';
+import SuperScene from "./scaffolding/SuperScene";
+import prop from "./props";
+import analytics from "./scaffolding/lib/analytics";
+import { NormalizeVector } from "./scaffolding/lib/vector";
 
 export default class PlayScene extends SuperScene {
   constructor() {
@@ -30,8 +30,7 @@ export default class PlayScene extends SuperScene {
     return 1;
   }
 
-  migrateSaveStateVersion1(save) {
-  }
+  migrateSaveStateVersion1(save) {}
 
   init(config) {
     super.init(config);
@@ -47,14 +46,12 @@ export default class PlayScene extends SuperScene {
     this.setupPhysics();
   }
 
-  setupPhysics() {
-  }
+  setupPhysics() {}
 
-  setupAnimations() {
-  }
+  setupAnimations() {}
 
   processInput(time, dt) {
-    const {command} = this;
+    const { command } = this;
 
     let dx = 0;
     let dy = 0;
@@ -104,15 +101,15 @@ export default class PlayScene extends SuperScene {
   }
 
   textSize(options) {
-    return '24px';
+    return "24px";
   }
 
   textColor(options) {
-    return 'rgb(255, 0, 0)';
+    return "rgb(255, 0, 0)";
   }
 
   strokeColor(options) {
-    return 'rgb(0, 0, 0)';
+    return "rgb(0, 0, 0)";
   }
 
   strokeWidth(options) {
@@ -134,23 +131,25 @@ export default class PlayScene extends SuperScene {
   }
 
   debugHandlePointerdown(event) {
-    let {x, y} = event;
+    let { x, y } = event;
 
     x += this.camera.scrollX;
     y += this.camera.scrollY;
   }
 
   _hotReloadCurrentLevel() {
-    super._hotReloadCurrentLevel({
-    }, {
-      animation: 'crossFade',
-      duration: 200,
-      delayNewSceneShader: true,
-      removeOldSceneShader: true,
-    }).then((scene) => {
-    });
+    super
+      ._hotReloadCurrentLevel(
+        {},
+        {
+          animation: "crossFade",
+          duration: 200,
+          delayNewSceneShader: true,
+          removeOldSceneShader: true,
+        }
+      )
+      .then((scene) => {});
   }
 
-  _hot() {
-  }
+  _hot() {}
 }

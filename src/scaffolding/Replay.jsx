@@ -1,41 +1,46 @@
-import React from 'react';
-import './Replay.css';
-import {saveField, loadField} from './lib/store';
-import DoubleEnder from './DoubleEnder';
+import React from "react";
+import "./Replay.css";
+import { saveField, loadField } from "./lib/store";
+import DoubleEnder from "./DoubleEnder";
+
+/* eslint-disable jsx-a11y/accessible-emoji */
 
 const ReplayEditFields = [
-  'metadata', // must be first
-  'commands',
-  'sceneSaveState',
-  'sceneTransitions',
+  "metadata", // must be first
+  "commands",
+  "sceneSaveState",
+  "sceneTransitions",
 ];
 
 export default class Replay extends React.Component {
   constructor(props) {
     super(props);
 
-    const replays = loadField('replays', []);
+    const replays = loadField("replays", []);
 
     // migrate old replays
     replays.forEach((replay) => {
       if (replay.preflight) {
-        replay.commands = [
-          ...replay.preflight,
-          ...(replay.commands || []),
-        ];
-        replay.preflightCutoff = replay.preflight.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0);
+        replay.commands = [...replay.preflight, ...(replay.commands || [])];
+        replay.preflightCutoff = replay.preflight.reduce(
+          (cutoff, frame) => cutoff + (frame._repeat || 1),
+          0
+        );
         delete replay.preflight;
       }
 
-      if (!('tickCount' in replay)) {
-        replay.tickCount = replay.commands.reduce((cutoff, frame) => cutoff + (frame._repeat || 1), 0);
+      if (!("tickCount" in replay)) {
+        replay.tickCount = replay.commands.reduce(
+          (cutoff, frame) => cutoff + (frame._repeat || 1),
+          0
+        );
       }
 
-      if (!('originalPreflightCutoff' in replay)) {
+      if (!("originalPreflightCutoff" in replay)) {
         replay.originalPreflightCutoff = replay.preflightCutoff;
       }
 
-      if (!('postflightCutoff' in replay)) {
+      if (!("postflightCutoff" in replay)) {
         replay.postflightCutoff = replay.tickCount;
       }
     });
@@ -43,10 +48,10 @@ export default class Replay extends React.Component {
     this.state = {
       replays,
       activeRecording: null,
-      activeReplay: loadField('activeReplay', null),
-      tweaking: loadField('tweaking', null),
-      editing: loadField('editing', null),
-      repeat: loadField('repeat', true),
+      activeReplay: loadField("activeReplay", null),
+      tweaking: loadField("tweaking", null),
+      editing: loadField("editing", null),
+      repeat: loadField("repeat", true),
     };
   }
 
@@ -56,7 +61,7 @@ export default class Replay extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {activateGame} = this.props;
+    const { activateGame } = this.props;
     if (activateGame !== prevProps.activateGame) {
       this.installGameCallbacks();
       this.beginAutoReplay();
@@ -64,24 +69,28 @@ export default class Replay extends React.Component {
   }
 
   setEditing(editing) {
-    this.setState({editing});
-    saveField('editing', editing);
+    this.setState({ editing });
+    saveField("editing", editing);
   }
 
   setActiveReplay(activeReplay) {
-    this.setState({activeReplay});
-    saveField('activeReplay', activeReplay);
+    this.setState({ activeReplay });
+    saveField("activeReplay", activeReplay);
   }
 
   beginReplay(replay, clearOtherEditing) {
-    const {activateGame} = this.props;
-    const {editing} = this.state;
+    const { activateGame } = this.props;
+    const { editing } = this.state;
     activateGame(() => {
-      const {activeReplay} = this.state;
+      const { activeReplay } = this.state;
       let transition;
 
       if (activeReplay) {
-        if (activeReplay.timestamp === replay.timestamp && !activeReplay.timeSight && replay.timeSight) {
+        if (
+          activeReplay.timestamp === replay.timestamp &&
+          !activeReplay.timeSight &&
+          replay.timeSight
+        ) {
           transition = window.game.topScene()._replayLatestTransition;
         }
 
@@ -99,14 +108,14 @@ export default class Replay extends React.Component {
   }
 
   stopReplay() {
-    const {activateGame} = this.props;
+    const { activateGame } = this.props;
     activateGame(() => {
       window.game.stopReplay();
     });
   }
 
   beginRecording(options) {
-    const {activateGame} = this.props;
+    const { activateGame } = this.props;
     this.setEditing(null);
 
     activateGame(() => {
@@ -115,7 +124,7 @@ export default class Replay extends React.Component {
   }
 
   stopRecording() {
-    const {activateGame} = this.props;
+    const { activateGame } = this.props;
     activateGame(() => {
       window.game.stopRecording();
     });
@@ -127,14 +136,17 @@ export default class Replay extends React.Component {
   }
 
   toggleTimeSight() {
-    const {activeReplay} = this.state;
-    this.beginReplay({...activeReplay, timeSight: !activeReplay.timeSight}, true);
+    const { activeReplay } = this.state;
+    this.beginReplay(
+      { ...activeReplay, timeSight: !activeReplay.timeSight },
+      true
+    );
   }
 
   toggleRepeat() {
-    this.setState(({repeat}) => {
+    this.setState(({ repeat }) => {
       setTimeout(() => {
-        saveField('repeat', !repeat);
+        saveField("repeat", !repeat);
       });
 
       return {
@@ -145,10 +157,10 @@ export default class Replay extends React.Component {
 
   saveReplays() {
     setTimeout(() => {
-      const {replays, activeReplay, editing} = this.state;
-      saveField('replays', replays);
-      saveField('editing', editing);
-      saveField('activeReplay', activeReplay);
+      const { replays, activeReplay, editing } = this.state;
+      saveField("replays", replays);
+      saveField("editing", editing);
+      saveField("activeReplay", activeReplay);
     });
   }
 
@@ -158,8 +170,8 @@ export default class Replay extends React.Component {
   }
 
   beginAutoReplay() {
-    const {activateGame} = this.props;
-    const {activeReplay} = this.state;
+    const { activateGame } = this.props;
+    const { activeReplay } = this.state;
 
     if (!activateGame) {
       return;
@@ -173,28 +185,28 @@ export default class Replay extends React.Component {
   }
 
   installGameCallbacks() {
-    const {game} = window;
+    const { game } = window;
     if (!game || game.onRecordBegin) {
       return;
     }
 
     game.onRecordBegin = (activeRecording) => {
-      this.setState({activeRecording});
+      this.setState({ activeRecording });
     };
 
     game.onRecordStop = (replay) => {
-      this.setState({activeRecording: null});
+      this.setState({ activeRecording: null });
 
       if (this._trashNextRecording) {
         delete this._trashNextRecording;
         return;
       }
 
-      this.setState(({replays}) => {
+      this.setState(({ replays }) => {
         const newReplays = [replay, ...replays];
 
         setTimeout(() => {
-          saveField('replays', newReplays);
+          saveField("replays", newReplays);
 
           if (!replay.snapshot) {
             this.beginReplay(replay);
@@ -214,7 +226,7 @@ export default class Replay extends React.Component {
     };
 
     game.onReplayEnd = (replay) => {
-      const {repeat} = this.state;
+      const { repeat } = this.state;
 
       if (repeat && !replay.snapshot) {
         setTimeout(() => {
@@ -231,8 +243,8 @@ export default class Replay extends React.Component {
     };
   }
 
-  updateReplay({timestamp}, changes, beginReplay) {
-    this.setState(({activeReplay, replays}) => {
+  updateReplay({ timestamp }, changes, beginReplay) {
+    this.setState(({ activeReplay, replays }) => {
       let newReplay;
       const newState = {
         replays: replays.map((replay) => {
@@ -268,37 +280,43 @@ export default class Replay extends React.Component {
   }
 
   editName(replay, name, beginReplay) {
-    this.updateReplay(replay, {name}, beginReplay);
+    this.updateReplay(replay, { name }, beginReplay);
   }
 
   editPreflightCutoff(replay, preflightCutoff, beginReplay) {
     const snapshot = preflightCutoff > replay.postflightCutoff * 0.99;
-    this.updateReplay(replay, {preflightCutoff, snapshot}, beginReplay);
+    this.updateReplay(replay, { preflightCutoff, snapshot }, beginReplay);
   }
 
   editPostflightCutoff(replay, postflightCutoff, beginReplay) {
     const snapshot = replay.preflightCutoff > postflightCutoff * 0.99;
-    this.updateReplay(replay, {postflightCutoff, snapshot}, beginReplay);
+    this.updateReplay(replay, { postflightCutoff, snapshot }, beginReplay);
   }
 
   editCutoffs(replay, preflightCutoff, postflightCutoff, beginReplay) {
     const snapshot = preflightCutoff > postflightCutoff * 0.99;
-    this.updateReplay(replay, {preflightCutoff, postflightCutoff, snapshot}, beginReplay);
+    this.updateReplay(
+      replay,
+      { preflightCutoff, postflightCutoff, snapshot },
+      beginReplay
+    );
   }
 
-  deleteReplay({timestamp}) {
-    this.setState(({activeReplay, replays}) => {
-      const newReplays = replays.filter((replay) => replay.timestamp !== timestamp);
+  deleteReplay({ timestamp }) {
+    this.setState(({ activeReplay, replays }) => {
+      const newReplays = replays.filter(
+        (replay) => replay.timestamp !== timestamp
+      );
 
       setTimeout(() => {
-        saveField('replays', newReplays);
+        saveField("replays", newReplays);
       });
 
       if (activeReplay && activeReplay.timestamp === timestamp) {
         setTimeout(() => this.stopReplay());
       }
 
-      return {replays: newReplays};
+      return { replays: newReplays };
     });
   }
 
@@ -309,14 +327,14 @@ export default class Replay extends React.Component {
       name: `Copy of ${replay.name}`,
     };
 
-    this.setState(({replays}) => {
+    this.setState(({ replays }) => {
       const newReplays = [newReplay, ...replays];
 
       setTimeout(() => {
-        saveField('replays', newReplays);
+        saveField("replays", newReplays);
       });
 
-      return {replays: newReplays};
+      return { replays: newReplays };
     });
   }
 
@@ -333,10 +351,10 @@ export default class Replay extends React.Component {
   }
 
   tweakReplay(replay) {
-    const metadata = {...replay};
-    const tweaking = {replay};
+    const metadata = { ...replay };
+    const tweaking = { replay };
     ReplayEditFields.forEach((field) => {
-      if (field !== 'metadata') {
+      if (field !== "metadata") {
         tweaking[field] = JSON.stringify(metadata[field], null, 2);
         delete metadata[field];
       }
@@ -347,12 +365,12 @@ export default class Replay extends React.Component {
       tweaking[`${field}_original`] = tweaking[field];
     });
 
-    this.setState({tweaking});
-    saveField('tweaking', tweaking);
+    this.setState({ tweaking });
+    saveField("tweaking", tweaking);
   }
 
   updateTweak(field, value) {
-    this.setState(({tweaking}) => {
+    this.setState(({ tweaking }) => {
       const t = {
         ...tweaking,
         [field]: value,
@@ -360,9 +378,9 @@ export default class Replay extends React.Component {
         [`${field}_changed`]: value !== tweaking[`${field}_original`],
       };
 
-      setTimeout(() => saveField('tweaking', t));
+      setTimeout(() => saveField("tweaking", t));
 
-      return {tweaking: t};
+      return { tweaking: t };
     });
   }
 
@@ -372,22 +390,24 @@ export default class Replay extends React.Component {
   }
 
   discardTweaks() {
-    setTimeout(() => { saveField('tweaking', null); });
+    setTimeout(() => {
+      saveField("tweaking", null);
+    });
     this.setState({
       tweaking: null,
     });
   }
 
   saveTweaks() {
-    this.setState(({tweaking}) => {
+    this.setState(({ tweaking }) => {
       let replay;
       let sawError = false;
-      const newState = {...tweaking};
+      const newState = { ...tweaking };
 
       ReplayEditFields.forEach((field) => {
         try {
           const value = JSON.parse(tweaking[field]);
-          if (field === 'metadata') {
+          if (field === "metadata") {
             replay = value;
           } else if (replay) {
             replay[field] = value;
@@ -403,25 +423,29 @@ export default class Replay extends React.Component {
       });
 
       if (sawError) {
-        setTimeout(() => { saveField('tweaking', newState); });
-        return {tweaking: newState};
+        setTimeout(() => {
+          saveField("tweaking", newState);
+        });
+        return { tweaking: newState };
       } else {
         setTimeout(() => {
           this.updateReplay(tweaking.replay, replay, false);
-          setTimeout(() => { saveField('tweaking', null); });
+          setTimeout(() => {
+            saveField("tweaking", null);
+          });
         });
 
-        return {tweaking: null};
+        return { tweaking: null };
       }
     });
   }
 
   renderEditReplay(replay) {
-    const {activeReplay} = this.state;
+    const { activeReplay } = this.state;
     let highlight1 = null;
     let highlight2 = null;
 
-    const {game} = window;
+    const { game } = window;
     const scene = game && game.topScene();
     let cursor = scene && scene.command ? scene.command.replayTicks : null;
 
@@ -429,10 +453,14 @@ export default class Replay extends React.Component {
       cursor = null;
     }
 
-    if (activeReplay && activeReplay.timestamp === replay.timestamp && activeReplay.timeSight) {
+    if (
+      activeReplay &&
+      activeReplay.timestamp === replay.timestamp &&
+      activeReplay.timeSight
+    ) {
       cursor = null;
 
-      const {sceneTransitions} = replay;
+      const { sceneTransitions } = replay;
       if (!sceneTransitions || sceneTransitions.length === 0) {
         highlight1 = replay.preflightCutoff;
         highlight2 = replay.postflightCutoff;
@@ -443,17 +471,25 @@ export default class Replay extends React.Component {
           highlight1 = replay.preflightCutoff;
           for (let i = 0; i < sceneTransitions.length; i += 1) {
             if (sceneTransitions[i].tickCount > highlight1) {
-              highlight2 = Math.min(replay.postflightCutoff, sceneTransitions[i].tickCount);
+              highlight2 = Math.min(
+                replay.postflightCutoff,
+                sceneTransitions[i].tickCount
+              );
               break;
             }
           }
         } else if (!latestTransition) {
           // no transition yet, so take the first segment
           highlight1 = replay.preflightCutoff;
-          highlight2 = Math.min(replay.postflightCutoff, sceneTransitions[0].tickCount);
+          highlight2 = Math.min(
+            replay.postflightCutoff,
+            sceneTransitions[0].tickCount
+          );
         } else {
           // take the intersection of the scene's ticks and pre/post flight
-          const firstTick = latestTransition ? (latestTransition.tickCount || 0) : 0;
+          const firstTick = latestTransition
+            ? latestTransition.tickCount || 0
+            : 0;
           let lastTick = replay.postflightCutoff;
 
           highlight1 = Math.max(firstTick, replay.preflightCutoff);
@@ -477,10 +513,11 @@ export default class Replay extends React.Component {
     }
 
     return (
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        this.finishEdit(replay);
-      }}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          this.finishEdit(replay);
+        }}
       >
         <input
           type="text"
@@ -491,18 +528,37 @@ export default class Replay extends React.Component {
         <span
           className="play button"
           title="Load snapshot (load state)"
-          onClick={() => this.beginReplay({...replay, snapshot: true, commands: []})}
+          onClick={() =>
+            this.beginReplay({ ...replay, snapshot: true, commands: [] })
+          }
         >
           🎆
         </span>
-        <span className="tweak button" title="Tweak replay" onClick={() => this.tweakReplay(replay)}>ℹ</span>
-        <span className="copy button" title="Copy replay" onClick={() => this.copyReplay(replay)}>🔃</span>
-        <span className="delete button" title="Delete replay" onClick={() => this.deleteReplay(replay)}>🚮</span>
+        <span
+          className="tweak button"
+          title="Tweak replay"
+          onClick={() => this.tweakReplay(replay)}
+        >
+          ℹ
+        </span>
+        <span
+          className="copy button"
+          title="Copy replay"
+          onClick={() => this.copyReplay(replay)}
+        >
+          🔃
+        </span>
+        <span
+          className="delete button"
+          title="Delete replay"
+          onClick={() => this.deleteReplay(replay)}
+        >
+          🚮
+        </span>
         <span className="detail">
-          {replay.preflightCutoff}
--
-          {replay.postflightCutoff}
-          {replay.postflightCutoff !== replay.tickCount && ` / ${replay.tickCount}`}
+          {replay.preflightCutoff}-{replay.postflightCutoff}
+          {replay.postflightCutoff !== replay.tickCount &&
+            ` / ${replay.tickCount}`}
         </span>
         <br />
         <DoubleEnder
@@ -513,17 +569,28 @@ export default class Replay extends React.Component {
           highlight1={highlight1}
           highlight2={highlight2}
           cursor={cursor}
-          notches={(replay.sceneTransitions || []).map((t) => ({value: t.tickCount, title: 'Scene transition'}))}
+          notches={(replay.sceneTransitions || []).map((t) => ({
+            value: t.tickCount,
+            title: "Scene transition",
+          }))}
           replayTimestamp={replay.timestamp}
           onMouseEnter={(e) => {
             this._inCutoffs = true;
-            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+            if (
+              activeReplay &&
+              activeReplay.timeSight &&
+              activeReplay.timestamp === replay.timestamp
+            ) {
               this.cutoffTimeSightEnter();
             }
           }}
           onMouseLeave={(e) => {
             this._inCutoffs = false;
-            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+            if (
+              activeReplay &&
+              activeReplay.timeSight &&
+              activeReplay.timestamp === replay.timestamp
+            ) {
               if (!this._changingCutoffs) {
                 this.cutoffTimeSightLeave();
               }
@@ -536,15 +603,21 @@ export default class Replay extends React.Component {
           onEndChange={(e) => {
             this._changingCutoffs = false;
 
-            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+            if (
+              activeReplay &&
+              activeReplay.timeSight &&
+              activeReplay.timestamp === replay.timestamp
+            ) {
               if (!this._inCutoffs) {
                 this.cutoffTimeSightLeave();
               }
               this.saveReplays();
             } else {
               setTimeout(() => {
-                const {replays} = this.state;
-                const newReplay = replays.find((r) => r.timestamp === replay.timestamp);
+                const { replays } = this.state;
+                const newReplay = replays.find(
+                  (r) => r.timestamp === replay.timestamp
+                );
                 this.beginReplay(newReplay);
                 this.saveReplays();
               });
@@ -552,29 +625,49 @@ export default class Replay extends React.Component {
           }}
           onChange1={(preflight) => {
             this.editPreflightCutoff(replay, Math.floor(preflight));
-            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+            if (
+              activeReplay &&
+              activeReplay.timeSight &&
+              activeReplay.timestamp === replay.timestamp
+            ) {
               setTimeout(() => {
                 // eslint-disable-next-line react/destructuring-assignment
-                this.cutoffTimeSightChanged(Math.floor(preflight), this.state.activeReplay.postflightCutoff);
+                this.cutoffTimeSightChanged(
+                  Math.floor(preflight),
+                  this.state.activeReplay.postflightCutoff
+                );
               });
             }
           }}
           onChange2={(postflight) => {
             this.editPostflightCutoff(replay, Math.floor(postflight));
-            if (activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp) {
+            if (
+              activeReplay &&
+              activeReplay.timeSight &&
+              activeReplay.timestamp === replay.timestamp
+            ) {
               setTimeout(() => {
                 // eslint-disable-next-line react/destructuring-assignment
-                this.cutoffTimeSightChanged(this.state.activeReplay.preflightCutoff, Math.floor(postflight));
+                this.cutoffTimeSightChanged(
+                  this.state.activeReplay.preflightCutoff,
+                  Math.floor(postflight)
+                );
               });
             }
           }}
         />
-        {(replay.preflightCutoff !== replay.originalPreflightCutoff || replay.postflightCutoff !== replay.tickCount) && (
+        {(replay.preflightCutoff !== replay.originalPreflightCutoff ||
+          replay.postflightCutoff !== replay.tickCount) && (
           <input
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              this.editCutoffs(replay, replay.originalPreflightCutoff, replay.tickCount, true);
+              this.editCutoffs(
+                replay,
+                replay.originalPreflightCutoff,
+                replay.tickCount,
+                true
+              );
             }}
             value="⤺"
           />
@@ -584,25 +677,42 @@ export default class Replay extends React.Component {
   }
 
   renderTweaking() {
-    const {tweaking} = this.state;
+    const { tweaking } = this.state;
 
     return (
       <div className="Replay tweaking">
         <div className="controls tweaking">
-          <span className="button" title="Cancel tweaks" onClick={() => this.discardTweaks()}>🚮</span>
-          <span className="button" title="Save tweaks" onClick={() => this.saveTweaks()}>🆙</span>
+          <span
+            className="button"
+            title="Cancel tweaks"
+            onClick={() => this.discardTweaks()}
+          >
+            🚮
+          </span>
+          <span
+            className="button"
+            title="Save tweaks"
+            onClick={() => this.saveTweaks()}
+          >
+            🆙
+          </span>
         </div>
         <div className="fields">
           {ReplayEditFields.map((field) => (
             <div
               key={field}
-              className={`field ${tweaking[`${field}_error`] ? 'error' : ''} ${tweaking[`${field}_changed`] ? 'changed' : ''}`}
+              className={`field ${tweaking[`${field}_error`] ? "error" : ""} ${
+                tweaking[`${field}_changed`] ? "changed" : ""
+              }`}
             >
               <label>
-                {field}
-                {' '}
+                {field}{" "}
                 <span
-                  style={{visibility: tweaking[`${field}_changed`] ? 'visible' : 'hidden'}}
+                  style={{
+                    visibility: tweaking[`${field}_changed`]
+                      ? "visible"
+                      : "hidden",
+                  }}
                   className="button"
                   title="Discard these tweaks"
                   onClick={() => this.revertTweak(field)}
@@ -613,7 +723,10 @@ export default class Replay extends React.Component {
               {tweaking[`${field}_error`] && (
                 <span className="info">{tweaking[`${field}_error`]}</span>
               )}
-              <textarea value={tweaking[field]} onChange={(e) => this.updateTweak(field, e.target.value)} />
+              <textarea
+                value={tweaking[field]}
+                onChange={(e) => this.updateTweak(field, e.target.value)}
+              />
             </div>
           ))}
         </div>
@@ -623,7 +736,12 @@ export default class Replay extends React.Component {
 
   render() {
     const {
-      replays, activeRecording, activeReplay, editing, repeat, tweaking,
+      replays,
+      activeRecording,
+      activeReplay,
+      editing,
+      repeat,
+      tweaking,
     } = this.state;
 
     if (tweaking) {
@@ -632,72 +750,166 @@ export default class Replay extends React.Component {
 
     return (
       <div className="Replay">
-        <div className={`controls ${activeReplay ? 'active-replay' : ''} ${activeReplay && activeReplay.timeSight ? 'timeSight' : ''}`}>
+        <div
+          className={`controls ${activeReplay ? "active-replay" : ""} ${
+            activeReplay && activeReplay.timeSight ? "timeSight" : ""
+          }`}
+        >
           {activeReplay && (
             <React.Fragment>
-
               <span
-                className={`button repeat ${repeat ? 'repeat-on' : 'repeat-off'}`}
-                title={repeat ? 'Disable automatic repeat' : 'Enable automatic repeat'}
+                className={`button repeat ${
+                  repeat ? "repeat-on" : "repeat-off"
+                }`}
+                title={
+                  repeat
+                    ? "Disable automatic repeat"
+                    : "Enable automatic repeat"
+                }
                 onClick={() => this.toggleRepeat()}
               >
                 🔁
               </span>
-              <span className="button" title="Stop replay" onClick={() => this.stopReplay()}>⏹</span>
+              <span
+                className="button"
+                title="Stop replay"
+                onClick={() => this.stopReplay()}
+              >
+                ⏹
+              </span>
               {activeReplay.timeSight && (
-                <span className="button" title="Disable timeSight" onClick={() => this.toggleTimeSight()}>📺</span>
+                <span
+                  className="button"
+                  title="Disable timeSight"
+                  onClick={() => this.toggleTimeSight()}
+                >
+                  📺
+                </span>
               )}
               {!activeReplay.timeSight && (
-                <span className="button" title="Enable timeSight" onClick={() => this.toggleTimeSight()}>⚛</span>
+                <span
+                  className="button"
+                  title="Enable timeSight"
+                  onClick={() => this.toggleTimeSight()}
+                >
+                  ⚛
+                </span>
               )}
             </React.Fragment>
           )}
-          {!activeReplay && (
-            activeRecording ? (
+          {!activeReplay &&
+            (activeRecording ? (
               <React.Fragment>
-                <span className="recording button" title="Stop recording" onClick={() => this.stopRecording()}>⏺️</span>
-                <span className="button" title="Discard recording" onClick={() => this.trashRecording()}>🚮</span>
+                <span
+                  className="recording button"
+                  title="Stop recording"
+                  onClick={() => this.stopRecording()}
+                >
+                  ⏺️
+                </span>
+                <span
+                  className="button"
+                  title="Discard recording"
+                  onClick={() => this.trashRecording()}
+                >
+                  🚮
+                </span>
               </React.Fragment>
             ) : (
               <React.Fragment>
-                <span className="record button" title="Start recording replay" onClick={() => this.beginRecording()}>🎦</span>
-                <span className="snapshot button" title="Take snapshot (save state)" onClick={() => this.beginRecording({snapshot: true})}>🎆</span>
+                <span
+                  className="record button"
+                  title="Start recording replay"
+                  onClick={() => this.beginRecording()}
+                >
+                  🎦
+                </span>
+                <span
+                  className="snapshot button"
+                  title="Take snapshot (save state)"
+                  onClick={() => this.beginRecording({ snapshot: true })}
+                >
+                  🎆
+                </span>
               </React.Fragment>
-            )
-          )}
+            ))}
         </div>
         <ul className="replays">
           {replays.map((replay) => (
             <li
               className={`
                 replay
-                ${activeReplay && activeReplay.timestamp === replay.timestamp ? 'active' : ''}
-                ${editing === replay.timestamp ? 'editing' : ''}
+                ${
+                  activeReplay && activeReplay.timestamp === replay.timestamp
+                    ? "active"
+                    : ""
+                }
+                ${editing === replay.timestamp ? "editing" : ""}
               `}
               key={replay.timestamp}
             >
               <span className="drag">⋮⋮</span>
-              {activeReplay && activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && (
-                <span className="play button" title="Restart timeSight" onClick={() => this.beginReplay({...replay, timeSight: true}, true)}>⚛</span>
-              )}
-              {activeReplay && !activeReplay.timeSight && activeReplay.timestamp === replay.timestamp && (
-                <span className="play button" title="Restart replay" onClick={() => this.beginReplay(replay, true)}>📺</span>
-              )}
-              {(!activeReplay || activeReplay.timestamp !== replay.timestamp) && !replay.snapshot && (
-                <span className="play button" title="Start replay" onClick={() => this.beginReplay(replay, true)}>▶️</span>
-              )}
-              {(!activeReplay || activeReplay.timestamp !== replay.timestamp) && replay.snapshot && (
-                <span className="play button" title="Load snapshot (load state)" onClick={() => this.beginReplay(replay, true)}>🎆</span>
-              )}
-              {editing === replay.timestamp && (
-                this.renderEditReplay(replay)
-              )}
-              <span className="name" onClick={() => this.beginReplay(replay, true)}>{replay.name}</span>
-              <span className="edit button" title="Edit replay" onClick={() => this.setEditing(replay.timestamp)}>ℹ</span>
+              {activeReplay &&
+                activeReplay.timeSight &&
+                activeReplay.timestamp === replay.timestamp && (
+                  <span
+                    className="play button"
+                    title="Restart timeSight"
+                    onClick={() =>
+                      this.beginReplay({ ...replay, timeSight: true }, true)
+                    }
+                  >
+                    ⚛
+                  </span>
+                )}
+              {activeReplay &&
+                !activeReplay.timeSight &&
+                activeReplay.timestamp === replay.timestamp && (
+                  <span
+                    className="play button"
+                    title="Restart replay"
+                    onClick={() => this.beginReplay(replay, true)}
+                  >
+                    📺
+                  </span>
+                )}
+              {(!activeReplay || activeReplay.timestamp !== replay.timestamp) &&
+                !replay.snapshot && (
+                  <span
+                    className="play button"
+                    title="Start replay"
+                    onClick={() => this.beginReplay(replay, true)}
+                  >
+                    ▶️
+                  </span>
+                )}
+              {(!activeReplay || activeReplay.timestamp !== replay.timestamp) &&
+                replay.snapshot && (
+                  <span
+                    className="play button"
+                    title="Load snapshot (load state)"
+                    onClick={() => this.beginReplay(replay, true)}
+                  >
+                    🎆
+                  </span>
+                )}
+              {editing === replay.timestamp && this.renderEditReplay(replay)}
+              <span
+                className="name"
+                onClick={() => this.beginReplay(replay, true)}
+              >
+                {replay.name}
+              </span>
+              <span
+                className="edit button"
+                title="Edit replay"
+                onClick={() => this.setEditing(replay.timestamp)}
+              >
+                ℹ
+              </span>
             </li>
           ))}
         </ul>
-
       </div>
     );
   }

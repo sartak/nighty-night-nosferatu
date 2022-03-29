@@ -1,22 +1,26 @@
-import Phaser from 'phaser';
-import {expandParticleProps} from './particles';
-import {expandTweenProps} from './tweens';
-import {expandTransitionProps} from './transitions';
-import {freezeStorage, removeAllFields, loadField} from './store';
-import {shaderProps} from './shaders.js';
+import Phaser from "phaser";
+import { expandParticleProps } from "./particles";
+import { expandTweenProps } from "./tweens";
+import { expandTransitionProps } from "./transitions";
+import { freezeStorage, removeAllFields, loadField } from "./store";
+import { shaderProps } from "./shaders.js";
 
-const savedChangedProps = loadField('changedProps', {});
-export {savedChangedProps};
+const savedChangedProps = loadField("changedProps", {});
+export { savedChangedProps };
 
 const rendererName = {
-  [Phaser.AUTO]: 'auto',
-  [Phaser.CANVAS]: 'canvas',
-  [Phaser.WEBGL]: 'webgl',
+  [Phaser.AUTO]: "auto",
+  [Phaser.CANVAS]: "canvas",
+  [Phaser.WEBGL]: "webgl",
 };
 
-const debug = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+const debug = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 
-export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFragments) {
+export function builtinPropSpecs(
+  commands,
+  shaderCoordFragments,
+  shaderColorFragments
+) {
   if (!debug) {
     Object.keys(commands).forEach((key) => {
       if (commands[key].debug) {
@@ -26,137 +30,233 @@ export function builtinPropSpecs(commands, shaderCoordFragments, shaderColorFrag
   }
 
   return {
-    'engine.time': [0.01, null, 'loop.time'],
-    'engine.frameTime': [0.01, null, 'loop.delta'],
-    'engine.actualFps': [0.01, null, 'loop.actualFps'],
-    'engine.targetFps': [0.01, null, 'loop.targetFps'],
-    'engine.renderer': [rendererName[Phaser.AUTO], null, (scene, game) => rendererName[game.renderer.type]],
-    'engine.focused': [false, null, 'scene.game.focused'],
-    'engine.throttle': [false],
-    'engine.stepping': [false, (value, scene, game) => (value ? game.loop.sleep() : game.loop.wake())],
-    'engine.step': [(scene, game) => game.prop('engine.stepping') && game.loop.tick()],
-    'engine.clearLocalStorage': [() => { removeAllFields(); freezeStorage(); window.location = window.location; }],
-    'engine.clearGameState': [() => { removeAllFields('game_'); freezeStorage(); window.location = window.location; }],
-    'engine.disableDebugUI': [(scene, game) => game.disableDebugUI()],
+    "engine.time": [0.01, null, "loop.time"],
+    "engine.frameTime": [0.01, null, "loop.delta"],
+    "engine.actualFps": [0.01, null, "loop.actualFps"],
+    "engine.targetFps": [0.01, null, "loop.targetFps"],
+    "engine.renderer": [
+      rendererName[Phaser.AUTO],
+      null,
+      (scene, game) => rendererName[game.renderer.type],
+    ],
+    "engine.focused": [false, null, "scene.game.focused"],
+    "engine.throttle": [false],
+    "engine.stepping": [
+      false,
+      (value, scene, game) => (value ? game.loop.sleep() : game.loop.wake()),
+    ],
+    "engine.step": [
+      (scene, game) => game.prop("engine.stepping") && game.loop.tick(),
+    ],
+    "engine.clearLocalStorage": [
+      () => {
+        removeAllFields();
+        freezeStorage();
+        // eslint-disable-next-line no-self-assign
+        window.location = window.location;
+      },
+    ],
+    "engine.clearGameState": [
+      () => {
+        removeAllFields("game_");
+        freezeStorage();
+        // eslint-disable-next-line no-self-assign
+        window.location = window.location;
+      },
+    ],
+    "engine.disableDebugUI": [(scene, game) => game.disableDebugUI()],
 
-    'config.debug': [debug, null, () => debug],
-    'config.width': [0, null, (scene, game) => game.config.width],
-    'config.height': [0, null, (scene, game) => game.config.height],
-    'config.tileWidth': [0, null, (scene, game) => game.config.tileWidth],
-    'config.tileHeight': [0, null, (scene, game) => game.config.tileHeight],
-    'config.xBorder': [0, null, (scene, game) => scene.xBorder],
-    'config.yBorder': [0, null, (scene, game) => scene.xBorder],
+    "config.debug": [debug, null, () => debug],
+    "config.width": [0, null, (scene, game) => game.config.width],
+    "config.height": [0, null, (scene, game) => game.config.height],
+    "config.tileWidth": [0, null, (scene, game) => game.config.tileWidth],
+    "config.tileHeight": [0, null, (scene, game) => game.config.tileHeight],
+    "config.xBorder": [0, null, (scene, game) => scene.xBorder],
+    "config.yBorder": [0, null, (scene, game) => scene.xBorder],
 
-    'scene.count': ['', null, 'scene.scenes.length'],
-    'scene.commandScenes': ['', null, (scene) => scene.command._scenes.size],
-    'scene.class': ['', null, (scene) => scene.constructor.name],
-    'scene.sceneId': ['', null, 'sceneId'],
-    'scene.parentSceneId': ['', null, 'scene.settings.data.parentSceneId'],
-    'scene.key': ['', null, 'scene.key'],
-    'scene.seed': ['', null, 'scene.settings.data.seed'],
-    'scene.scene_time': [0.01, null, 'scene_time'],
-    'scene.music': ['', null, 'currentMusicName'],
-    'scene.timeScale': [0.01, null, 'timeScale'],
-    'scene.shaderName': ['', null, 'shaderName'],
-    'scene.physicsFps': [0.01, null, 'physics.world.fps'],
-    'scene.images': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Image').length],
-    'scene.sprites': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Sprite').length],
-    'scene.particles': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'ParticleEmitterManager').length],
-    'scene.text': [0, null, (scene) => scene.add.displayList.list.filter((node) => node.type === 'Text').length],
-    'scene.sounds': [0, null, 'sounds.length'],
-    'scene.timers': [0, null, 'timers.length'],
-    'scene.physicsColliders': [0, null, 'physics.world.colliders._active.length'],
-    'scene.musicVolume': [1, 0, 1, (value, scene, game) => {
-      game.changeVolume(game.volume);
-    }],
-    'scene.soundVolume': [1, 0, 1, (value, scene, game) => {
-      game.changeVolume(game.volume);
-    }],
-    'scene.debugDraw': [false, (value, scene) => {
-      if (value) {
-        scene.physics.world.createDebugGraphic();
-      } else {
-        scene.physics.world.debugGraphic.destroy();
-      }
-    }],
-    'scene.replaceWithSelf': [(scene) => scene.replaceWithSelf(false)],
+    "scene.count": ["", null, "scene.scenes.length"],
+    "scene.commandScenes": ["", null, (scene) => scene.command._scenes.size],
+    "scene.class": ["", null, (scene) => scene.constructor.name],
+    "scene.sceneId": ["", null, "sceneId"],
+    "scene.parentSceneId": ["", null, "scene.settings.data.parentSceneId"],
+    "scene.key": ["", null, "scene.key"],
+    "scene.seed": ["", null, "scene.settings.data.seed"],
+    "scene.scene_time": [0.01, null, "scene_time"],
+    "scene.music": ["", null, "currentMusicName"],
+    "scene.timeScale": [0.01, null, "timeScale"],
+    "scene.shaderName": ["", null, "shaderName"],
+    "scene.physicsFps": [0.01, null, "physics.world.fps"],
+    "scene.images": [
+      0,
+      null,
+      (scene) =>
+        scene.add.displayList.list.filter((node) => node.type === "Image")
+          .length,
+    ],
+    "scene.sprites": [
+      0,
+      null,
+      (scene) =>
+        scene.add.displayList.list.filter((node) => node.type === "Sprite")
+          .length,
+    ],
+    "scene.particles": [
+      0,
+      null,
+      (scene) =>
+        scene.add.displayList.list.filter(
+          (node) => node.type === "ParticleEmitterManager"
+        ).length,
+    ],
+    "scene.text": [
+      0,
+      null,
+      (scene) =>
+        scene.add.displayList.list.filter((node) => node.type === "Text")
+          .length,
+    ],
+    "scene.sounds": [0, null, "sounds.length"],
+    "scene.timers": [0, null, "timers.length"],
+    "scene.physicsColliders": [
+      0,
+      null,
+      "physics.world.colliders._active.length",
+    ],
+    "scene.musicVolume": [
+      1,
+      0,
+      1,
+      (value, scene, game) => {
+        game.changeVolume(game.volume);
+      },
+    ],
+    "scene.soundVolume": [
+      1,
+      0,
+      1,
+      (value, scene, game) => {
+        game.changeVolume(game.volume);
+      },
+    ],
+    "scene.debugDraw": [
+      false,
+      (value, scene) => {
+        if (value) {
+          scene.physics.world.createDebugGraphic();
+        } else {
+          scene.physics.world.debugGraphic.destroy();
+        }
+      },
+    ],
+    "scene.replaceWithSelf": [(scene) => scene.replaceWithSelf(false)],
 
-    'scene.camera.width': [0, null, 'camera.width'],
-    'scene.camera.height': [0, null, 'camera.height'],
-    'scene.camera.alpha': [0.1, null, 'camera.alpha'],
-    'scene.camera.zoom': [0.1, null, 'camera.zoom'],
-    'scene.camera.rotation': [0.1, null, 'camera.rotation'],
-    'scene.camera.x': [0, null, 'camera.x'],
-    'scene.camera.y': [0, null, 'camera.y'],
-    'scene.camera.scrollX': [0, null, 'camera.scrollX'],
-    'scene.camera.scrollY': [0, null, 'camera.scrollY'],
-    'scene.camera.centerX': [0, null, 'camera.centerX'],
-    'scene.camera.centerY': [0, null, 'camera.centerY'],
-    'scene.camera.boundsX': [0, null, 'camera._bounds.x'],
-    'scene.camera.boundsY': [0, null, 'camera._bounds.y'],
-    'scene.camera.boundsWidth': [0, null, 'camera._bounds.width'],
-    'scene.camera.boundsHeight': [0, null, 'camera._bounds.height'],
-    'scene.camera.useBounds': [true, null, 'camera.useBounds'],
+    "scene.camera.width": [0, null, "camera.width"],
+    "scene.camera.height": [0, null, "camera.height"],
+    "scene.camera.alpha": [0.1, null, "camera.alpha"],
+    "scene.camera.zoom": [0.1, null, "camera.zoom"],
+    "scene.camera.rotation": [0.1, null, "camera.rotation"],
+    "scene.camera.x": [0, null, "camera.x"],
+    "scene.camera.y": [0, null, "camera.y"],
+    "scene.camera.scrollX": [0, null, "camera.scrollX"],
+    "scene.camera.scrollY": [0, null, "camera.scrollY"],
+    "scene.camera.centerX": [0, null, "camera.centerX"],
+    "scene.camera.centerY": [0, null, "camera.centerY"],
+    "scene.camera.boundsX": [0, null, "camera._bounds.x"],
+    "scene.camera.boundsY": [0, null, "camera._bounds.y"],
+    "scene.camera.boundsWidth": [0, null, "camera._bounds.width"],
+    "scene.camera.boundsHeight": [0, null, "camera._bounds.height"],
+    "scene.camera.useBounds": [true, null, "camera.useBounds"],
 
-    'scene.camera.follow': ['', null, objectIdentifier(
-      (scene) => scene.level,
-      (scene) => scene.camera._follow,
-    )],
-    'scene.camera.followOffsetX': [0, null, 'camera.followOffset.x'],
-    'scene.camera.followOffsetY': [0, null, 'camera.followOffset.y'],
+    "scene.camera.follow": [
+      "",
+      null,
+      objectIdentifier((scene) => scene.level, (scene) => scene.camera._follow),
+    ],
+    "scene.camera.followOffsetX": [0, null, "camera.followOffset.x"],
+    "scene.camera.followOffsetY": [0, null, "camera.followOffset.y"],
 
-    'scene.camera.lerp': [1, 0, 1, (value, scene) => {
-      scene.setCameraLerp();
-    }],
-    'scene.camera.deadzoneX': [0, 0, 1000, (value, scene) => {
-      scene.setCameraDeadzone();
-    }],
-    'scene.camera.deadzoneY': [0, 0, 1000, (value, scene) => {
-      scene.setCameraDeadzone();
-    }],
-    'scene.camera.hasBounds': [true, (value, scene) => {
-      scene.setCameraBounds();
-    }],
+    "scene.camera.lerp": [
+      1,
+      0,
+      1,
+      (value, scene) => {
+        scene.setCameraLerp();
+      },
+    ],
+    "scene.camera.deadzoneX": [
+      0,
+      0,
+      1000,
+      (value, scene) => {
+        scene.setCameraDeadzone();
+      },
+    ],
+    "scene.camera.deadzoneY": [
+      0,
+      0,
+      1000,
+      (value, scene) => {
+        scene.setCameraDeadzone();
+      },
+    ],
+    "scene.camera.hasBounds": [
+      true,
+      (value, scene) => {
+        scene.setCameraBounds();
+      },
+    ],
 
-    'scene.trauma.amount': [0.01, null, '_trauma'],
-    'scene.trauma.shakeAmount': [0.01, null, '_traumaShake'],
-    'scene.trauma.decay': [0.001, 0, 1],
-    'scene.trauma.exponent': [2.0, 0, 4],
-    'scene.trauma.dx': [30.0, 0, 100],
-    'scene.trauma.dy': [30.0, 0, 100],
-    'scene.trauma.dt': [0.17, 0, 1],
-    'scene.trauma.speed': [0.2, 0, 1],
-    'scene.trauma.easeIn': [100, 0, 1000],
-    'scene.trauma.legacy': [false],
-    'scene.trauma.mild': [(scene) => scene.trauma(0.2)],
-    'scene.trauma.minor': [(scene) => scene.trauma(0.5)],
-    'scene.trauma.major': [(scene) => scene.trauma(0.8)],
-    'scene.trauma.max': [(scene) => scene.trauma(100)],
-    'scene.trauma.enabled': [true],
+    "scene.trauma.amount": [0.01, null, "_trauma"],
+    "scene.trauma.shakeAmount": [0.01, null, "_traumaShake"],
+    "scene.trauma.decay": [0.001, 0, 1],
+    "scene.trauma.exponent": [2.0, 0, 4],
+    "scene.trauma.dx": [30.0, 0, 100],
+    "scene.trauma.dy": [30.0, 0, 100],
+    "scene.trauma.dt": [0.17, 0, 1],
+    "scene.trauma.speed": [0.2, 0, 1],
+    "scene.trauma.easeIn": [100, 0, 1000],
+    "scene.trauma.legacy": [false],
+    "scene.trauma.mild": [(scene) => scene.trauma(0.2)],
+    "scene.trauma.minor": [(scene) => scene.trauma(0.5)],
+    "scene.trauma.major": [(scene) => scene.trauma(0.8)],
+    "scene.trauma.max": [(scene) => scene.trauma(100)],
+    "scene.trauma.enabled": [true],
 
     ...commandKeyProps(commands),
 
-    'command.gamepad.total': [0, null],
-    'command.gamepad.A': [false, null],
-    'command.gamepad.B': [false, null],
-    'command.gamepad.X': [false, null],
-    'command.gamepad.Y': [false, null],
-    'command.gamepad.L1': [false, null],
-    'command.gamepad.L2': [false, null],
-    'command.gamepad.R1': [false, null],
-    'command.gamepad.R2': [false, null],
-    'command.gamepad.UP': [false, null],
-    'command.gamepad.DOWN': [false, null],
-    'command.gamepad.LEFT': [false, null],
-    'command.gamepad.RIGHT': [false, null],
-    'command.gamepad.LSTICKX': [0.01, null],
-    'command.gamepad.LSTICKY': [0.01, null],
-    'command.gamepad.RSTICKX': [0.01, null],
-    'command.gamepad.RSTICKY': [0.01, null],
+    "command.gamepad.total": [0, null],
+    "command.gamepad.A": [false, null],
+    "command.gamepad.B": [false, null],
+    "command.gamepad.X": [false, null],
+    "command.gamepad.Y": [false, null],
+    "command.gamepad.L1": [false, null],
+    "command.gamepad.L2": [false, null],
+    "command.gamepad.R1": [false, null],
+    "command.gamepad.R2": [false, null],
+    "command.gamepad.UP": [false, null],
+    "command.gamepad.DOWN": [false, null],
+    "command.gamepad.LEFT": [false, null],
+    "command.gamepad.RIGHT": [false, null],
+    "command.gamepad.LSTICKX": [0.01, null],
+    "command.gamepad.LSTICKY": [0.01, null],
+    "command.gamepad.RSTICKX": [0.01, null],
+    "command.gamepad.RSTICKY": [0.01, null],
 
-    'command.ignore_all.any': [false, null, (scene) => scene.command.ignoreAll()],
-    'command.ignore_all._transition': [false, null, (scene) => scene.command.ignoreAll('_transition')],
-    'command.ignore_all._sleep': [false, null, (scene) => scene.command.ignoreAll('_sleep')],
+    "command.ignore_all.any": [
+      false,
+      null,
+      (scene) => scene.command.ignoreAll(),
+    ],
+    "command.ignore_all._transition": [
+      false,
+      null,
+      (scene) => scene.command.ignoreAll("_transition"),
+    ],
+    "command.ignore_all._sleep": [
+      false,
+      null,
+      (scene) => scene.command.ignoreAll("_sleep"),
+    ],
 
     ...commandProps(commands),
     ...shaderProps(shaderCoordFragments, shaderColorFragments),
@@ -179,21 +279,38 @@ function commandProps(commands) {
 
     if (config.cooldown) {
       props[`command.${name}.cooldown`] = [config.cooldown, 0, 100000];
-      props[`command.${name}.coolingDown`] = [false, null, (scene) => scene.command[name].coolingDown];
-      props[`command.${name}.coolingDownTime`] = [0.01, null, (scene) => scene.command[name].coolingDownTime];
+      props[`command.${name}.coolingDown`] = [
+        false,
+        null,
+        (scene) => scene.command[name].coolingDown,
+      ];
+      props[`command.${name}.coolingDownTime`] = [
+        0.01,
+        null,
+        (scene) => scene.command[name].coolingDownTime,
+      ];
     }
 
     if (config.joystick) {
-      props[`command.${name}.x`] = [0.01, null, (scene) => scene.command[name].held[0]];
-      props[`command.${name}.y`] = [0.01, null, (scene) => scene.command[name].held[1]];
+      props[`command.${name}.x`] = [
+        0.01,
+        null,
+        (scene) => scene.command[name].held[0],
+      ];
+      props[`command.${name}.y`] = [
+        0.01,
+        null,
+        (scene) => scene.command[name].held[1],
+      ];
     }
 
     props[`command.${name}.enabled`] = [true];
 
     if (config.execute) {
-      const execute = typeof config.execute === 'function'
-        ? (scene, game) => config.execute(scene, game)
-        : (scene, game) => scene[config.execute](scene, game);
+      const execute =
+        typeof config.execute === "function"
+          ? (scene, game) => config.execute(scene, game)
+          : (scene, game) => scene[config.execute](scene, game);
       props[`command.${name}.execute`] = [execute];
     }
   });
@@ -202,30 +319,30 @@ function commandProps(commands) {
 }
 
 const knownInputs = [
-  'gamepad.A',
-  'gamepad.B',
-  'gamepad.X',
-  'gamepad.Y',
-  'gamepad.L1',
-  'gamepad.L2',
-  'gamepad.R1',
-  'gamepad.R2',
-  'gamepad.UP',
-  'gamepad.DOWN',
-  'gamepad.LEFT',
-  'gamepad.RIGHT',
-  'gamepad.LSTICK.UP',
-  'gamepad.LSTICK.DOWN',
-  'gamepad.LSTICK.LEFT',
-  'gamepad.LSTICK.RIGHT',
-  'gamepad.RSTICK.UP',
-  'gamepad.RSTICK.DOWN',
-  'gamepad.RSTICK.LEFT',
-  'gamepad.RSTICK.RIGHT',
-  'gamepad.LSTICK.RAW',
-  'gamepad.RSTICK.RAW',
+  "gamepad.A",
+  "gamepad.B",
+  "gamepad.X",
+  "gamepad.Y",
+  "gamepad.L1",
+  "gamepad.L2",
+  "gamepad.R1",
+  "gamepad.R2",
+  "gamepad.UP",
+  "gamepad.DOWN",
+  "gamepad.LEFT",
+  "gamepad.RIGHT",
+  "gamepad.LSTICK.UP",
+  "gamepad.LSTICK.DOWN",
+  "gamepad.LSTICK.LEFT",
+  "gamepad.LSTICK.RIGHT",
+  "gamepad.RSTICK.UP",
+  "gamepad.RSTICK.DOWN",
+  "gamepad.RSTICK.LEFT",
+  "gamepad.RSTICK.RIGHT",
+  "gamepad.LSTICK.RAW",
+  "gamepad.RSTICK.RAW",
 
-  ...(Object.keys(Phaser.Input.Keyboard.KeyCodes).map((x) => `keyboard.${x}`)),
+  ...Object.keys(Phaser.Input.Keyboard.KeyCodes).map((x) => `keyboard.${x}`),
 ].reduce((a, b) => {
   a[b] = true;
   return a;
@@ -243,7 +360,9 @@ export function keysWithPrefix(commands, prefix, skipWarning) {
       if (!knownInputs[inputPath]) {
         if (!skipWarning) {
           // eslint-disable-next-line no-console
-          console.error(`Unknown input path ${inputPath} for command ${command}`);
+          console.error(
+            `Unknown input path ${inputPath} for command ${command}`
+          );
         }
         return;
       }
@@ -258,19 +377,21 @@ export function keysWithPrefix(commands, prefix, skipWarning) {
 }
 
 export function commandKeys(commands, skipWarning) {
-  return keysWithPrefix(commands, 'keyboard.', skipWarning);
+  return keysWithPrefix(commands, "keyboard.", skipWarning);
 }
 
 export function gamepadKeys(commands, skipWarning) {
-  return keysWithPrefix(commands, 'gamepad.', skipWarning);
+  return keysWithPrefix(commands, "gamepad.", skipWarning);
 }
 
 export function commandKeyProps(commands) {
   const props = {};
 
-  commandKeys(commands).sort().forEach((key) => {
-    props[`command.keyboard.${key}`] = [false, null];
-  });
+  commandKeys(commands)
+    .sort()
+    .forEach((key) => {
+      props[`command.keyboard.${key}`] = [false, null];
+    });
 
   return props;
 }
@@ -284,16 +405,18 @@ export function preprocessPropSpecs(propSpecs, particleImages) {
 export function ManageableProps(propSpecs) {
   Object.entries(propSpecs).forEach(([key, spec]) => {
     if (!Array.isArray(spec)) {
-      throw new Error(`Invalid spec for prop ${key}; expected array, got ${spec}`);
+      throw new Error(
+        `Invalid spec for prop ${key}; expected array, got ${spec}`
+      );
     }
 
     let [value] = spec;
     // interject the scene and game, and wrap in a try
-    if (typeof value === 'function') {
+    if (typeof value === "function") {
       const original = value;
       value = () => {
         try {
-          const {game} = window;
+          const { game } = window;
           const scene = game.topScene();
           scene.command.recordPropExecution(key);
           original(scene, game);
@@ -392,13 +515,13 @@ export function objectIdentifier(getContainer, getObject) {
       return cacheOutput;
     }
 
-    if (typeof object === 'object' && object.name) {
+    if (typeof object === "object" && object.name) {
       cacheOutput = object.name;
       return cacheOutput;
     }
 
     const container = getContainer(...args);
-    if (container && typeof container === 'object') {
+    if (container && typeof container === "object") {
       // eslint-disable-next-line guard-for-in, no-restricted-syntax
       for (const key in container) {
         const value = container[key];
@@ -410,7 +533,7 @@ export function objectIdentifier(getContainer, getObject) {
       }
     }
 
-    if (typeof object === 'object' && object.texture && object.texture.key) {
+    if (typeof object === "object" && object.texture && object.texture.key) {
       cacheOutput = object.texture.key;
       return cacheOutput;
     }
