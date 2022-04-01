@@ -18,18 +18,18 @@ export default class Production extends React.Component {
               by
               <br />
               {productionDisplay.authorURL ? (
-                <a href={productionDisplay.authorURL}>{productionDisplay.authorName}</a>
+                <a target="_blank" rel="noopener noreferrer" href={productionDisplay.authorURL}>{productionDisplay.authorName}</a>
               ) : (
                 productionDisplay.authorName
               )}
               <br />
               {productionDisplay.authorTwitter && (
-                <a href={`https://twitter.com/${productionDisplay.authorTwitter}`}>
+                <a target="_blank" rel="noopener noreferrer" href={`https://twitter.com/${productionDisplay.authorTwitter}`}>
                   <img src={twitterLogo} alt={`@${productionDisplay.authorTwitter} on Twitter`} />
                 </a>
               )}
               {productionDisplay.authorTwitch && (
-                <a href={`https://twitch.tv/${productionDisplay.authorTwitch}`}>
+                <a target="_blank" rel="noopener noreferrer" href={`https://twitch.tv/${productionDisplay.authorTwitch}`}>
                   <img src={twitchLogo} alt={`${productionDisplay.authorTwitch} on Twitch`} />
                 </a>
               )}
@@ -50,7 +50,7 @@ export default class Production extends React.Component {
           </p>
           {productionDisplay.eventURL && (
             <p>
-              <a href={productionDisplay.eventURL}>
+              <a target="_blank" rel="noopener noreferrer" href={productionDisplay.eventURL}>
                 {productionDisplay.eventURL}
               </a>
             </p>
@@ -72,7 +72,7 @@ export default class Production extends React.Component {
             <p>
               code at
               <br />
-              <a className="url" href={productionDisplay.repoURL}>
+              <a className="url" target="_blank" rel="noopener noreferrer" href={productionDisplay.repoURL}>
                 {productionDisplay.repoURL}
               </a>
             </p>
