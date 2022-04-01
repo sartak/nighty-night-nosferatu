@@ -2146,8 +2146,6 @@ export default class SuperScene extends Phaser.Scene {
     const emitterProps = massageParticleProps(props);
     const emitter = particles.createEmitter(emitterProps);
 
-    particles.timeScale = this.timeScale;
-
     injectEmitterOpSeededRandom(emitter, reloadSeed || this.randFloat('particles'));
 
     if (onAdd) {
@@ -2666,12 +2664,6 @@ export default class SuperScene extends Phaser.Scene {
   set timeScale(scale) {
     this._timeScale = scale;
 
-    if (this.particleSystems) {
-      this.particleSystems.forEach((p) => {
-        p.particles.timeScale = scale;
-      });
-    }
-
     if (this.physics) {
       this.physics.world.timeScale = scale;
       this.physics.world.bodies.entries.forEach((body) => {
@@ -2686,6 +2678,12 @@ export default class SuperScene extends Phaser.Scene {
     this.tweens.timeScale = scale;
     this.time.timeScale = scale;
     this.anims.globalTimeScale = scale;
+    if (this.particleSystems) {
+      this.particleSystems.forEach((p) => {
+        p.particles.timeScale = scale;
+      });
+    }
+
     */
   }
 
