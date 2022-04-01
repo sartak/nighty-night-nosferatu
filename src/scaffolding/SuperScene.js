@@ -46,6 +46,8 @@ export default class SuperScene extends Phaser.Scene {
       tweens: false,
       anims: false,
     };
+
+    this._renderDelta = 0;
   }
 
   init(config) {
@@ -117,61 +119,65 @@ export default class SuperScene extends Phaser.Scene {
         world.step = (originalDelta) => {
           const delta = originalDelta / world.timeScale;
 
-          const dt = delta * 1000;
-          time += dt;
-          physics.dt = dt;
-          physics.time = time;
-          this.scene_time = time;
+          while (this._renderDelta > 0) {
+            const dt = delta * 1000;
+            time += dt;
+            physics.dt = dt;
+            physics.time = time;
+            this.scene_time = time;
 
-          if (this.game._stepExceptions > 100) {
-            return;
-          }
+            this._renderDelta -= originalDelta * 1000;
 
-          try {
-            const isTopScene = this.isTopScene();
-
-            if (this.timeSightFrozen) {
-              if (isTopScene) {
-                this.command.processInput(this, time, dt, true);
-              }
-              this.updateTweens(time, dt);
-              this.timeSightMouseDrag();
+            if (this.game._stepExceptions > 100) {
               return;
             }
 
-            if (!this._paused.physics) {
-              originalStep.call(world, delta);
-            }
+            try {
+              const isTopScene = this.isTopScene();
 
-            if (isTopScene) {
-              this.command.processInput(this, time, dt);
-            }
+              if (this.timeSightFrozen) {
+                if (isTopScene) {
+                  this.command.processInput(this, time, dt, true);
+                }
+                this.updateTweens(time, dt);
+                this.timeSightMouseDrag();
+                return;
+              }
 
-            if (this.game.updateReplayCursor) {
-              this.game.updateReplayCursor(this.command.replayTicks, this._replay);
-            }
+              if (!this._paused.physics) {
+                originalStep.call(world, delta);
+              }
 
-            if (!this._paused.physics) {
-              this.fixedUpdate(time, dt);
-            }
+              if (isTopScene) {
+                this.command.processInput(this, time, dt);
+              }
 
-            this.updateTimers(time, dt);
+              if (this.game.updateReplayCursor) {
+                this.game.updateReplayCursor(this.command.replayTicks, this._replay);
+              }
 
-            if (this.performanceProps && this.performanceProps.length) {
-              this.recoverPerformance();
-            }
+              if (!this._paused.physics) {
+                this.fixedUpdate(time, dt);
+              }
 
-            this.updateTweens(time, dt);
+              this.updateTimers(time, dt);
 
-            this.game._stepExceptions = 0;
-          } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error(e);
+              if (this.performanceProps && this.performanceProps.length) {
+                this.recoverPerformance();
+              }
 
-            this.game._stepExceptions = (this.game._stepExceptions || 0) + 1;
-            if (this.game._stepExceptions > 100) {
+              this.updateTweens(time, dt);
+
+              this.game._stepExceptions = 0;
+            } catch (e) {
               // eslint-disable-next-line no-console
-              console.error('Too many errors; pausing update cycle until hot reload');
+              console.error(e);
+
+              this.game._stepExceptions = (this.game._stepExceptions || 0) + 1;
+              if (this.game._stepExceptions > 100) {
+                // eslint-disable-next-line no-console
+                console.error('Too many errors; pausing update cycle until hot reload');
+              }
             }
           }
         };
@@ -907,7 +913,9 @@ export default class SuperScene extends Phaser.Scene {
     if (!this._firstUpdated) {
       this.firstUpdate(time, dt);
       this._firstUpdated = true;
+      this._renderDelta = 0;
     }
+    this._renderDelta += dt;
 
     if (this.physics && this.physics.world.isPaused && !this.timeSightFrozen && this.isTopScene()) {
       this.command.processInput(this, time, dt, true);
