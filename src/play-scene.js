@@ -42,7 +42,19 @@ export default class PlayScene extends SuperScene {
   create(config) {
     super.create(config);
 
+    this.hud = this.createHud();
     this.setupPhysics();
+
+  }
+
+  createHud() {
+    const hud = {};
+    /*
+    const score = hud.score = this.text(x, y, text, {color: 'rgb(255, 255, 255)'});
+    scoreSteady.setScrollFactor(0);
+    scoreSteady.setDepth(1000);
+    */
+    return hud;
   }
 
   setupPhysics() {}
@@ -119,12 +131,47 @@ export default class PlayScene extends SuperScene {
     return 0x000000;
   }
 
+  musicName() {
+    // return this.level && this.level.music;
+    return undefined;
+  }
+
   launchTimeSight() {
     super.launchTimeSight();
   }
 
   renderTimeSightFrameInto(scene, phantomDt, time, dt, isLast) {
     const objects = [];
+
+    if (!this.timeSightX) {
+      this.timeSightX = this.timeSightY = 0;
+    }
+
+    const prevX = this.timeSightX;
+    const prevY = this.timeSightY;
+
+    /*
+    const {player} = this.level;
+    if (isLast || Math.sqrt((player.x - prevX) * (player.x - prevX) + (player.y - prevY) * (player.y - prevY)) >= 28) {
+      const phantom = scene.physics.add.sprite(player.x, player.y, 'spritePlayerDefault');
+      phantom.anims.play(animation);
+      phantom.setFlipX(player.flipX);
+      phantom.setScale(player.scaleX, player.scaleY);
+      phantom.alpha = 0.4;
+
+      objects.push(phantom);
+      this.timeSightX = player.x;
+      this.timeSightY = player.y;
+    }
+    */
+
+    if (objects.length === 0) {
+      return null;
+    }
+
+    objects.forEach((object) => {
+      object.anims.stop();
+    });
 
     return objects;
   }
