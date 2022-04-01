@@ -119,14 +119,19 @@ export default class SuperScene extends Phaser.Scene {
         world.step = (originalDelta) => {
           const delta = originalDelta / world.timeScale;
 
-          while (this._renderDelta > 0) {
+          while (!this._didRenderDelta || this._renderDelta > 0) {
             const dt = delta * 1000;
             time += dt;
             physics.dt = dt;
             physics.time = time;
             this.scene_time = time;
 
-            this._renderDelta -= originalDelta * 1000;
+            if (this._didRenderDelta) {
+              this._renderDelta -= originalDelta * 1000;
+            } else {
+              this._renderDelta = 0;
+              this._didRenderDelta = true;
+            }
 
             if (this.game._stepExceptions > 100) {
               return;
