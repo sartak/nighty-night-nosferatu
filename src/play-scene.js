@@ -230,9 +230,46 @@ export default class PlayScene extends SuperScene {
     this.player.setVelocityY(dy * prop("player.speed"));
   }
 
+  sunPosition(percent = this.percent) {
+    if (percent < 0 || percent > 1) {
+      return [0, 0];
+    }
+
+    if (!this.spline) {
+      const points = [];
+      points.push(new Phaser.Math.Vector2(10, 600));
+      points.push(new Phaser.Math.Vector2(100, 200));
+      points.push(new Phaser.Math.Vector2(400, 10));
+      points.push(new Phaser.Math.Vector2(700, 200));
+      points.push(new Phaser.Math.Vector2(790, 600));
+      this.spline = new Phaser.Curves.Spline(points);
+    }
+
+    const { x, y } = this.spline.getPoint(percent);
+    return [x, y];
+  }
+
+  isCrisping() {
+    const [sunX, sunY] = this.sunPosition();
+    const { x: playerX, y: playerY } = this.player;
+
+    const sunray = new Phaser.Geom.Line(sunX, sunY, playerX, playerY);
+    return !this.objects.some((obj) => {
+      const points = Phaser.Geom.Intersects.LineToRectangle(
+        sunray,
+        obj.getBounds()
+      );
+      return !!points;
+    });
+  }
+
   fixedUpdate(time, dt) {
     this.processInput(time, dt);
-    this.t = (this.t || 0) + dt;
+
+    const rawTime = (this.t = (this.t || 0) + dt);
+    const speed = 10;
+    const t = (rawTime * speed) / 1000;
+    this.percent = t / 800;
   }
 
   renderUpdate(time, dt) {
@@ -248,7 +285,7 @@ export default class PlayScene extends SuperScene {
       darkmask,
     } = this;
 
-    [this.player].forEach((sprite) => {
+    [this.player, ...this.objects].forEach((sprite) => {
       const { x, y, width, height, occ } = sprite;
       occ.topleft.x = x - width / 2;
       occ.topleft.y = y - height / 2;
@@ -257,24 +294,18 @@ export default class PlayScene extends SuperScene {
       occ.syncFromTopleftBottomright();
     });
 
-    const speed = 50;
-    const t = ((this.t || 0) * speed) / 1000;
-    const percent = t / 800;
-
-    const points = [];
-    points.push(new Phaser.Math.Vector2(10, 600));
-    points.push(new Phaser.Math.Vector2(100, 200));
-    points.push(new Phaser.Math.Vector2(400, 10));
-    points.push(new Phaser.Math.Vector2(700, 200));
-    points.push(new Phaser.Math.Vector2(790, 600));
-    const spline = new Phaser.Curves.Spline(points);
-
-    const { x, y } =
-      percent < 0 || percent > 1 ? { x: 0, y: 0 } : spline.getPoint(percent);
+    const { percent } = this;
+    const [x, y] = this.sunPosition(percent);
 
     ambient.position = sun.position = corona.position = new Vec2(x, y);
-    ambient.color = `rgba(${255}, ${150 - 100 * percent}, ${150 -
-      100 * percent}, ${percent / 4 + 0.5})`;
+    const crisping = this.isCrisping();
+    if (crisping) {
+      ambient.color = `rgba(${255}, ${150 - 100 * percent}, ${150 -
+        100 * percent}, ${percent / 4 + 0.5})`;
+    } else {
+      ambient.color = `rgba(${1500 - 100 * percent}, ${255}, ${150 -
+        100 * percent}, ${percent / 4 + 0.5})`;
+    }
 
     lighting1.compute(canvas.width, canvas.height);
     lighting2.compute(canvas.width, canvas.height);
@@ -320,6 +351,7 @@ export default class PlayScene extends SuperScene {
 
   launchTimeSight() {
     super.launchTimeSight();
+    this.player.visible = false;
   }
 
   renderTimeSightFrameInto(scene, phantomDt, time, dt, isLast) {
@@ -332,20 +364,24 @@ export default class PlayScene extends SuperScene {
     const prevX = this.timeSightX;
     const prevY = this.timeSightY;
 
-    /*
-    const {player} = this.level;
-    if (isLast || Math.sqrt((player.x - prevX) * (player.x - prevX) + (player.y - prevY) * (player.y - prevY)) >= 28) {
-      const phantom = scene.physics.add.sprite(player.x, player.y, 'spritePlayerDefault');
-      phantom.anims.play(animation);
-      phantom.setFlipX(player.flipX);
-      phantom.setScale(player.scaleX, player.scaleY);
+    const { player } = this;
+    if (
+      isLast ||
+      Math.sqrt(
+        (player.x - prevX) * (player.x - prevX) +
+          (player.y - prevY) * (player.y - prevY)
+      ) >= 28
+    ) {
+      const phantom = scene.physics.add.sprite(player.x, player.y, "player");
+      // phantom.anims.play(animation);
+      // phantom.setFlipX(player.flipX);
+      // phantom.setScale(player.scaleX, player.scaleY);
       phantom.alpha = 0.4;
 
       objects.push(phantom);
       this.timeSightX = player.x;
       this.timeSightY = player.y;
     }
-    */
 
     if (objects.length === 0) {
       return null;
