@@ -79,6 +79,7 @@ export const shaderPipelines = {};
 
 export const propSpecs = {
   ...builtinPropSpecs(commands, shaderCoordFragments, shaderColorFragments),
+  "player.speed": [100, 1, 1000],
 };
 
 export const tileDefinitions = {

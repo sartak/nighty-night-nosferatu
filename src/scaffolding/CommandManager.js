@@ -164,7 +164,7 @@ export default class CommandManager {
       });
     }
 
-    const canvas = document.querySelector("#engine canvas#phaser");
+    const canvas = document.querySelector("#engine canvas:not(#illuminated)");
 
     ["pointerdown", "pointerup"].forEach((name) => {
       scene.input.on(name, (pointer) => {

@@ -56,16 +56,33 @@ export default class PlayScene extends SuperScene {
     const canvas = document.getElementById("illuminated");
     const ctx = canvas.getContext("2d");
 
-    const sprites = [1, 1, 1, 1, 1, 1, 1, 11, 1, 1, 1, 1, 1, 1, 1].map(
-      (_, i) => {
-        const s = this.physics.add.sprite(
-          20 + 50 * i,
-          200 + Math.random() * 200,
-          "test"
-        );
-        return s;
-      }
-    );
+    const player = (this.player = this.physics.add.sprite(400, 570, "player"));
+    this.player.setVelocityX(-1 * prop("player.speed"));
+
+    const sprites = (this.objects = [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      11,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+    ].map((_, i) => {
+      const s = this.physics.add.sprite(
+        20 + 50 * i,
+        200 + this.randFloat("sprite") * 200,
+        "test"
+      );
+      return s;
+    }));
 
     const sun = new Lamp({
       position: new Vec2(100, 250),
@@ -88,13 +105,15 @@ export default class PlayScene extends SuperScene {
       samples: 10,
     });
 
-    const objects = sprites.map(
-      ({ x, y, width, height }) =>
-        new RectangleObject({
-          topleft: new Vec2(x - width / 2, y - height / 2),
-          bottomright: new Vec2(x + width / 2, y + height / 2),
-        })
-    );
+    const objects = [...sprites, player].map((sprite) => {
+      const { x, y, width, height } = sprite;
+      const occ = new RectangleObject({
+        topleft: new Vec2(x - width / 2, y - height / 2),
+        bottomright: new Vec2(x + width / 2, y + height / 2),
+      });
+      sprite.occ = occ;
+      return occ;
+    });
 
     const lighting1 = new Lighting({
       light: ambient,
@@ -156,7 +175,11 @@ export default class PlayScene extends SuperScene {
     return hud;
   }
 
-  setupPhysics() {}
+  setupPhysics() {
+    this.objects.forEach((obj) => {
+      this.physics.add.collider(this.player, obj);
+    });
+  }
 
   setupAnimations() {}
 
@@ -202,10 +225,14 @@ export default class PlayScene extends SuperScene {
     } else {
       dx = dy = 0;
     }
+
+    this.player.setVelocityX(dx * prop("player.speed"));
+    this.player.setVelocityY(dy * prop("player.speed"));
   }
 
   fixedUpdate(time, dt) {
     this.processInput(time, dt);
+    this.t = (this.t || 0) + dt;
   }
 
   renderUpdate(time, dt) {
@@ -221,8 +248,17 @@ export default class PlayScene extends SuperScene {
       darkmask,
     } = this;
 
+    [this.player].forEach((sprite) => {
+      const { x, y, width, height, occ } = sprite;
+      occ.topleft.x = x - width / 2;
+      occ.topleft.y = y - height / 2;
+      occ.bottomright.x = x + width / 2;
+      occ.bottomright.y = y + height / 2;
+      occ.syncFromTopleftBottomright();
+    });
+
     const speed = 50;
-    const t = (time * speed) / 1000 - 10;
+    const t = ((this.t || 0) * speed) / 1000;
     const percent = t / 800;
 
     const points = [];
@@ -233,7 +269,8 @@ export default class PlayScene extends SuperScene {
     points.push(new Phaser.Math.Vector2(790, 600));
     const spline = new Phaser.Curves.Spline(points);
 
-    const { x, y } = percent > 1 ? { x: 0, y: 0 } : spline.getPoint(percent);
+    const { x, y } =
+      percent < 0 || percent > 1 ? { x: 0, y: 0 } : spline.getPoint(percent);
 
     ambient.position = sun.position = corona.position = new Vec2(x, y);
     ambient.color = `rgba(${255}, ${150 - 100 * percent}, ${150 -
