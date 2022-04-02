@@ -3,13 +3,16 @@ import prop from "./props";
 import { NormalizeVector } from "./scaffolding/lib/vector";
 import Phaser from "phaser";
 
-const Illuminated = window.illuminated,
-  Lamp = Illuminated.Lamp,
-  RectangleObject = Illuminated.RectangleObject,
-  DiscObject = Illuminated.DiscObject,
-  DarkMask = Illuminated.DarkMask,
-  Vec2 = Illuminated.Vec2,
-  Lighting = Illuminated.Lighting;
+const Illuminated = window.illuminated;
+const {
+  Lamp,
+  RectangleObject,
+  PolygonObject,
+  //DiscObject,
+  DarkMask,
+  Vec2,
+  Lighting,
+} = Illuminated;
 
 // DELAY THE INEVITABLE
 
@@ -50,6 +53,35 @@ export default class PlayScene extends SuperScene {
     super.preload();
   }
 
+  rotatedVecs(rect) {
+    const vecs = [];
+    const {
+      originX,
+      originY,
+      rotation,
+      width,
+      height,
+      x: offsetX,
+      y: offsetY,
+      scaleX,
+      scaleY,
+    } = rect;
+
+    const w = width * scaleX;
+    const h = height * scaleY;
+
+    [[0, 0], [0, h], [w, h], [w, 0]].forEach(([x, y]) => {
+      const { x: newX, y: newY } = Phaser.Math.RotateAround(
+        { x: x - w / 2, y: y - h / 2 },
+        originX,
+        originY,
+        rotation
+      );
+      vecs.push(new Vec2(newX + offsetX, newY + offsetY));
+    });
+    return vecs;
+  }
+
   create(config) {
     super.create(config);
 
@@ -59,28 +91,19 @@ export default class PlayScene extends SuperScene {
     const player = (this.player = this.physics.add.sprite(400, 570, "player"));
     this.player.setVelocityX(-1 * prop("player.speed"));
 
-    const sprites = (this.objects = [
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      11,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-    ].map((_, i) => {
+    const sprites = (this.objects = [1, 1, 1, 1, 1, 1, 1, 1].map((_, i) => {
       const s = this.physics.add.sprite(
-        20 + 50 * i,
+        20 + 100 * i,
         200 + this.randFloat("sprite") * 200,
         "test"
       );
+      //s.setScale(this.randBetween("x", 0.5, 3), this.randBetween("y", 0.5, 3));
+      s.setScale(this.randBetween("x", 2, 5), 1);
+      s.setAngularVelocity(this.randBetween("r", 10, 50));
+      s.setVelocityX(this.randBetween("dx", -50, 50));
+      s.setVelocityY(this.randBetween("dy", -50, 50));
+      s.setRotation(this.randBetween("t", 0, 2 * Math.PI));
+
       return s;
     }));
 
@@ -106,11 +129,7 @@ export default class PlayScene extends SuperScene {
     });
 
     const objects = [...sprites, player].map((sprite) => {
-      const { x, y, width, height } = sprite;
-      const occ = new RectangleObject({
-        topleft: new Vec2(x - width / 2, y - height / 2),
-        bottomright: new Vec2(x + width / 2, y + height / 2),
-      });
+      const occ = new PolygonObject({ points: this.rotatedVecs(sprite) });
       sprite.occ = occ;
       return occ;
     });
@@ -267,7 +286,7 @@ export default class PlayScene extends SuperScene {
     this.processInput(time, dt);
 
     const rawTime = (this.t = (this.t || 0) + dt);
-    const speed = 10;
+    const speed = prop("sun.speed");
     const t = (rawTime * speed) / 1000;
     this.percent = t / 800;
   }
@@ -285,13 +304,17 @@ export default class PlayScene extends SuperScene {
       darkmask,
     } = this;
 
-    [this.player, ...this.objects].forEach((sprite) => {
-      const { x, y, width, height, occ } = sprite;
-      occ.topleft.x = x - width / 2;
-      occ.topleft.y = y - height / 2;
-      occ.bottomright.x = x + width / 2;
-      occ.bottomright.y = y + height / 2;
+    [this.player, ...this.objects].forEach((s) => {
+      const { occ } = s;
+
+      occ.points = this.rotatedVecs(s);
+      /*
+      occ.topleft.x = x;
+      occ.topleft.y = y;
+      occ.bottomright.x = x + width;
+      occ.bottomright.y = y + height;
       occ.syncFromTopleftBottomright();
+      */
     });
 
     const { percent } = this;
