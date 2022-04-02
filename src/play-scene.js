@@ -274,11 +274,14 @@ export default class PlayScene extends SuperScene {
 
     const sunray = new Phaser.Geom.Line(sunX, sunY, playerX, playerY);
     return !this.objects.some((obj) => {
-      const points = Phaser.Geom.Intersects.LineToRectangle(
-        sunray,
-        obj.getBounds()
-      );
-      return !!points;
+      const { occ } = obj;
+      const { points } = occ;
+      return [[0, 1], [1, 2], [2, 3], [3, 0]].some(([i1, i2]) => {
+        const p1 = points[i1];
+        const p2 = points[i2];
+        const edge = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
+        return Phaser.Geom.Intersects.LineToLine(sunray, edge);
+      });
     });
   }
 
