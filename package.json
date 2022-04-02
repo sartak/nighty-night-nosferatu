@@ -1,10 +1,10 @@
 {
-  "name": "ld50.shawn.dev",
+  "name": "nippy-nosferatu",
   "homepage": "/",
   "version": "0.1.0",
   "productionDisplay": {
     "embed": false,
-    "displayName": "LD50",
+    "displayName": "Nippy Nosferatu",
     "authorName": "@sartak",
     "authorURL": "https://shawn.dev",
     "eventDescription": "created solo in 48 hours as part of",
@@ -16,7 +16,7 @@
     "themePre": "",
     "themeItalic": "\"Delay the inevitable\"",
     "themePost": "",
-    "repoURL": "https://github.com/sartak/ld50.shawn.dev"
+    "repoURL": "https://github.com/sartak/nippy-nosferatu"
   },
   "developmentDisplay": {
     "links": [
