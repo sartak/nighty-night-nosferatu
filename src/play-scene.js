@@ -16,6 +16,19 @@ const {
 
 // DELAY THE INEVITABLE
 
+let BeadSamples = 1;
+let CoronaSamples = 10;
+let AmbientSamples = 20;
+const Downsamples = [[1, 2, 4], [1, 1, 1], [0, 0, 1]];
+
+const Downsample = (t) => {
+  if (Downsamples.length) {
+    console.log("downsampling to ", Downsamples[0]);
+    [BeadSamples, CoronaSamples, AmbientSamples] = Downsamples.shift();
+    t();
+  }
+};
+
 export default class PlayScene extends SuperScene {
   constructor() {
     super({
@@ -29,7 +42,10 @@ export default class PlayScene extends SuperScene {
       },
     });
 
-    this.performanceProps = [];
+    this.performanceProps = [
+      ...Downsamples.map(() => Downsample(() => this.resampleSuns())),
+    ];
+
     this.mapsAreRectangular = true;
     this.suns = [];
   }
@@ -110,7 +126,7 @@ export default class PlayScene extends SuperScene {
       position: new Vec2(x - this.lightX, y - this.lightY),
       distance: 10,
       radius: 6,
-      samples: 1,
+      samples: BeadSamples,
     });
     const corona = new Lamp({
       position: new Vec2(x - this.lightX, y - this.lightY),
@@ -121,7 +137,7 @@ export default class PlayScene extends SuperScene {
       }, 0.8)`,
       distance: 100,
       radius: 10,
-      samples: 10,
+      samples: CoronaSamples,
     });
     const ambient = new Lamp({
       position: new Vec2(x - this.lightX, y - this.lightY),
@@ -132,7 +148,7 @@ export default class PlayScene extends SuperScene {
       }, 1)`,
       distance: 1400,
       radius: 10,
-      samples: 20,
+      samples: AmbientSamples,
     });
 
     const lighting1 = new Lighting({
@@ -160,6 +176,14 @@ export default class PlayScene extends SuperScene {
     });
 
     return set;
+  }
+
+  resampleSuns() {
+    (this.suns || []).forEach(({ bead, corona, ambient }) => {
+      bead.samples = BeadSamples;
+      corona.samples = CoronaSamples;
+      ambient.samples = AmbientSamples;
+    });
   }
 
   create(config) {
