@@ -89,7 +89,7 @@ export const propSpecs = {
     null,
     (scene) => scene.command.ignoreAll("dying"),
   ],
-  "player.speed": [100, 1, 1000],
+  "player.speed": [500, 1, 1000],
   "sun.speed": [10, 1, 100],
   "sun.downsamplesLeft": [
     0,
