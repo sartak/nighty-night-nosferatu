@@ -1,6 +1,7 @@
 import SuperScene from "./scaffolding/SuperScene";
 import prop from "./props";
 import { NormalizeVector } from "./scaffolding/lib/vector";
+import Phaser from "phaser";
 
 const Illuminated = window.illuminated,
   Lamp = Illuminated.Lamp,
@@ -66,64 +67,80 @@ export default class PlayScene extends SuperScene {
       }
     );
 
-    {
-      if (1) {
-        const light1 = new Lamp({
-          position: new Vec2(100, 250),
-          distance: 200,
-          radius: 10,
-          samples: 50,
-        });
-        const light2 = new Lamp({
-          position: new Vec2(300, 50),
-          color: "#CCF",
-          distance: 200,
-          radius: 10,
-          samples: 50,
-        });
+    const sun = new Lamp({
+      position: new Vec2(100, 250),
+      distance: 10,
+      radius: 6,
+      samples: 1,
+    });
+    const corona = new Lamp({
+      position: new Vec2(100, 250),
+      color: "rgba(255, 0, 0, 0.8)",
+      distance: 100,
+      radius: 10,
+      samples: 10,
+    });
+    const ambient = new Lamp({
+      position: new Vec2(300, 50),
+      color: "rgba(255, 200, 200, 1)",
+      distance: 1400,
+      radius: 10,
+      samples: 10,
+    });
 
-        const objects = sprites.map(
-          ({ x, y, width, height }) =>
-            new RectangleObject({
-              topleft: new Vec2(x - width / 2, y - height / 2),
-              bottomright: new Vec2(x + width / 2, y + height / 2),
-            })
-        );
+    const objects = sprites.map(
+      ({ x, y, width, height }) =>
+        new RectangleObject({
+          topleft: new Vec2(x - width / 2, y - height / 2),
+          bottomright: new Vec2(x + width / 2, y + height / 2),
+        })
+    );
 
-        const lighting1 = new Lighting({
-          light: light1,
-          objects: objects,
-        });
-        const lighting2 = new Lighting({
-          light: light2,
-          objects: objects,
-        });
+    const lighting1 = new Lighting({
+      light: ambient,
+      objects: objects,
+    });
+    const lighting2 = new Lighting({
+      light: sun,
+      objects: objects,
+    });
+    const lighting3 = new Lighting({
+      light: corona,
+      objects: objects,
+    });
 
-        const darkmask = new DarkMask({ lights: [light1, light2] });
+    const darkmask = new DarkMask({ lights: [ambient, sun] });
 
-        lighting1.compute(canvas.width, canvas.height);
-        lighting2.compute(canvas.width, canvas.height);
-        darkmask.compute(canvas.width, canvas.height);
+    lighting1.compute(canvas.width, canvas.height);
+    lighting2.compute(canvas.width, canvas.height);
+    lighting3.compute(canvas.width, canvas.height);
+    darkmask.compute(canvas.width, canvas.height);
 
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.globalCompositeOperation = "lighter";
-        lighting1.render(ctx);
-        lighting2.render(ctx);
+    ctx.globalCompositeOperation = "lighter";
+    lighting1.render(ctx);
+    lighting2.render(ctx);
+    lighting3.render(ctx);
 
-        ctx.globalCompositeOperation = "source-over";
-        darkmask.render(ctx);
+    ctx.globalCompositeOperation = "source-over";
+    darkmask.render(ctx);
 
-        this.canvas = canvas;
-        this.ctx = ctx;
-        this.light1 = light1;
-        this.light2 = light2;
-        this.lighting1 = lighting1;
-        this.lighting2 = lighting2;
-        this.darkmask = darkmask;
-      }
-    }
+    this.canvas = canvas;
+    this.ctx = ctx;
+    this.ambient = ambient;
+    this.sun = sun;
+    this.corona = corona;
+    this.lighting1 = lighting1;
+    this.lighting2 = lighting2;
+    this.lighting3 = lighting3;
+    this.darkmask = darkmask;
+
+    this.input.on("pointermove", (pointer) => {
+      this.x = pointer.x;
+      this.y = pointer.y;
+    });
 
     this.hud = this.createHud();
     this.setupPhysics();
@@ -195,19 +212,36 @@ export default class PlayScene extends SuperScene {
     const {
       canvas,
       ctx,
-      light1,
-      light2,
+      ambient,
+      sun,
+      corona,
       lighting1,
       lighting2,
+      lighting3,
       darkmask,
     } = this;
 
-    const t = Math.round(100 * Math.cos(time / 1000));
-    light1.position = new Vec2(200 - t, 150 + t);
-    light2.position = new Vec2(200 + t, 150 - t);
+    const speed = 50;
+    const t = (time * speed) / 1000 - 10;
+    const percent = t / 800;
+
+    const points = [];
+    points.push(new Phaser.Math.Vector2(10, 600));
+    points.push(new Phaser.Math.Vector2(100, 200));
+    points.push(new Phaser.Math.Vector2(400, 10));
+    points.push(new Phaser.Math.Vector2(700, 200));
+    points.push(new Phaser.Math.Vector2(790, 600));
+    const spline = new Phaser.Curves.Spline(points);
+
+    const { x, y } = percent > 1 ? { x: 0, y: 0 } : spline.getPoint(percent);
+
+    ambient.position = sun.position = corona.position = new Vec2(x, y);
+    ambient.color = `rgba(${255}, ${150 - 100 * percent}, ${150 -
+      100 * percent}, ${percent / 4 + 0.5})`;
 
     lighting1.compute(canvas.width, canvas.height);
     lighting2.compute(canvas.width, canvas.height);
+    lighting3.compute(canvas.width, canvas.height);
     darkmask.compute(canvas.width, canvas.height);
 
     ctx.fillStyle = "black";
@@ -216,6 +250,7 @@ export default class PlayScene extends SuperScene {
     ctx.globalCompositeOperation = "lighter";
     lighting1.render(ctx);
     lighting2.render(ctx);
+    lighting3.render(ctx);
 
     ctx.globalCompositeOperation = "source-over";
     darkmask.render(ctx);
