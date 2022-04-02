@@ -2,6 +2,8 @@ import SuperScene from "./scaffolding/SuperScene";
 import prop from "./props";
 import { NormalizeVector } from "./scaffolding/lib/vector";
 
+// DELAY THE INEVITABLE
+
 export default class PlayScene extends SuperScene {
   constructor() {
     super({
