@@ -9,23 +9,26 @@ import {
 const particleImages = ["dot"];
 
 export const commands = {
-  /*
   jump: {
-    input: ['keyboard.Z', 'gamepad.A'],
-  },
-  */
-
-  up: {
-    input: ["keyboard.UP", "gamepad.UP"],
+    input: [
+      "keyboard.UP",
+      "keyboard.Z",
+      "keyboard.W",
+      "keyboard.SPACE",
+      "gamepad.A",
+      "gamepad.B",
+      "gamepad.X",
+      "gamepad.Y",
+    ],
   },
   down: {
-    input: ["keyboard.DOWN", "gamepad.DOWN"],
+    input: ["keyboard.DOWN", "gamepad.DOWN", "keyboard.S"],
   },
   left: {
-    input: ["keyboard.LEFT", "gamepad.LEFT"],
+    input: ["keyboard.LEFT", "gamepad.LEFT", "keyboard.A"],
   },
   right: {
-    input: ["keyboard.RIGHT", "gamepad.RIGHT"],
+    input: ["keyboard.RIGHT", "gamepad.RIGHT", "keyboard.D"],
   },
   lstick: {
     input: ["gamepad.LSTICK.RAW"],
@@ -89,8 +92,20 @@ export const propSpecs = {
     null,
     (scene) => scene.command.ignoreAll("dying"),
   ],
-  "player.speed": [500, 1, 1000],
-  "player.gravityBase": [1, 1, 1000],
+
+  "player.speed": [150, 1, 1000],
+  "player.drag": [0.3, 0, 1],
+  "player.gravityBase": [3000, 1, 10000],
+  "player.baseJumpVelocity": [300, 1, 1000],
+  "player.touchingDown": [false, null, "level.player.body.touching.down"],
+  "player.isJumping": [false, null, "level.player.isJumping"],
+  "player.hasLiftedOff": [false, null, "level.player.hasLiftedOff"],
+  "player.hasReleasedJump": [false, null, "level.player.hasReleasedJump"],
+  "player.jumpStart": [0, null, "level.player.jumpStart"],
+  "player.maxJumpTime": [200, 0, 10000],
+  "player.maxJumpTrauma": [0.5, 0, 1],
+  "player.jumpTraumaDivisor": [3000, 0, 10000],
+
   "sun.speed": [10, 1, 100],
   "sun.downsamplesLeft": [
     0,
@@ -156,7 +171,7 @@ export const tileDefinitions = {
     isStatic: true,
   },
   "@": {
-    image: "vampire",
+    image: "player",
     group: "player",
   },
 };

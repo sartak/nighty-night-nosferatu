@@ -230,12 +230,12 @@ export default class PlayScene extends SuperScene {
 
     level.player = level.groups.player.objects[0];
     level.player.setGravityY(prop("player.gravityBase"));
+    //level.player.anims.play("idle");
 
     this.createHealthBar(level.player);
 
     level.blockingObjects = [];
     Object.entries(level.groups).forEach(([name, { objects, shadow }]) => {
-      console.log(name, shadow, objects);
       if (shadow) {
         level.blockingObjects.push(...objects);
       }
@@ -314,7 +314,17 @@ export default class PlayScene extends SuperScene {
     physics.add.collider(player, ground.group);
   }
 
-  setupAnimations() {}
+  setupAnimations() {
+    this.anims.create({
+      key: "player",
+      frames: [
+        {
+          key: "idle",
+          frame: 0,
+        },
+      ],
+    });
+  }
 
   processInput(time, dt) {
     const { command, level } = this;
@@ -324,9 +334,20 @@ export default class PlayScene extends SuperScene {
     let dy = 0;
     let stickInput = false;
 
-    if (command.up.held) {
-      dy = -1;
-    } else if (command.down.held) {
+    const canJump = player.body.touching.down && !player.isJumping;
+    if (command.jump.started) {
+      if (canJump) {
+        player.isJumping = true;
+        player.hasLiftedOff = false;
+        player.hasReleasedJump = false;
+        player.jumpStart = time;
+        player.setVelocityY(
+          player.body.velocity.y - prop("player.baseJumpVelocity")
+        );
+      }
+    }
+
+    if (command.down.held) {
       dy = 1;
     }
 
@@ -360,7 +381,47 @@ export default class PlayScene extends SuperScene {
       dx = dy = 0;
     }
 
-    player.setVelocityX(dx * prop("player.speed"));
+    let vx = player.body.velocity.x + dx * prop("player.speed");
+    vx *= 1 - prop("player.drag");
+    player.setVelocityX(vx);
+  }
+
+  processJumping(time, dt) {
+    const { command, level } = this;
+    const { player } = level;
+
+    if (!command.jump.held) {
+      player.hasReleasedJump = true;
+    }
+
+    const touchingDown = player.body.touching.down;
+    if (player.isJumping && !player.hasLiftedOff && !touchingDown) {
+      player.hasLiftedOff = true;
+    }
+
+    if (player.isJumping && player.hasLiftedOff && touchingDown) {
+      player.hasLiftedOff = false;
+      player.isJumping = false;
+      this.trauma(
+        Math.min(
+          prop("player.maxJumpTrauma"),
+          player.previousVelocityY / prop("player.jumpTraumaDivisor")
+        )
+      );
+    }
+
+    let vy = player.body.velocity.y;
+    if (player.isJumping && !player.hasReleasedJump) {
+      if (time - player.jumpStart > prop("player.maxJumpTime")) {
+        player.hasReleasedJump = true;
+      } else {
+        vy -= prop("player.baseJumpVelocity");
+        vy *= 1 - prop("player.drag");
+        player.setVelocityY(vy);
+      }
+    }
+
+    player.previousVelocityY = player.body.velocity.y;
   }
 
   sunPosition(percent = this.percent) {
@@ -423,6 +484,7 @@ export default class PlayScene extends SuperScene {
   fixedUpdate(time, dt) {
     const { level } = this;
     this.processInput(time, dt);
+    this.processJumping(time, dt);
 
     const rawTime = (this.t = (this.t || 0) + dt);
     const speed = prop("sun.speed");
