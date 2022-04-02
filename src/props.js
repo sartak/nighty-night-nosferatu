@@ -91,6 +91,11 @@ export const propSpecs = {
   ],
   "player.speed": [100, 1, 1000],
   "sun.speed": [10, 1, 100],
+  "sun.downsamplesLeft": [
+    0,
+    null,
+    (scene) => scene.downsamples && scene.downsamples.length,
+  ],
   "level.replaceDelay": [2000, 0, 10000],
   "effects.playerDie.tween": [
     {

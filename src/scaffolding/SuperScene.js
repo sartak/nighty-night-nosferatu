@@ -2855,7 +2855,7 @@ export default class SuperScene extends Phaser.Scene {
       this.performanceAcceptable = this.game.loop.actualFps > 50;
     }
 
-    if (this.performanceFrames < 300) {
+    if (this.performanceFrames < 200) {
       return;
     }
 

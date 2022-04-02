@@ -42,8 +42,9 @@ export default class PlayScene extends SuperScene {
       },
     });
 
+    this.downsamples = Downsamples;
     this.performanceProps = [
-      ...Downsamples.map(() => Downsample(() => this.resampleSuns())),
+      ...Downsamples.map(() => () => Downsample(() => this.resampleSuns())),
     ];
 
     this.mapsAreRectangular = true;
