@@ -6,7 +6,7 @@ import {
   preprocessPropSpecs,
 } from "./scaffolding/lib/props";
 
-const particleImages = [""];
+const particleImages = ["dot"];
 
 export const commands = {
   /*
@@ -73,14 +73,43 @@ export const commands = {
   },
 };
 
-export const shaderCoordFragments = null;
+export const shaderCoordFragments = ["shockwave"];
 export const shaderColorFragments = null;
 export const shaderPipelines = {};
 
 export const propSpecs = {
   ...builtinPropSpecs(commands, shaderCoordFragments, shaderColorFragments),
+  "command.ignore_all.spawn": [
+    false,
+    null,
+    (scene) => scene.command.ignoreAll("spawn"),
+  ],
+  "command.ignore_all.dying": [
+    false,
+    null,
+    (scene) => scene.command.ignoreAll("dying"),
+  ],
   "player.speed": [100, 1, 1000],
   "sun.speed": [10, 1, 100],
+  "level.replaceDelay": [2000, 0, 10000],
+  "effects.playerDie.tween": [
+    {
+      duration: 200,
+      alpha: 0,
+    },
+  ],
+  "effects.playerAsh.particles": [
+    {
+      image: "dot",
+      blendMode: "ADD",
+      accelerationY: 2000,
+      lifespan: 500,
+      speedX: 500,
+      speedY: -1000,
+      frequency: 1,
+      quantity: 5,
+    },
+  ],
 };
 
 export const tileDefinitions = {

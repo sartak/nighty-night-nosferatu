@@ -1,3 +1,4 @@
+import _ from "lodash";
 import SuperScene from "./scaffolding/SuperScene";
 import prop from "./props";
 import { NormalizeVector } from "./scaffolding/lib/vector";
@@ -6,7 +7,6 @@ import Phaser from "phaser";
 const Illuminated = window.illuminated;
 const {
   Lamp,
-  RectangleObject,
   PolygonObject,
   //DiscObject,
   DarkMask,
@@ -31,6 +31,7 @@ export default class PlayScene extends SuperScene {
 
     this.performanceProps = [];
     this.mapsAreRectangular = true;
+    this.suns = [];
   }
 
   initialSaveState() {
@@ -54,6 +55,7 @@ export default class PlayScene extends SuperScene {
   }
 
   rotatedVecs(rect) {
+    const { lightX, lightY } = this;
     const vecs = [];
     const {
       originX,
@@ -77,16 +79,93 @@ export default class PlayScene extends SuperScene {
         originY,
         rotation
       );
-      vecs.push(new Vec2(newX + offsetX, newY + offsetY));
+      vecs.push(new Vec2(newX + offsetX - lightX, newY + offsetY - lightY));
     });
     return vecs;
+  }
+
+  createLightCanvas() {
+    const key = (this.lightKey = "light-" + Date.now());
+    const lightWidth = (this.lightWidth = 1000);
+    const lightHeight = (this.lightHeight = 800);
+    // const lightWidth = (this.lightWidth = 800);
+    // const lightHeight = (this.lightHeight = 600);
+    const lightX = (this.lightX = (800 - this.lightWidth) / 2);
+    const lightY = (this.lightY = (600 - this.lightHeight) / 2);
+    this.lightTexture = this.textures.createCanvas(
+      key,
+      lightWidth,
+      lightHeight
+    );
+    this.add.image(lightX, lightY, key).setOrigin(0, 0);
+  }
+
+  createSun(x, y, objects, backwards) {
+    let coronaPrimary = 255;
+    let coronaSecondary = 0;
+    let ambientPrimary = 255;
+    let ambientSecondary = 200;
+
+    const bead = new Lamp({
+      position: new Vec2(x - this.lightX, y - this.lightY),
+      distance: 10,
+      radius: 6,
+      samples: 1,
+    });
+    const corona = new Lamp({
+      position: new Vec2(x - this.lightX, y - this.lightY),
+      color: `rgba(${
+        backwards ? coronaSecondary : coronaPrimary
+      }, ${coronaSecondary}, ${
+        backwards ? coronaPrimary : coronaSecondary
+      }, 0.8)`,
+      distance: 100,
+      radius: 10,
+      samples: 10,
+    });
+    const ambient = new Lamp({
+      position: new Vec2(x - this.lightX, y - this.lightY),
+      color: `rgba(${
+        backwards ? ambientSecondary : ambientPrimary
+      }, ${ambientSecondary}, ${
+        backwards ? ambientPrimary : ambientSecondary
+      }, 1)`,
+      distance: 1400,
+      radius: 10,
+      samples: 20,
+    });
+
+    const lighting1 = new Lighting({
+      light: ambient,
+      objects,
+    });
+    const lighting2 = new Lighting({
+      light: bead,
+      objects,
+    });
+    const lighting3 = new Lighting({
+      light: corona,
+      objects,
+    });
+
+    const lamps = [bead, corona, ambient];
+    const lightings = [lighting1, lighting2, lighting3];
+
+    const set = { bead, corona, ambient, lamps, lightings, backwards };
+
+    this.suns.push(set);
+
+    this.dark = new DarkMask({
+      lights: _.flatMap(this.suns, ({ lamps }) => lamps),
+    });
+
+    return set;
   }
 
   create(config) {
     super.create(config);
 
-    const canvas = document.getElementById("illuminated");
-    const ctx = canvas.getContext("2d");
+    this.createLightCanvas();
 
     const player = (this.player = this.physics.add.sprite(400, 570, "player"));
     this.player.setVelocityX(-1 * prop("player.speed"));
@@ -107,81 +186,28 @@ export default class PlayScene extends SuperScene {
       return s;
     }));
 
-    const sun = new Lamp({
-      position: new Vec2(100, 250),
-      distance: 10,
-      radius: 6,
-      samples: 1,
-    });
-    const corona = new Lamp({
-      position: new Vec2(100, 250),
-      color: "rgba(255, 0, 0, 0.8)",
-      distance: 100,
-      radius: 10,
-      samples: 10,
-    });
-    const ambient = new Lamp({
-      position: new Vec2(300, 50),
-      color: "rgba(255, 200, 200, 1)",
-      distance: 1400,
-      radius: 10,
-      samples: 10,
-    });
-
     const objects = [...sprites, player].map((sprite) => {
       const occ = new PolygonObject({ points: this.rotatedVecs(sprite) });
       sprite.occ = occ;
       return occ;
     });
 
-    const lighting1 = new Lighting({
-      light: ambient,
-      objects: objects,
-    });
-    const lighting2 = new Lighting({
-      light: sun,
-      objects: objects,
-    });
-    const lighting3 = new Lighting({
-      light: corona,
-      objects: objects,
-    });
-
-    const darkmask = new DarkMask({ lights: [ambient, sun] });
-
-    lighting1.compute(canvas.width, canvas.height);
-    lighting2.compute(canvas.width, canvas.height);
-    lighting3.compute(canvas.width, canvas.height);
-    darkmask.compute(canvas.width, canvas.height);
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.globalCompositeOperation = "lighter";
-    lighting1.render(ctx);
-    lighting2.render(ctx);
-    lighting3.render(ctx);
-
-    ctx.globalCompositeOperation = "source-over";
-    darkmask.render(ctx);
-
-    this.canvas = canvas;
-    this.ctx = ctx;
-    this.ambient = ambient;
-    this.sun = sun;
-    this.corona = corona;
-    this.lighting1 = lighting1;
-    this.lighting2 = lighting2;
-    this.lighting3 = lighting3;
-    this.darkmask = darkmask;
-
-    this.input.on("pointermove", (pointer) => {
-      this.x = pointer.x;
-      this.y = pointer.y;
-    });
+    this.createSun(0, 0, objects);
+    //this.createSun(0, 0, objects, true);
 
     this.hud = this.createHud();
     this.setupPhysics();
+
+    this.command.ignoreAll("spawn", true);
+    this.command.ignoreAll("dying", false);
+
+    this.spawn();
+  }
+
+  spawn() {
+    this.timer(() => {
+      this.command.ignoreAll("spawn", false);
+    }, 500);
   }
 
   createHud() {
@@ -268,21 +294,41 @@ export default class PlayScene extends SuperScene {
     return [x, y];
   }
 
-  isCrisping() {
-    const [sunX, sunY] = this.sunPosition();
+  crispingSun() {
+    const { suns, percent, lightX, lightY } = this;
+
     const { x: playerX, y: playerY } = this.player;
 
-    const sunray = new Phaser.Geom.Line(sunX, sunY, playerX, playerY);
-    return !this.objects.some((obj) => {
-      const { occ } = obj;
-      const { points } = occ;
-      return [[0, 1], [1, 2], [2, 3], [3, 0]].some(([i1, i2]) => {
-        const p1 = points[i1];
-        const p2 = points[i2];
-        const edge = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
-        return Phaser.Geom.Intersects.LineToLine(sunray, edge);
+    const sunrays = suns.map((sun) => {
+      const { backwards } = sun;
+      const [sunX, sunY] = this.sunPosition(backwards ? 1 - percent : percent);
+      const ray = new Phaser.Geom.Line(sunX, sunY, playerX, playerY);
+      return [sun, ray, Phaser.Geom.Line.Length(ray)];
+    });
+
+    const touchingSunrays = sunrays.filter(([_sun, sunray]) => {
+      return !this.objects.some((obj) => {
+        const { occ } = obj;
+        const { points } = occ;
+        return [[0, 1], [1, 2], [2, 3], [3, 0]].some(([i1, i2]) => {
+          const p1 = points[i1];
+          const p2 = points[i2];
+          const edge = new Phaser.Geom.Line(
+            p1.x + lightX,
+            p1.y + lightY,
+            p2.x + lightX,
+            p2.y + lightY
+          );
+          return Phaser.Geom.Intersects.LineToLine(sunray, edge);
+        });
       });
     });
+
+    if (!touchingSunrays.length) {
+      return;
+    }
+
+    return touchingSunrays;
   }
 
   fixedUpdate(time, dt) {
@@ -292,62 +338,167 @@ export default class PlayScene extends SuperScene {
     const speed = prop("sun.speed");
     const t = (rawTime * speed) / 1000;
     this.percent = t / 800;
-  }
-
-  renderUpdate(time, dt) {
-    const {
-      canvas,
-      ctx,
-      ambient,
-      sun,
-      corona,
-      lighting1,
-      lighting2,
-      lighting3,
-      darkmask,
-    } = this;
 
     [this.player, ...this.objects].forEach((s) => {
       const { occ } = s;
-
       occ.points = this.rotatedVecs(s);
-      /*
-      occ.topleft.x = x;
-      occ.topleft.y = y;
-      occ.bottomright.x = x + width;
-      occ.bottomright.y = y + height;
-      occ.syncFromTopleftBottomright();
-      */
     });
 
-    const { percent } = this;
-    const [x, y] = this.sunPosition(percent);
-
-    ambient.position = sun.position = corona.position = new Vec2(x, y);
-    const crisping = this.isCrisping();
-    if (crisping) {
-      ambient.color = `rgba(${255}, ${150 - 100 * percent}, ${150 -
-        100 * percent}, ${percent / 4 + 0.5})`;
+    const maxCrisp = 2000;
+    this.crispingSuns = this.crispingSun();
+    if (this.crispingSuns) {
+      this.crispTime = Math.min(maxCrisp, (this.crispTime || 0) + dt);
     } else {
-      ambient.color = `rgba(${1500 - 100 * percent}, ${255}, ${150 -
-        100 * percent}, ${percent / 4 + 0.5})`;
+      this.crispTime = Math.max(0, (this.crispTime || 0) - dt);
     }
+    this.crispPercent = this.crispTime / maxCrisp;
 
-    lighting1.compute(canvas.width, canvas.height);
-    lighting2.compute(canvas.width, canvas.height);
-    lighting3.compute(canvas.width, canvas.height);
-    darkmask.compute(canvas.width, canvas.height);
+    if (this.crispPercent >= 1) {
+      this.playerDie();
+    }
+  }
+
+  unlightObject(obj) {
+    const { suns } = this;
+    const { occ } = obj;
+    suns.forEach(({ lightings }) => {
+      lightings.forEach((lighting) => {
+        lighting.objects = lighting.objects.filter((o) => o !== occ);
+      });
+    });
+  }
+
+  playerDie() {
+    const { player } = this;
+    if (this.playerDying) {
+      return;
+    }
+    this.playerDying = true;
+    this.unlightObject(player);
+    this.shockwave(player.x, player.y);
+    this.command.ignoreAll("dying", true);
+    this.trauma(1);
+    this.particleSystem("effects.playerAsh", {
+      x: {
+        min: player.x - player.width * 0.4,
+        max: player.x + player.width * 0.4,
+      },
+      y: {
+        min: player.y - player.height * 0.4,
+        max: player.y + player.height * 0.4,
+      },
+      alpha: { start: 1, end: 0 },
+      scale: { start: 1, end: 1.5 },
+      speedY: {
+        min: 0.5 * prop("effects.playerAsh.speedY"),
+        max: prop("effects.playerAsh.speedY"),
+      },
+      speedX: {
+        min: -prop("effects.playerAsh.speedX"),
+        max: prop("effects.playerAsh.speedX"),
+      },
+      tint: [0xf6c456, 0xec5b55, 0xaaaaaa],
+      onAdd: (particles, emitter) => {
+        this.timer(() => {
+          emitter.stop();
+        }, prop("effects.playerDie.duration") * 2 /* + prop("level.replaceDelay") - prop("effects.playerAsh.lifespan") */);
+      },
+    });
+    this.tween("effects.playerDie", player, {
+      onComplete: () => {
+        this.timer(() => {
+          this.replaceWithSelf(
+            true,
+            {},
+            {
+              animation: "crossFade",
+              duration: 200,
+              delayNewSceneShader: true,
+              removeOldSceneShader: true,
+            }
+          );
+        }, prop("level.replaceDelay"));
+      },
+    });
+  }
+
+  renderUpdate() {
+    this.renderLights();
+  }
+
+  renderLights() {
+    const {
+      lightTexture,
+      lightWidth,
+      lightHeight,
+      lightX,
+      lightY,
+      suns,
+      dark,
+      crispPercent,
+    } = this;
+    if (!lightTexture) {
+      return;
+    }
+    const ctx = lightTexture.context;
+
+    lightTexture.refresh();
+    ctx.clearRect(0, 0, lightWidth, lightHeight);
+
+    const { percent } = this;
+
+    suns.forEach((sun) => {
+      const { lamps, ambient, backwards } = sun;
+      const [x, y] = this.sunPosition(backwards ? 1 - percent : percent);
+
+      const pos = new Vec2(x - lightX, y - lightY);
+      lamps.forEach((lamp) => {
+        lamp.position = pos;
+      });
+
+      const crispingColor = {
+        r: 255,
+        g: 150,
+        b: 150,
+      };
+
+      const safeColor = {
+        r: 150,
+        g: 255,
+        b: 150,
+      };
+      let alpha = (0.3 + this.crispPercent * 0.7) / suns.length;
+
+      const tint = Phaser.Display.Color.Interpolate.ColorWithColor(
+        safeColor,
+        crispingColor,
+        100,
+        100 * crispPercent
+      );
+      const { r, g, b } = tint;
+
+      ambient.color = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    });
+
+    suns.forEach(({ lightings }) => {
+      lightings.forEach((lighting) => {
+        lighting.compute(lightWidth, lightHeight);
+      });
+    });
+    dark.compute(lightWidth, lightHeight);
 
     ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, lightWidth, lightHeight);
 
     ctx.globalCompositeOperation = "lighter";
-    lighting1.render(ctx);
-    lighting2.render(ctx);
-    lighting3.render(ctx);
+    suns.forEach(({ lightings }) => {
+      lightings.forEach((lighting) => {
+        lighting.render(ctx);
+      });
+    });
 
     ctx.globalCompositeOperation = "source-over";
-    darkmask.render(ctx);
+    dark.render(ctx);
   }
 
   textSize(options) {
@@ -367,7 +518,7 @@ export default class PlayScene extends SuperScene {
   }
 
   cameraColor() {
-    return null;
+    return 0x000000;
   }
 
   musicName() {
@@ -425,6 +576,7 @@ export default class PlayScene extends SuperScene {
 
     x += this.camera.scrollX;
     y += this.camera.scrollY;
+    this.shockwave(x, y);
   }
 
   _hotReloadCurrentLevel() {
