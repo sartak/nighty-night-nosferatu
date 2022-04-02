@@ -30,19 +30,8 @@ body.natural #engine-container canvas {
   margin-right: auto;
 }
 
-#engine-container {
+.production #engine-container {
   position: relative;
-}
-
-#engine-container canvas {
-  position: absolute;
-  z-index: 0;
-  top: 0;
-  left: 0;
-}
-
-#engine-container canvas#illuminated {
-  z-index: -1;
 }
 
 #engine-container.activate {
