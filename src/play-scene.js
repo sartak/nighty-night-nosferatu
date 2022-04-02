@@ -483,8 +483,8 @@ export default class PlayScene extends SuperScene {
 
       const crispingColor = {
         r: 255,
-        g: 150,
-        b: 150,
+        g: 100,
+        b: 100,
       };
 
       const safeColor = {
@@ -492,7 +492,7 @@ export default class PlayScene extends SuperScene {
         g: 255,
         b: 150,
       };
-      let alpha = (0.3 + this.crispPercent * 0.7) / suns.length;
+      let alpha = (0.3 + this.crispPercent * 0.5) / suns.length;
 
       const tint = Phaser.Display.Color.Interpolate.ColorWithColor(
         safeColor,
