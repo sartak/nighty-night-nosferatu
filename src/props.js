@@ -103,6 +103,13 @@ export const propSpecs = {
       alpha: 0,
     },
   ],
+  "effects.playerDieHealthBar.tween": [
+    {
+      duration: 200,
+      dy: 100,
+      alpha: 0,
+    },
+  ],
   "effects.playerAsh.particles": [
     {
       image: "dot",

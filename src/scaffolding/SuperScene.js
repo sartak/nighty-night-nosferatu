@@ -2712,11 +2712,14 @@ export default class SuperScene extends Phaser.Scene {
   }
 
   trauma(amount) {
-    if (amount && !this._trauma) {
+    if ((this.minTrauma || amount) && !this._trauma) {
       this._traumaStart = this.time.now;
     }
 
-    const newTrauma = Math.min(Math.max(this._trauma + amount, 0), 1);
+    let newTrauma = Math.min(Math.max((this._trauma || 0) + amount, 0), 1);
+    if (this.minTrauma) {
+      newTrauma = Math.max(this.minTrauma, newTrauma);
+    }
     const shake = newTrauma ** prop("scene.trauma.exponent");
     this._trauma = newTrauma;
     this._traumaShake = shake;

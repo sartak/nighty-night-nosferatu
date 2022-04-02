@@ -187,13 +187,47 @@ export default class PlayScene extends SuperScene {
     });
   }
 
+  createHealthBar(owner) {
+    const border = this.add.sprite(owner.x, owner.y, "hpbar");
+    const fill = this.add.sprite(owner.x, owner.y, "hpbar");
+    const healthBar = {
+      fill,
+      border,
+    };
+
+    fill.setCrop(1, 1, fill.width - 2, fill.height - 2);
+    fill.tint = 0xff0000;
+
+    border.tint = 0;
+    border.visible = fill.visible = false;
+    owner.healthBar = healthBar;
+  }
+
+  updateHealthBarFor(owner, percent) {
+    const { healthBar } = owner;
+    const { fill, border } = healthBar;
+
+    if (percent <= 0) {
+      border.visible = fill.visible = false;
+      return;
+    }
+
+    border.visible = fill.visible = true;
+    border.x = owner.x;
+    border.y = owner.y - owner.height;
+    fill.x = owner.x;
+    fill.y = owner.y - owner.height;
+
+    fill.setCrop(1, 1, fill.width * percent - 2, fill.height - 2);
+  }
+
   create(config) {
     super.create(config);
 
     this.createLightCanvas();
 
     const player = (this.player = this.physics.add.sprite(400, 570, "player"));
-    this.player.setVelocityX(-1 * prop("player.speed"));
+    this.createHealthBar(player);
 
     const sprites = (this.objects = [1, 1, 1, 1, 1, 1, 1, 1].map((_, i) => {
       const s = this.physics.add.sprite(
@@ -378,9 +412,30 @@ export default class PlayScene extends SuperScene {
     }
     this.crispPercent = this.crispTime / maxCrisp;
 
+    let desiredTimeScale = 1;
+    let desiredZoom = 1;
+
+    this.minTrauma = 0;
     if (this.crispPercent >= 1) {
       this.playerDie();
+    } else if (!this.playerDying && this.crispPercent >= 0.3) {
+      if (this.crispPercent >= 0.6) {
+        if (this.crispingSuns) {
+          desiredTimeScale = 4;
+          desiredZoom = 1.01;
+        }
+        this.minTrauma = 0.2;
+      } else {
+        this.minTrauma = 0.1;
+      }
+      this.trauma(0);
     }
+
+    const factor = this.crispingSuns && !this.playerDying ? 0.01 : 0.4;
+    this.timeScale =
+      this.timeScale + (desiredTimeScale - this.timeScale) * factor;
+    this.camera.zoom =
+      this.camera.zoom + (desiredZoom - this.camera.zoom) * factor;
   }
 
   unlightObject(obj) {
@@ -429,6 +484,8 @@ export default class PlayScene extends SuperScene {
         }, prop("effects.playerDie.duration") * 2 /* + prop("level.replaceDelay") - prop("effects.playerAsh.lifespan") */);
       },
     });
+    this.tween("effects.playerDieHealthBar", player.healthBar.fill);
+    this.tween("effects.playerDieHealthBar", player.healthBar.border);
     this.tween("effects.playerDie", player, {
       onComplete: () => {
         this.timer(() => {
@@ -449,6 +506,7 @@ export default class PlayScene extends SuperScene {
 
   renderUpdate() {
     this.renderLights();
+    this.updateHealthBarFor(this.player, this.crispPercent);
   }
 
   renderLights() {
