@@ -1,20 +1,20 @@
-import _ from 'lodash';
-import {commandKeys, gamepadKeys} from './lib/props';
-import prop from '../props';
+import _ from "lodash";
+import { commandKeys, gamepadKeys } from "./lib/props";
+import prop from "../props";
 
 const GamepadButtons = {
-  LEFT: '_LCLeft',
-  RIGHT: '_LCRight',
-  UP: '_LCTop',
-  DOWN: '_LCBottom',
-  A: '_RCBottom',
-  Y: '_RCTop',
-  X: '_RCLeft',
-  B: '_RCRight',
-  L1: '_FBLeftTop',
-  L2: '_FBLeftBottom',
-  R1: '_FBRightTop',
-  R2: '_FBRightBottom',
+  LEFT: "_LCLeft",
+  RIGHT: "_LCRight",
+  UP: "_LCTop",
+  DOWN: "_LCBottom",
+  A: "_RCBottom",
+  Y: "_RCTop",
+  X: "_RCLeft",
+  B: "_RCRight",
+  L1: "_FBLeftTop",
+  L2: "_FBLeftBottom",
+  R1: "_FBRightTop",
+  R2: "_FBRightBottom",
 };
 
 const ButtonName = {};
@@ -55,11 +55,11 @@ export default class CommandManager {
   freezeCommandState() {
     const state = {
       inputs: {},
-      ignoreAlls: {...this._ignoreAlls},
+      ignoreAlls: { ...this._ignoreAlls },
     };
 
     Object.keys(this._spec).forEach((name) => {
-      state.inputs[name] = {...this[name]};
+      state.inputs[name] = { ...this[name] };
     });
 
     return state;
@@ -67,9 +67,9 @@ export default class CommandManager {
 
   thawCommandState(state) {
     Object.keys(this._spec).forEach((name) => {
-      this[name] = {...state.inputs[name]};
+      this[name] = { ...state.inputs[name] };
     });
-    this._ignoreAlls = {...state.ignoreAlls};
+    this._ignoreAlls = { ...state.ignoreAlls };
   }
 
   getManager(scene) {
@@ -94,11 +94,12 @@ export default class CommandManager {
   }
 
   attachKey(scene, code) {
-    const {keyboard} = scene.input;
+    const { keyboard } = scene.input;
 
     keyboard.on(`keydown-${code}`, (e) => {
-      const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
-      if (tag === 'input' || tag === 'select' || tag === 'textarea') {
+      const tag =
+        document.activeElement && document.activeElement.tagName.toLowerCase();
+      if (tag === "input" || tag === "select" || tag === "textarea") {
         return;
       }
 
@@ -111,8 +112,9 @@ export default class CommandManager {
     });
 
     keyboard.on(`keyup-${code}`, (e) => {
-      const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
-      if (tag === 'input' || tag === 'select' || tag === 'textarea') {
+      const tag =
+        document.activeElement && document.activeElement.tagName.toLowerCase();
+      if (tag === "input" || tag === "select" || tag === "textarea") {
         return;
       }
 
@@ -135,7 +137,7 @@ export default class CommandManager {
     });
 
     if (scene.input.gamepad) {
-      scene.input.gamepad.on('down', (gamepad, button) => {
+      scene.input.gamepad.on("down", (gamepad, button) => {
         let buttonName = ButtonName[button.index];
         if (!buttonName) {
           Object.entries(GamepadButtons).forEach(([name, method]) => {
@@ -148,7 +150,7 @@ export default class CommandManager {
         this.gamepad[buttonName] = true;
       });
 
-      scene.input.gamepad.on('up', (gamepad, button) => {
+      scene.input.gamepad.on("up", (gamepad, button) => {
         let buttonName = ButtonName[button.index];
         if (!buttonName) {
           Object.entries(GamepadButtons).forEach(([name, method]) => {
@@ -162,12 +164,16 @@ export default class CommandManager {
       });
     }
 
-    const canvas = document.querySelector('#engine canvas');
+    const canvas = document.querySelector("#engine canvas#phaser");
 
-    ['pointerdown', 'pointerup'].forEach((name) => {
+    ["pointerdown", "pointerup"].forEach((name) => {
       scene.input.on(name, (pointer) => {
         // fix issue with dat.gui not releasing focus
-        if (!document.activeElement || !document.activeElement.contains || document.activeElement.contains(canvas)) {
+        if (
+          !document.activeElement ||
+          !document.activeElement.contains ||
+          document.activeElement.contains(canvas)
+        ) {
           this.pointerEvents.push({
             name,
             x: pointer.x,
@@ -184,7 +190,7 @@ export default class CommandManager {
   }
 
   readRawGamepad(scenes) {
-    const {gamepad} = this;
+    const { gamepad } = this;
     let seenGamepad = false;
 
     scenes.forEach((scene) => {
@@ -207,31 +213,33 @@ export default class CommandManager {
         gamepad.total = rawGamepad.total;
       }
 
-      rawGamepad.gamepads.filter((pad) => pad).forEach((rawPad) => {
-        const {leftStick, rightStick} = rawPad;
-        if (Math.abs(leftStick.x) > Math.abs(gamepad.LSTICKX)) {
-          gamepad.LSTICKX = leftStick.x;
-        }
+      rawGamepad.gamepads
+        .filter((pad) => pad)
+        .forEach((rawPad) => {
+          const { leftStick, rightStick } = rawPad;
+          if (Math.abs(leftStick.x) > Math.abs(gamepad.LSTICKX)) {
+            gamepad.LSTICKX = leftStick.x;
+          }
 
-        if (Math.abs(leftStick.y) > Math.abs(gamepad.LSTICKY)) {
-          gamepad.LSTICKY = leftStick.y;
-        }
+          if (Math.abs(leftStick.y) > Math.abs(gamepad.LSTICKY)) {
+            gamepad.LSTICKY = leftStick.y;
+          }
 
-        if (Math.abs(rightStick.x) > Math.abs(gamepad.RSTICKX)) {
-          gamepad.RSTICKX = rightStick.x;
-        }
+          if (Math.abs(rightStick.x) > Math.abs(gamepad.RSTICKX)) {
+            gamepad.RSTICKX = rightStick.x;
+          }
 
-        if (Math.abs(rightStick.y) > Math.abs(gamepad.RSTICKY)) {
-          gamepad.RSTICKY = rightStick.y;
-        }
-      });
+          if (Math.abs(rightStick.y) > Math.abs(gamepad.RSTICKY)) {
+            gamepad.RSTICKY = rightStick.y;
+          }
+        });
     });
   }
 
   heldCommands(onlyUnignorable) {
-    const {gamepad} = this;
+    const { gamepad } = this;
     const spec = this._spec;
-    const frame = {_repeat: 0};
+    const frame = { _repeat: 0 };
 
     Object.entries(spec).forEach(([name, config]) => {
       if (onlyUnignorable && !config.unignorable) {
@@ -244,25 +252,33 @@ export default class CommandManager {
           let keyHeld;
 
           if (gamepad.total) {
-            if (path === 'gamepad.LSTICK.RAW' && (Math.abs(gamepad.LSTICKX) > 0.1 || Math.abs(gamepad.LSTICKY) > 0.1)) {
+            if (
+              path === "gamepad.LSTICK.RAW" &&
+              (Math.abs(gamepad.LSTICKX) > 0.1 ||
+                Math.abs(gamepad.LSTICKY) > 0.1)
+            ) {
               held = [gamepad.LSTICKX, gamepad.LSTICKY];
-            } else if (path === 'gamepad.RSTICK.RAW' && (Math.abs(gamepad.RSTICKX) > 0.1 || Math.abs(gamepad.RSTICKY) > 0.1)) {
+            } else if (
+              path === "gamepad.RSTICK.RAW" &&
+              (Math.abs(gamepad.RSTICKX) > 0.1 ||
+                Math.abs(gamepad.RSTICKY) > 0.1)
+            ) {
               held = [gamepad.RSTICKX, gamepad.RSTICKY];
-            } else if (path === 'gamepad.LSTICK.UP') {
+            } else if (path === "gamepad.LSTICK.UP") {
               keyHeld = gamepad.LSTICKY < -0.2;
-            } else if (path === 'gamepad.LSTICK.DOWN') {
+            } else if (path === "gamepad.LSTICK.DOWN") {
               keyHeld = gamepad.LSTICKY > 0.2;
-            } else if (path === 'gamepad.LSTICK.LEFT') {
+            } else if (path === "gamepad.LSTICK.LEFT") {
               keyHeld = gamepad.LSTICKX < -0.2;
-            } else if (path === 'gamepad.LSTICK.RIGHT') {
+            } else if (path === "gamepad.LSTICK.RIGHT") {
               keyHeld = gamepad.LSTICKX > 0.2;
-            } else if (path === 'gamepad.RSTICK.UP') {
+            } else if (path === "gamepad.RSTICK.UP") {
               keyHeld = gamepad.RSTICKY < -0.2;
-            } else if (path === 'gamepad.RSTICK.DOWN') {
+            } else if (path === "gamepad.RSTICK.DOWN") {
               keyHeld = gamepad.RSTICKY > 0.2;
-            } else if (path === 'gamepad.RSTICK.LEFT') {
+            } else if (path === "gamepad.RSTICK.LEFT") {
               keyHeld = gamepad.RSTICKX < -0.2;
-            } else if (path === 'gamepad.RSTICK.RIGHT') {
+            } else if (path === "gamepad.RSTICK.RIGHT") {
               keyHeld = gamepad.RSTICKX > 0.2;
             } else {
               keyHeld = _.get(this, path);
@@ -341,7 +357,7 @@ export default class CommandManager {
 
       if (isSame) {
         list.pop();
-        list.push({...prevFrame, _repeat: prevFrame._repeat + 1});
+        list.push({ ...prevFrame, _repeat: prevFrame._repeat + 1 });
         return;
       }
     }
@@ -350,7 +366,7 @@ export default class CommandManager {
   }
 
   ignoreAll(type, newValue) {
-    const {_ignoreAlls} = this;
+    const { _ignoreAlls } = this;
 
     if (type === undefined) {
       let ignoreAny = false;
@@ -371,7 +387,7 @@ export default class CommandManager {
   }
 
   clearIgnoreAlls() {
-    const {_ignoreAlls} = this;
+    const { _ignoreAlls } = this;
     Object.keys(_ignoreAlls).forEach((key) => {
       _ignoreAlls[key] = false;
     });
@@ -379,14 +395,17 @@ export default class CommandManager {
 
   processCommands(manager, frame, dt) {
     const spec = this._spec;
-    const {scene} = manager;
+    const { scene } = manager;
 
     const ignoreAll = this.ignoreAll();
 
     Object.entries(spec).forEach(([name, config]) => {
       const command = this[name];
 
-      if (!prop(`command.${name}.enabled`) || (ignoreAll && !config.unignorable)) {
+      if (
+        !prop(`command.${name}.enabled`) ||
+        (ignoreAll && !config.unignorable)
+      ) {
         command.held = false;
       }
 
@@ -421,7 +440,7 @@ export default class CommandManager {
       }
 
       if (command.started && config.execute) {
-        if (typeof config.execute === 'function') {
+        if (typeof config.execute === "function") {
           config.execute(scene, scene.game);
         } else {
           const scenePath = _.get(scene, config.execute);
@@ -432,7 +451,11 @@ export default class CommandManager {
             if (gamePath) {
               gamePath.call(scene.game);
             } else {
-              throw new Error(`Invalid execute for command '${name}'; expected a function or a scene/game method name, got ${config.execute}`);
+              throw new Error(
+                `Invalid execute for command '${name}'; expected a function or a scene/game method name, got ${
+                  config.execute
+                }`
+              );
             }
           }
         }
@@ -448,11 +471,13 @@ export default class CommandManager {
     if (this.replay && frame._executedProps) {
       frame._executedProps.forEach((propName) => {
         const fn = prop(propName);
-        if (typeof fn === 'function') {
+        if (typeof fn === "function") {
           fn();
         } else {
           // eslint-disable-next-line no-console
-          console.error(`Recorded prop ${propName} is no longer a function? It's ${fn}`);
+          console.error(
+            `Recorded prop ${propName} is no longer a function? It's ${fn}`
+          );
         }
       });
     }
@@ -463,7 +488,10 @@ export default class CommandManager {
       return null;
     }
 
-    if (this.replayFrameIndex >= this.replay.commands.length || this.replayTicks >= this.replay.postflightCutoff) {
+    if (
+      this.replayFrameIndex >= this.replay.commands.length ||
+      this.replayTicks >= this.replay.postflightCutoff
+    ) {
       this.endedReplay();
       return null;
     }
@@ -487,7 +515,7 @@ export default class CommandManager {
     this.heldCommands(true);
     this.mergeUnignorable(frame);
 
-    return {...frame, _repeat: 0};
+    return { ...frame, _repeat: 0 };
   }
 
   processInput(scene, time, dt, onlyUnignorable) {
@@ -499,14 +527,22 @@ export default class CommandManager {
       return;
     }
 
-    const frame = this.injectReplayFrame()
-      || this.heldCommands(onlyUnignorable);
+    const frame =
+      this.injectReplayFrame() || this.heldCommands(onlyUnignorable);
 
     if (manager.commands) {
-      this.addFrameToList(manager.suppressRepeatFrames, manager.commands, frame);
+      this.addFrameToList(
+        manager.suppressRepeatFrames,
+        manager.commands,
+        frame
+      );
     }
     if (this.recording) {
-      this.addFrameToList(manager.suppressRepeatFrames, this.recording.commands, frame);
+      this.addFrameToList(
+        manager.suppressRepeatFrames,
+        this.recording.commands,
+        frame
+      );
     }
 
     manager.tickCount += 1;
@@ -526,11 +562,12 @@ export default class CommandManager {
     const manager = this.getManager(scene);
     this.recording = recording;
     recording.commands = [...manager.commands];
-    recording.originalPreflightCutoff = recording.preflightCutoff = recording.tickCount = manager.tickCount;
+    recording.originalPreflightCutoff = recording.preflightCutoff = recording.tickCount =
+      manager.tickCount;
   }
 
   stopRecording() {
-    const {recording} = this;
+    const { recording } = this;
     delete this.recording;
     recording.postflightCutoff = recording.tickCount;
     return recording;
@@ -556,7 +593,7 @@ export default class CommandManager {
       return;
     }
 
-    const {onEnd} = this.replayOptions;
+    const { onEnd } = this.replayOptions;
 
     delete this.replay;
     delete this.replayOptions;
@@ -574,7 +611,7 @@ export default class CommandManager {
       return;
     }
 
-    const {onStop} = this.replayOptions;
+    const { onStop } = this.replayOptions;
 
     delete this.replay;
     delete this.replayOptions;
@@ -596,7 +633,10 @@ export default class CommandManager {
       return false;
     }
 
-    return this.replayTicks < (this.replayOptions.preflightCutoff || this.replay.preflightCutoff);
+    return (
+      this.replayTicks <
+      (this.replayOptions.preflightCutoff || this.replay.preflightCutoff)
+    );
   }
 
   updateCommandsFromReload(next) {
@@ -623,7 +663,7 @@ export default class CommandManager {
 
         const prevJson = {};
         Object.entries(prev[name]).forEach(([key, value]) => {
-          if (typeof value === 'function') {
+          if (typeof value === "function") {
             prevJson[key] = String(value);
           } else {
             prevJson[key] = value;
@@ -632,7 +672,7 @@ export default class CommandManager {
 
         const nextJson = {};
         Object.entries(next[name]).forEach(([key, value]) => {
-          if (typeof value === 'function') {
+          if (typeof value === "function") {
             nextJson[key] = String(value);
           } else {
             nextJson[key] = value;
@@ -651,23 +691,27 @@ export default class CommandManager {
       }
     });
 
-    if (addCommands.length === 0 && removeCommands.length === 0 && updateCommands.length === 0) {
+    if (
+      addCommands.length === 0 &&
+      removeCommands.length === 0 &&
+      updateCommands.length === 0
+    ) {
       return;
     }
 
     const changes = [];
     if (addCommands.length) {
-      changes.push(`+[${addCommands.join(', ')}]`);
+      changes.push(`+[${addCommands.join(", ")}]`);
     }
     if (removeCommands.length) {
-      changes.push(`-[${removeCommands.join(', ')}]`);
+      changes.push(`-[${removeCommands.join(", ")}]`);
     }
     if (updateCommands.length) {
-      changes.push(`Δ[${updateCommands.join(', ')}]`);
+      changes.push(`Δ[${updateCommands.join(", ")}]`);
     }
 
     // eslint-disable-next-line no-console
-    console.info(`Hot-loading command changes (${changes.join(', ')})`);
+    console.info(`Hot-loading command changes (${changes.join(", ")})`);
   }
 
   updateInputsFromReload(prev, next, isKeyboard) {
@@ -711,13 +755,17 @@ export default class CommandManager {
 
     const changes = [];
     if (addKeys.length) {
-      changes.push(`+[${addKeys.join(', ')}]`);
+      changes.push(`+[${addKeys.join(", ")}]`);
     }
     if (removeKeys.length) {
-      changes.push(`-[${removeKeys.join(', ')}]`);
+      changes.push(`-[${removeKeys.join(", ")}]`);
     }
 
     // eslint-disable-next-line no-console
-    console.info(`Hot-loading ${isKeyboard ? 'keyboard' : 'gamepad'} input changes (${changes.join(', ')})`);
+    console.info(
+      `Hot-loading ${
+        isKeyboard ? "keyboard" : "gamepad"
+      } input changes (${changes.join(", ")})`
+    );
   }
 }

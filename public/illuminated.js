@@ -183,7 +183,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   @param {Number} [options.distance=100] Intensity of this light.
   @param {Number} [options.diffuse=0.8] How diffuse this light is.
   **/
-  cp.Light = function (options) { extend(this, cp.Light.defaults, options);}
+  cp.Light = function (options) { extend(this, cp.Light.defaults, options); }
 
   cp.Light.defaults = {
     /**
@@ -280,7 +280,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     var hash = ""+d;
     if (this.vismaskhash != hash) {
       this.vismaskhash = hash;
-      var c = this._vismaskcache = createCanvasAnd2dContext('vm'+this.id, 2*d, 2*d);
+      var c = this._vismaskcache = createCanvasAnd2dContext(2*d, 2*d);
       var g = c.ctx.createRadialGradient(d, d, 0, d, d, d);
       g.addColorStop( 0, 'rgba(0,0,0,1)' );
       g.addColorStop( 1, 'rgba(0,0,0,0)' );
@@ -288,16 +288,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       c.ctx.fillRect(0, 0, c.w, c.h);
     }
     return this._vismaskcache;
-  }
-
-  /**
-  Return a string hash key representing this lamp.
-  @private
-  @method _getHashCache
-  @return {String} The hash key.
-  **/
-  cp.Light.prototype._getHashCache = function () {
-    return [this.distance, this.diffuse].toString();
   }
 
 
@@ -319,8 +309,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     **/
     diffuse: 0.8
   };
-
-  cp.OpaqueObject.uniqueId = 0;
 
   /**
   Fill ctx with the shadows projected by this opaque object at the origin
@@ -393,19 +381,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   @param {Number} [options.angle=0] The angle of the orientation of the lamp.
   @param {Number} [options.roughness=0] The roughness of the oriented effect.
   **/
-  cp.Lamp = function (options) { extend(this, cp.Light.defaults, cp.Lamp.defaults, options);
-    if(this.id===0){this.id=++cp.Lamp.uniqueId} }
+  cp.Lamp = function (options) { extend(this, cp.Light.defaults, cp.Lamp.defaults, options); }
   inherit(cp.Lamp, cp.Light);
 
   cp.Lamp.defaults = {
-    /**
-     * The id of this light object.
-     * @property id
-     * @type Number
-     * @default 0
-     */
-    id: 0,
-
     /**
     The color emitted by the lamp. The color can be specified in any CSS format.
     @property color
@@ -448,8 +427,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     roughness: 0
   };
 
-  cp.Lamp.uniqueId = 0;
-
   /**
   Return a string hash key representing this lamp.
   @private
@@ -457,7 +434,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   @return {String} The hash key.
   **/
   cp.Lamp.prototype._getHashCache = function () {
-    return [this.color, this.distance, this.diffuse, this.angle, this.roughness, this.samples, this.radius].toString();
+    return [this.color, this.distance, this.diffuse, this.angle, this.roughness].toString();
   }
 
   /**
@@ -511,7 +488,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     this._cacheHashcode = hashcode;
     var d = Math.round(this.distance);
     var D = d*2;
-    var cache = createCanvasAnd2dContext('gc'+this.id, D, D);
+    var cache = createCanvasAnd2dContext(D, D);
     var g = cache.ctx.createRadialGradient(center.x, center.y, 0, d, d, d);
     g.addColorStop( Math.min(1,this.radius/this.distance), this.color );
     g.addColorStop( 1, cp.getRGBA(this.color, 0) );
@@ -541,7 +518,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   **/
   cp.Lamp.prototype.forEachSample = function (f) {
     // "spiral" algorithm for spreading emit samples
-    for (var s=0, l=this.samples; s<l; ++s) {
+    for (var s=0; s<this.samples; ++s) {
       var a = s * GOLDEN_ANGLE;
       var r = Math.sqrt(s/this.samples)*this.radius;
       var delta = new cp.Vec2( Math.cos(a)*r, Math.sin(a)*r );
@@ -826,7 +803,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   cp.PolygonObject.prototype.bounds = function () {
     var topleft = this.points[0].copy();
     var bottomright = topleft.copy();
-    for (var p=1, l=this.points.length; p<l; ++p) {
+    for (var p=1; p<this.points.length; ++p) {
       var point = this.points[p];
       if (point.x > bottomright.x)
         bottomright.x = point.x;
@@ -848,11 +825,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   **/
   cp.PolygonObject.prototype.contains = function (p) {
     var points = this.points;
-    var i, l=points.length, j=l-1;
+    var i, j=points.length-1;
     var x = p.x, y = p.y;
     var oddNodes = false;
 
-    for (i=0; i<l; i++) {
+    for (i=0; i<points.length; i++) {
       if ((points[i].y< y && points[j].y>=y
       ||   points[j].y< y && points[i].y>=y)
       &&  (points[i].x<=x || points[j].x<=x)) {
@@ -927,7 +904,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   **/
   cp.PolygonObject.prototype._forEachVisibleEdges = function (origin, bounds, f) {
     var a = this.points[this.points.length-1], b;
-    for (var p=0, l=this.points.length; p<l; ++p, a=b) {
+    for (var p=0; p<this.points.length; ++p, a=b) {
       b = this.points[p];
       if (a.inBound(bounds.topleft, bounds.bottomright)) {
          var originToA = a.sub(origin);
@@ -1081,8 +1058,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   @param {Number} h Height of the contexts.
   **/
   cp.Lighting.prototype.createCache = function (w, h) {
-    this._cache = createCanvasAnd2dContext('lc', w,h);
-    this._castcache = createCanvasAnd2dContext('lcc', w,h);
+    this._cache = createCanvasAnd2dContext(w,h);
+    this._castcache = createCanvasAnd2dContext(w,h);
   }
 
   /**
@@ -1104,7 +1081,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     var objects = this.objects;
     light.forEachSample(function (position) {
       var sampleInObject = false;
-      for (var o=0, l=objects.length; o<l; ++o) {
+      for (var o=0; o<objects.length; ++o) {
         if (objects[o].contains(position)) {
           ctx.fillRect(bounds.topleft.x, bounds.topleft.y, bounds.bottomright.x-bounds.topleft.x, bounds.bottomright.y-bounds.topleft.y);
           return;
@@ -1156,15 +1133,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   /**
-  Returns the light and shadows onto the given context as canvas.
-  @method render
-  @return {Canvas} The picture of the light and shadow.
-  **/
-  cp.Lighting.prototype.getCanvas = function () {
-    return this._cache.canvas;
-  }
-
-  /**
   Defines the dark layer which hides the dark area not illuminated by a set of
   lights.
   @class DarkMask
@@ -1206,7 +1174,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   **/
   cp.DarkMask.prototype.compute = function (w,h) {
     if (!this._cache || this._cache.w != w || this._cache.h != h)
-      this._cache = createCanvasAnd2dContext('dm', w,h);
+      this._cache = createCanvasAnd2dContext(w,h);
     var ctx = this._cache.ctx;
     ctx.save();
     ctx.clearRect(0, 0, w, h);
@@ -1228,15 +1196,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     ctx.drawImage(this._cache.canvas, 0, 0);
   }
 
-  /**
-  Gives the dark mask back.
-  @method render
-  @return {CanvasRenderingContext2D} The canvas context.
-  **/
-  cp.DarkMask.prototype.getCanvas = function (ctx) {
-    return this._cache.canvas;
-  }  
-
    // UTILS & CONSTANTS
 
   var GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -1256,26 +1215,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   @return {Object} An anonymous object with "canvas", "ctx", "w" and "h"
   properties.
   **/
-  function createCanvasAnd2dContext (id, w, h) {
-    var iid = 'illujs_'+id;
-    var canvas = document.getElementById(iid);
-
-    if(canvas === null) {
-      var canvas = document.createElement("canvas");
-      canvas.id = iid;
-      canvas.width = w;
-      canvas.height = h;
-      canvas.style.display = 'none';
-      document.body.appendChild(canvas);
-    }
-
-    var ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  function createCanvasAnd2dContext (w, h) {
+    var canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
-
-    return { canvas: canvas, ctx: ctx, w: w, h: h };
+    return { canvas: canvas, ctx: canvas.getContext("2d"), w: w, h: h };
   }
   cp.createCanvasAnd2dContext = createCanvasAnd2dContext;
 
@@ -1293,7 +1237,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   function path (ctx, points, dontJoinLast) {
     var p = points[0];
     ctx.moveTo(p.x, p.y);
-    for (var i=1, l=points.length; i<l; ++i) {
+    for (var i=1; i<points.length; ++i) {
       p = points[i];
       ctx.lineTo(p.x, p.y);
     }
@@ -1313,11 +1257,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   @return {String} Color in RGBA format.
   **/
   var getRGBA = cp.getRGBA = (function(){
-    //var ctx = createCanvasAnd2dContext('grgba', 1, 1);
     var canvas = document.createElement("canvas");
     canvas.width = canvas.height = 1;
     var ctx = canvas.getContext("2d");
-
     return function (color, alpha) {
       ctx.clearRect(0,0,1,1);
       ctx.fillStyle = color;
@@ -1338,7 +1280,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   number from 0.0 to 1.0, rounded to 3 decimal places.
   **/
   var extractColorAndAlpha = cp.extractColorAndAlpha = (function(){
-    //var ctx = createCanvasAnd2dContext('grgba', 1, 1);
     var canvas = document.createElement("canvas");
     canvas.width = canvas.height = 1;
     var ctx = canvas.getContext("2d");
@@ -1369,7 +1310,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   @param {Object} mergeFrom* Objects to merge from.
   **/
   function extend (extending /* , arg1, arg2, ... */) {
-    for (var a=1, l=arguments.length; a<l; ++a) {
+    for(var a=1; a<arguments.length; ++a) {
       var source = arguments[a];
       if (source) {
         for (var prop in source)

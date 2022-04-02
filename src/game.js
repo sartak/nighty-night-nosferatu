@@ -1,9 +1,11 @@
-import SuperGame from './scaffolding/SuperGame';
-import proxyClass from './scaffolding/lib/proxy';
+import SuperGame from "./scaffolding/SuperGame";
+import proxyClass from "./scaffolding/lib/proxy";
 
-import PlayScene from './play-scene';
+import PlayScene from "./play-scene";
 
 const baseConfig = {
+  transparent: true,
+  "render.transparent": true,
 };
 
 export default class Game extends SuperGame {
@@ -12,10 +14,7 @@ export default class Game extends SuperGame {
       ...baseConfig,
       ...options,
     };
-    super(
-      config,
-      [PlayScene],
-    );
+    super(config, [PlayScene]);
   }
 
   launch() {
@@ -29,8 +28,8 @@ export default class Game extends SuperGame {
 if (module.hot) {
   {
     const proxy = proxyClass(PlayScene);
-    module.hot.accept('./play-scene', () => {
-      const Next = require('./play-scene').default;
+    module.hot.accept("./play-scene", () => {
+      const Next = require("./play-scene").default;
       window.game.scene.scenes.forEach((scene) => {
         if (scene.constructor.name === Next.name) {
           proxyClass(Next, scene, proxy);

@@ -251,6 +251,7 @@ export default class Engine extends React.Component {
         >
           <div style={{ backgroundImage: `url(${cover})` }} id="cover" />
           <Spinner />
+          <canvas width={800} height={600} id="illuminated" />
         </div>
         <Controls
           ref={this.controls}
