@@ -90,6 +90,7 @@ export const propSpecs = {
     (scene) => scene.command.ignoreAll("dying"),
   ],
   "player.speed": [500, 1, 1000],
+  "player.gravityBase": [1, 1, 1000],
   "sun.speed": [10, 1, 100],
   "sun.downsamplesLeft": [
     0,
@@ -126,6 +127,38 @@ export const propSpecs = {
 
 export const tileDefinitions = {
   ".": null, // background
+  "#": {
+    image: "test",
+    group: "wall",
+    combine: "#",
+    isStatic: true,
+    shadow: true,
+  },
+  "|": {
+    image: "test",
+    group: "ground",
+    combine: "|",
+    preferCombineVertical: true,
+    isStatic: true,
+  },
+  I: {
+    image: "test",
+    group: "wall",
+    combine: "I",
+    preferCombineVertical: true,
+    isStatic: true,
+    shadow: true,
+  },
+  _: {
+    image: "test",
+    group: "ground",
+    combine: "_",
+    isStatic: true,
+  },
+  "@": {
+    image: "vampire",
+    group: "player",
+  },
 };
 
 preprocessPropSpecs(propSpecs, particleImages);

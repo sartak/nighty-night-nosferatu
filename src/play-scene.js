@@ -114,7 +114,10 @@ export default class PlayScene extends SuperScene {
       lightWidth,
       lightHeight
     );
-    this.add.image(lightX, lightY, key).setOrigin(0, 0);
+    this.add
+      .image(lightX, lightY, key)
+      .setOrigin(0, 0)
+      .setDepth(-1);
   }
 
   createSun(x, y, objects, backwards) {
@@ -221,14 +224,36 @@ export default class PlayScene extends SuperScene {
     fill.setCrop(1, 1, fill.width * percent - 2, fill.height - 2);
   }
 
+  createLevel(id) {
+    const levelId = this.levelIds()[id];
+    const level = super.createLevel(levelId);
+
+    level.player = level.groups.player.objects[0];
+    level.player.setGravityY(prop("player.gravityBase"));
+
+    this.createHealthBar(level.player);
+
+    level.blockingObjects = [];
+    Object.entries(level.groups).forEach(([name, { objects, shadow }]) => {
+      console.log(name, shadow, objects);
+      if (shadow) {
+        level.blockingObjects.push(...objects);
+      }
+    });
+
+    level.shadowObjects = [level.player, ...level.blockingObjects];
+
+    return level;
+  }
+
   create(config) {
     super.create(config);
 
+    const level = this.createLevel(0);
+
     this.createLightCanvas();
 
-    const player = (this.player = this.physics.add.sprite(400, 570, "player"));
-    this.createHealthBar(player);
-
+    /*
     const sprites = (this.objects = [1, 1, 1, 1, 1, 1, 1, 1].map((_, i) => {
       const s = this.physics.add.sprite(
         20 + 100 * i,
@@ -244,15 +269,16 @@ export default class PlayScene extends SuperScene {
 
       return s;
     }));
+    */
 
-    const objects = [...sprites, player].map((sprite) => {
+    level.illObjects = level.shadowObjects.map((sprite) => {
       const occ = new PolygonObject({ points: this.rotatedVecs(sprite) });
       sprite.occ = occ;
       return occ;
     });
 
-    this.createSun(0, 0, objects);
-    //this.createSun(0, 0, objects, true);
+    this.createSun(0, 0, level.illObjects);
+    //this.createSun(0, 0, level.illObjects, true);
 
     this.hud = this.createHud();
     this.setupPhysics();
@@ -280,15 +306,19 @@ export default class PlayScene extends SuperScene {
   }
 
   setupPhysics() {
-    this.objects.forEach((obj) => {
-      this.physics.add.collider(this.player, obj);
-    });
+    const { level, physics } = this;
+    const { player, groups } = level;
+    const { wall, ground } = groups;
+
+    physics.add.collider(player, wall.group);
+    physics.add.collider(player, ground.group);
   }
 
   setupAnimations() {}
 
   processInput(time, dt) {
-    const { command } = this;
+    const { command, level } = this;
+    const { player } = level;
 
     let dx = 0;
     let dy = 0;
@@ -330,8 +360,7 @@ export default class PlayScene extends SuperScene {
       dx = dy = 0;
     }
 
-    this.player.setVelocityX(dx * prop("player.speed"));
-    this.player.setVelocityY(dy * prop("player.speed"));
+    player.setVelocityX(dx * prop("player.speed"));
   }
 
   sunPosition(percent = this.percent) {
@@ -354,9 +383,10 @@ export default class PlayScene extends SuperScene {
   }
 
   crispingSun() {
-    const { suns, percent, lightX, lightY } = this;
+    const { suns, percent, lightX, lightY, level } = this;
+    const { player, blockingObjects } = level;
 
-    const { x: playerX, y: playerY } = this.player;
+    const { x: playerX, y: playerY } = player;
 
     const sunrays = suns.map((sun) => {
       const { backwards } = sun;
@@ -366,7 +396,7 @@ export default class PlayScene extends SuperScene {
     });
 
     const touchingSunrays = sunrays.filter(([_sun, sunray]) => {
-      return !this.objects.some((obj) => {
+      return !blockingObjects.some((obj) => {
         const { occ } = obj;
         const { points } = occ;
         return [[0, 1], [1, 2], [2, 3], [3, 0]].some(([i1, i2]) => {
@@ -391,6 +421,7 @@ export default class PlayScene extends SuperScene {
   }
 
   fixedUpdate(time, dt) {
+    const { level } = this;
     this.processInput(time, dt);
 
     const rawTime = (this.t = (this.t || 0) + dt);
@@ -398,7 +429,7 @@ export default class PlayScene extends SuperScene {
     const t = (rawTime * speed) / 1000;
     this.percent = t / 800;
 
-    [this.player, ...this.objects].forEach((s) => {
+    level.shadowObjects.forEach((s) => {
       const { occ } = s;
       occ.points = this.rotatedVecs(s);
     });
@@ -421,8 +452,8 @@ export default class PlayScene extends SuperScene {
     } else if (!this.playerDying && this.crispPercent >= 0.3) {
       if (this.crispPercent >= 0.6) {
         if (this.crispingSuns) {
-          desiredTimeScale = 4;
-          desiredZoom = 1.01;
+          desiredTimeScale = 3;
+          desiredZoom = 1.02;
         }
         this.minTrauma = 0.2;
       } else {
@@ -435,7 +466,7 @@ export default class PlayScene extends SuperScene {
     this.timeScale =
       this.timeScale + (desiredTimeScale - this.timeScale) * factor;
     this.camera.zoom =
-      this.camera.zoom + (desiredZoom - this.camera.zoom) * factor;
+      this.camera.zoom + (desiredZoom - this.camera.zoom) * (factor * 1.5);
   }
 
   unlightObject(obj) {
@@ -449,7 +480,8 @@ export default class PlayScene extends SuperScene {
   }
 
   playerDie() {
-    const { player } = this;
+    const { level } = this;
+    const { player } = level;
     if (this.playerDying) {
       return;
     }
@@ -505,8 +537,10 @@ export default class PlayScene extends SuperScene {
   }
 
   renderUpdate() {
+    const { level } = this;
+    const { player } = level;
     this.renderLights();
-    this.updateHealthBarFor(this.player, this.crispPercent);
+    this.updateHealthBarFor(player, this.crispPercent);
   }
 
   renderLights() {
@@ -519,6 +553,7 @@ export default class PlayScene extends SuperScene {
       suns,
       dark,
       crispPercent,
+      percent,
     } = this;
     if (!lightTexture) {
       return;
@@ -527,8 +562,6 @@ export default class PlayScene extends SuperScene {
 
     lightTexture.refresh();
     ctx.clearRect(0, 0, lightWidth, lightHeight);
-
-    const { percent } = this;
 
     suns.forEach((sun) => {
       const { lamps, ambient, backwards } = sun;
@@ -610,11 +643,15 @@ export default class PlayScene extends SuperScene {
   }
 
   launchTimeSight() {
+    const { level } = this;
+    const { player } = level;
     super.launchTimeSight();
-    this.player.visible = false;
+    player.visible = false;
   }
 
   renderTimeSightFrameInto(scene, phantomDt, time, dt, isLast) {
+    const { level } = this;
+    const { player } = level;
     const objects = [];
 
     if (!this.timeSightX) {
@@ -624,7 +661,6 @@ export default class PlayScene extends SuperScene {
     const prevX = this.timeSightX;
     const prevY = this.timeSightY;
 
-    const { player } = this;
     if (
       isLast ||
       Math.sqrt(
