@@ -984,10 +984,10 @@ export default class PlayScene extends SuperScene {
     });
   }
 
-  renderUpdate() {
+  renderUpdate(time, dt) {
     const { level } = this;
     const { player } = level;
-    this.renderLights();
+    this.renderLights(time, dt);
     this.updateHealthBarFor(player, this.crispPercent);
   }
 
@@ -1096,7 +1096,7 @@ export default class PlayScene extends SuperScene {
     }, 2000);
   }
 
-  renderLights() {
+  renderLights(time, dt) {
     const {
       lightTexture,
       lightWidth,
@@ -1160,13 +1160,17 @@ export default class PlayScene extends SuperScene {
       );
       const { r, g, b } = tint;
 
-      ambient.color = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      const coronaPulse = 0.5 + Math.sin(time / 1000) / 2;
+      let coronaAlpha = 0.8 + 0.2 * coronaPulse;
       if (this.winning) {
-        if (backwards) {
-          corona.color = `rgba(0, 0, 255, ${alpha})`;
-        } else {
-          corona.color = `rgba(255, 0, 0, ${alpha})`;
-        }
+        coronaAlpha = alpha;
+      }
+
+      ambient.color = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      if (backwards) {
+        corona.color = `rgba(0, 0, 255, ${coronaAlpha})`;
+      } else {
+        corona.color = `rgba(255, 0, 0, ${coronaAlpha})`;
       }
     });
 
