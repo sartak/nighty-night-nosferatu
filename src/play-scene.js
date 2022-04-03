@@ -894,7 +894,7 @@ export default class PlayScene extends SuperScene {
   playerDie(explode) {
     const { level, save } = this;
     const { player } = level;
-    if (this.playerDying) {
+    if (this.playerDying || this.winning) {
       return;
     }
 
@@ -906,6 +906,7 @@ export default class PlayScene extends SuperScene {
     this.shockwave(player.x, player.y);
     this.command.ignoreAll("dying", true);
     this.trauma(1);
+    player.disableBody(true, false);
 
     if (explode) {
       this.particleSystem("effects.playerAsh", {
@@ -1035,6 +1036,10 @@ export default class PlayScene extends SuperScene {
       button,
     } = groups;
 
+    if (this.playerDying) {
+      return;
+    }
+
     if (this.winning) {
       return;
     }
@@ -1070,7 +1075,11 @@ export default class PlayScene extends SuperScene {
               prop("effects.goodNight.dy"),
           });
         },
-        obj === player ? 3000 : this.randBetween("goodnight", 0, 1000)
+        obj === player
+          ? this.level.bye
+            ? 3000
+            : 2000
+          : this.randBetween("goodnight", 0, 1000)
       );
     });
 
@@ -1078,21 +1087,27 @@ export default class PlayScene extends SuperScene {
     this.saveState();
 
     this.timer(() => {
-      this.speak(400, 300, level.bye, {
-        scrollFactor: 0,
-        onExit: () => {
-          this.replaceWithSelf(
-            true,
-            { respawn: false, levelIndex: level.index + 1 },
-            {
-              animation: "crossFade",
-              duration: 200,
-              delayNewSceneShader: true,
-              removeOldSceneShader: true,
-            }
-          );
-        },
-      });
+      const ciao = () => {
+        this.replaceWithSelf(
+          true,
+          { respawn: false, levelIndex: level.index + 1 },
+          {
+            animation: "crossFade",
+            duration: 200,
+            delayNewSceneShader: true,
+            removeOldSceneShader: true,
+          }
+        );
+      };
+
+      if (level.bye) {
+        this.speak(400, 300, level.bye, {
+          scrollFactor: 0,
+          onExit: ciao,
+        });
+      } else {
+        this.timer(ciao, 1000);
+      }
     }, 2000);
   }
 
@@ -1196,7 +1211,6 @@ export default class PlayScene extends SuperScene {
   }
 
   textSize(options) {
-    console.log(options);
     return "24px";
   }
 
