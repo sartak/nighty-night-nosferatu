@@ -16,9 +16,9 @@ const {
 
 // DELAY THE INEVITABLE
 
-let CoronaSamples = 10;
+let CoronaSamples = 0;
 let AmbientSamples = 20;
-const Downsamples = [[2, 4], [1, 1], [0, 1]];
+const Downsamples = [[0, 4], [0, 1]];
 
 const Downsample = (t) => {
   if (Downsamples.length) {
@@ -158,7 +158,7 @@ export default class PlayScene extends SuperScene {
     });
     const lighting2 = new Lighting({
       light: corona,
-      objects,
+      objects: [],
     });
 
     const lamps = [corona, ambient];
