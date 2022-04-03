@@ -250,6 +250,14 @@ export const propSpecs = {
       preemit: true,
     },
   ],
+  "effects.comet.particles": [
+    {
+      image: "dot",
+      blendMode: "ADD",
+      lifespan: 1000,
+      frequency: 1,
+    },
+  ],
 };
 
 propSpecs["scene.camera.lerp"][0] = 0.005;

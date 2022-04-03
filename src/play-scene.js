@@ -271,6 +271,38 @@ export default class PlayScene extends SuperScene {
     });
   }
 
+  scheduleComet(level, t = this.randBetween("comet", 10000, 100000)) {
+    this.timer(() => {
+      this.comet(level);
+    }, t);
+  }
+
+  comet(level) {
+    let speedX = this.randBetween("comet", 50, 100);
+    if (this.randFloat("comet") < 0.5) {
+      speedX *= -1;
+    }
+    const speedY = this.randBetween("comet", -10, 10);
+    this.particleSystem("effects.comet", {
+      scale: 0.5,
+      alpha: 0.5,
+      speedX,
+      speedY,
+      onAdd: (particles, emitter) => {
+        particles.x = this.randBetween("comet", 100, 700);
+        particles.y = this.randBetween("comet", 100, 500);
+        particles.setDepth(-1);
+        level.comet = { particles, emitter };
+        this.timer(() => {
+          emitter.stop();
+        }, 1000);
+        this.timer(() => {
+          particles.destroy();
+        }, 2000);
+      },
+    });
+  }
+
   createLevel(id) {
     const levelId = this.levelIds()[id];
     const level = super.createLevel(levelId);
@@ -285,6 +317,7 @@ export default class PlayScene extends SuperScene {
     this.createHealthBar(level.player);
     this.createSmoker(level.player);
     this.createStars(level);
+    this.scheduleComet(level);
 
     level.blockingObjects = [];
     Object.entries(level.groups).forEach(([name, group]) => {
