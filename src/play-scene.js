@@ -240,39 +240,50 @@ export default class PlayScene extends SuperScene {
     this.createHealthBar(level.player);
 
     level.blockingObjects = [];
-    Object.entries(level.groups).forEach(
-      ([name, { objects, shadow, reverse }]) => {
-        if (shadow) {
-          level.blockingObjects.push(...objects);
-        }
-        switch (name) {
-          case "spinner":
-          case "reverseSpinner":
-            objects.forEach((obj) => {
-              obj.setScale(5, 1);
-              obj.setImmovable();
-              if (name === "reverseSpinner") {
-                obj.body.setAngularVelocity(-30);
-                // This 180 is misleading, it's radians
-                obj.rotation = 180;
-              } else {
-                obj.body.setAngularVelocity(30);
-              }
-            });
-            break;
-          case "drawbridge":
-            objects.forEach((obj) => {
-              obj.setScale(8, 1);
-              obj.setImmovable();
-              obj.setOrigin(1, 0.5);
-              obj.angle = prop("effects.drawbridge.rotation");
-            });
-            break;
-          default:
-            break;
-        }
+    Object.entries(level.groups).forEach(([name, group]) => {
+      const { objects, shadow } = group;
+      if (shadow) {
+        level.blockingObjects.push(...objects);
       }
-    );
+      switch (name) {
+        case "spinner":
+        case "reverseSpinner":
+          objects.forEach((obj) => {
+            obj.setScale(5, 1);
+            obj.setImmovable();
+            if (name === "reverseSpinner") {
+              obj.body.setAngularVelocity(-30);
+              // This 180 is misleading, it's radians
+              obj.rotation = 180;
+            } else {
+              obj.body.setAngularVelocity(30);
+            }
+          });
+          break;
+        case "drawbridge":
+          objects.forEach((obj) => {
+            obj.setScale(8, 1);
+            obj.setImmovable();
+            obj.body.pushable = false;
+            obj.setOrigin(1, 0.5);
+            obj.angle = prop("effects.drawbridge.rotation");
+            obj.body.enable = false;
+
+            const alternate = group.group.create(obj.x, obj.y, "drawbridge");
+            alternate.setScale(1, 8);
+            alternate.setOrigin(0.5, 0);
+            alternate.setImmovable();
+            alternate.body.pushable = false;
+
+            alternate.visible = false;
+
+            obj.alternate = alternate;
+          });
+          break;
+        default:
+          break;
+      }
+    });
 
     level.shadowObjects = [level.player, ...level.blockingObjects];
 
@@ -388,12 +399,21 @@ export default class PlayScene extends SuperScene {
   setupPhysics() {
     const { level, physics } = this;
     const { player, groups } = level;
-    const { wall, ground, spinner, reverseSpinner, crumble, button } = groups;
+    const {
+      wall,
+      ground,
+      spinner,
+      reverseSpinner,
+      crumble,
+      button,
+      drawbridge,
+    } = groups;
 
     physics.add.collider(player, wall.group);
     physics.add.collider(player, ground.group);
     // physics.add.collider(player, spinner.group);
     // physics.add.collider(player, reverseSpinner.group);
+    physics.add.collider(player, drawbridge.group);
     physics.add.collider(player, crumble.group, (...args) =>
       this.crumble(...args)
     );
@@ -454,6 +474,8 @@ export default class PlayScene extends SuperScene {
     button.toggling = true;
 
     const [drawbridge] = this.level.groups.drawbridge.objects;
+    const alternate = drawbridge.alternate;
+
     this.tween("effects.buttonPress", button, {
       onComplete: () => {
         button.toggling = false;
@@ -462,8 +484,12 @@ export default class PlayScene extends SuperScene {
 
     if (button.pressed) {
       button.pressed = false;
+      alternate.body.enable = true;
+      drawbridge.body.enable = false;
       this.tween("effects.drawbridge", drawbridge, {});
     } else {
+      alternate.body.enable = false;
+      drawbridge.body.enable = true;
       button.pressed = true;
       this.tween("effects.drawbridge", drawbridge, {
         rotation: 0,

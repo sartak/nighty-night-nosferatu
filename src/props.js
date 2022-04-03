@@ -280,7 +280,6 @@ export const tileDefinitions = {
     image: "drawbridge",
     group: "drawbridge",
     shadow: true,
-    // isStatic: true,
   },
 };
 
