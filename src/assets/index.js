@@ -27,7 +27,11 @@ export const imageAssets = {
 };
 
 export const spriteAssets = {
-  player,
+  player: {
+    file: player,
+    frameWidth: 32,
+    frameHeight: 32,
+  },
   crumble: {
     file: crumble,
     frameWidth: 2 + 24 * 3,

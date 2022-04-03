@@ -51,7 +51,7 @@
 ...I........................I..
 ...I........................I..
 ...I......@.................I..
-...I_________________________..
+...I________________________I..
 
 {
   "id": "blart",
@@ -149,7 +149,7 @@
 {
   "id": "crumble",
   "sunSpeed": 30,
-  "hi": "These weary stones are treacherous",
+  "hi": "These weary stones offer no respite.",
   "bye": ""
 }
 

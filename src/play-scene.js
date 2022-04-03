@@ -84,10 +84,12 @@ export default class PlayScene extends SuperScene {
       y: offsetY,
       scaleX,
       scaleY,
+      overrideScaleX,
+      overrideScaleY,
     } = rect;
 
-    const w = width * scaleX;
-    const h = height * scaleY;
+    const w = width * (overrideScaleX || scaleX);
+    const h = height * (overrideScaleY || scaleY);
 
     [[0, 0], [0, h], [w, h], [w, 0]].forEach(([x, y]) => {
       const { x: newX, y: newY } = Phaser.Math.RotateAround(
@@ -276,19 +278,40 @@ export default class PlayScene extends SuperScene {
   }
 
   comet(level = this.level) {
-    let speedX = this.randBetween("comet", 50, 100);
+    let speedX = this.randBetween("comet", 200, 400);
     if (this.randFloat("comet") < 0.5) {
       speedX *= -1;
     }
-    const speedY = this.randBetween("comet", -10, 10);
+    let speedY = this.randBetween("comet", 3, 10);
+    if (this.randFloat("comet") < 0.5) {
+      speedY *= -1;
+    }
+    const x = this.randBetween("comet", 100, 700);
+    const y = this.randBetween("comet", 100, 500);
+
+    const comet = this.add.image(x, y, "dot");
+    comet.setScale(1.5, 1.5);
+    comet.setDepth(-48);
+    this.tweenPercent(1000, (p) => {
+      const t = 0.03 + p;
+      let nx = x + speedX * t;
+      let ny = y + speedY * t;
+      comet.x = nx;
+      comet.y = ny;
+      comet.setScale(1 + (1 - p) * 0.5, 1 + (1 - p) * 0.5);
+    });
+
+    this.timer(() => {
+      comet.destroy();
+    }, prop("effects.comet.lifespan"));
     this.particleSystem("effects.comet", {
       scale: 0.5,
       alpha: 0.5,
       speedX,
       speedY,
       onAdd: (particles, emitter) => {
-        particles.x = this.randBetween("comet", 100, 700);
-        particles.y = this.randBetween("comet", 100, 500);
+        particles.x = x;
+        particles.y = y;
         particles.setDepth(-49);
         level.comet = { particles, emitter };
         this.timer(() => {
@@ -308,6 +331,8 @@ export default class PlayScene extends SuperScene {
     level.index = id;
     level.player = level.groups.player.objects[0];
     level.player.setGravityY(prop("player.gravityBase"));
+    level.player.anims.play("idle");
+    level.player.overrideScaleX = 0.5;
     //level.player.anims.play("idle");
 
     this.cameraFollow(level.player);
@@ -503,7 +528,7 @@ export default class PlayScene extends SuperScene {
       return;
     }
 
-    if (player.y + player.height * 0.9 >= block.y) {
+    if (player.y + player.height * 0.6 >= block.y) {
       return;
     }
 
@@ -521,7 +546,7 @@ export default class PlayScene extends SuperScene {
   }
 
   button(player, button) {
-    if (player.y + player.height * 0.9 >= button.y) {
+    if (player.y + player.height * 0.6 >= button.y) {
       return;
     }
 
@@ -561,11 +586,52 @@ export default class PlayScene extends SuperScene {
 
   setupAnimations() {
     this.anims.create({
-      key: "player",
+      key: "idle",
       frames: [
         {
-          key: "idle",
+          key: "player",
           frame: 0,
+        },
+      ],
+    });
+    this.anims.create({
+      key: "run",
+      frames: [
+        {
+          key: "player",
+          frame: 2,
+        },
+        {
+          key: "player",
+          frame: 1,
+        },
+        {
+          key: "player",
+          frame: 2,
+        },
+        {
+          key: "player",
+          frame: 3,
+        },
+      ],
+      repeat: -1,
+      frameRate: 8,
+    });
+    this.anims.create({
+      key: "fall",
+      frames: [
+        {
+          key: "player",
+          frame: 5,
+        },
+      ],
+    });
+    this.anims.create({
+      key: "jump",
+      frames: [
+        {
+          key: "player",
+          frame: 4,
         },
       ],
     });
@@ -643,6 +709,22 @@ export default class PlayScene extends SuperScene {
     let vx = player.body.velocity.x + dx * prop("player.speed");
     vx *= 1 - prop("player.drag");
     player.setVelocityX(vx);
+    if (Math.abs(vx) > 0) {
+      player.setFlipX(vx < 0);
+    }
+
+    const vy = player.body.velocity.y;
+    if (player.body.touching.down || this.pressingButton) {
+      if (Math.abs(dx) > 0) {
+        player.anims.play("run", true);
+      } else {
+        player.anims.play("idle", true);
+      }
+    } else if (vy > 0) {
+      player.anims.play("fall", true);
+    } else if (vy < 0) {
+      player.anims.play("jump", true);
+    }
 
     // squash and stretch
     {
@@ -650,8 +732,8 @@ export default class PlayScene extends SuperScene {
       let targetY = 1;
 
       const { x, y } = player.body.velocity;
-      let dx = Math.abs(x) / (24 * 24);
-      let dy = Math.abs(y) / (24 * 24);
+      let dx = Math.abs(x) / (32 * 32);
+      let dy = Math.abs(y) / (32 * 32);
 
       if (dx + dy > 0.1) {
         [dx, dy] = [(dx - dy) / (dx + dy), (dy - dx) / (dx + dy)];
