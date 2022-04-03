@@ -1,10 +1,10 @@
 {
-  "name": "nippy-nosferatu",
+  "name": "nighty-night-nosferatu",
   "homepage": "/",
   "version": "0.1.0",
   "productionDisplay": {
     "embed": false,
-    "displayName": "Nippy Nosferatu",
+    "displayName": "Nighty Night, Nosferatu",
     "authorName": "@sartak",
     "authorURL": "https://shawn.dev",
     "eventDescription": "created solo in 48 hours as part of",
@@ -16,7 +16,7 @@
     "themePre": "",
     "themeItalic": "\"Delay the inevitable\"",
     "themePost": "",
-    "repoURL": "https://github.com/sartak/nippy-nosferatu"
+    "repoURL": "https://github.com/sartak/nighty-night-nosferatu"
   },
   "developmentDisplay": {
     "links": [
