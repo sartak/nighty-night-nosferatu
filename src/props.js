@@ -39,6 +39,12 @@ export const commands = {
     joystick: true,
   },
 
+  comet: {
+    input: ["keyboard.M"],
+    execute: "comet",
+    unignorable: true,
+  },
+
   restart: {
     input: ["keyboard.R"],
     execute: (scene) => scene.replaceWithSelf(),

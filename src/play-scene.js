@@ -277,7 +277,7 @@ export default class PlayScene extends SuperScene {
     }, t);
   }
 
-  comet(level) {
+  comet(level = this.level) {
     let speedX = this.randBetween("comet", 50, 100);
     if (this.randFloat("comet") < 0.5) {
       speedX *= -1;
