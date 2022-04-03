@@ -399,20 +399,10 @@ export default class PlayScene extends SuperScene {
   setupPhysics() {
     const { level, physics } = this;
     const { player, groups } = level;
-    const {
-      wall,
-      ground,
-      spinner,
-      reverseSpinner,
-      crumble,
-      button,
-      drawbridge,
-    } = groups;
+    const { wall, ground, crumble, button, drawbridge } = groups;
 
     physics.add.collider(player, wall.group);
     physics.add.collider(player, ground.group);
-    // physics.add.collider(player, spinner.group);
-    // physics.add.collider(player, reverseSpinner.group);
     physics.add.collider(player, drawbridge.group);
     physics.add.collider(player, crumble.group, (...args) =>
       this.crumble(...args)
@@ -644,6 +634,29 @@ export default class PlayScene extends SuperScene {
     return [p.x, p.y];
   }
 
+  spinnered() {
+    const { level, lightX, lightY } = this;
+    const { player, groups } = level;
+    const { spinner, reverseSpinner } = groups;
+
+    const bounds = player.getBounds();
+
+    return [...spinner.objects, ...reverseSpinner.objects].some(({ occ }) => {
+      const { points } = occ;
+      return [[0, 1], [1, 2], [2, 3], [3, 0]].some(([i1, i2]) => {
+        const p1 = points[i1];
+        const p2 = points[i2];
+        const edge = new Phaser.Geom.Line(
+          p1.x + lightX,
+          p1.y + lightY,
+          p2.x + lightX,
+          p2.y + lightY
+        );
+        return Phaser.Geom.Intersects.LineToRectangle(edge, bounds);
+      });
+    });
+  }
+
   crispingSun() {
     const { suns, percent, lightX, lightY, level } = this;
     const { player, blockingObjects } = level;
@@ -712,6 +725,10 @@ export default class PlayScene extends SuperScene {
     const maxCrisp = 2000;
 
     if (!this.playerDying) {
+      if (this.spinnered()) {
+        this.playerDie(true);
+      }
+
       this.crispingSuns =
         !this.winning && this.percent < 0.9 && this.crispingSun();
       if (this.level.dualSun && this.percent < 0.1) {
@@ -781,7 +798,7 @@ export default class PlayScene extends SuperScene {
     });
   }
 
-  playerDie(crisped) {
+  playerDie(explode) {
     const { level, save } = this;
     const { player } = level;
     if (this.playerDying) {
@@ -797,7 +814,7 @@ export default class PlayScene extends SuperScene {
     this.command.ignoreAll("dying", true);
     this.trauma(1);
 
-    if (crisped) {
+    if (explode) {
       this.particleSystem("effects.playerAsh", {
         x: {
           min: player.x - player.width * 0.4,
