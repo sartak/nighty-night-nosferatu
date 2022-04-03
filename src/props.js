@@ -240,6 +240,16 @@ export const propSpecs = {
       quantity: 1,
     },
   ],
+  "effects.stars.particles": [
+    {
+      image: "dot",
+      blendMode: "ADD",
+      lifespan: 2000,
+      frequency: 1000,
+      quantity: 25,
+      preemit: true,
+    },
+  ],
 };
 
 propSpecs["scene.camera.lerp"][0] = 0.005;

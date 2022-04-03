@@ -119,7 +119,7 @@ export default class PlayScene extends SuperScene {
     this.add
       .image(lightX, lightY, key)
       .setOrigin(0, 0)
-      .setDepth(-1);
+      .setDepth(-100);
   }
 
   createSun(x, y, objects, backwards) {
@@ -255,6 +255,32 @@ export default class PlayScene extends SuperScene {
     };
   }
 
+  createStars(level) {
+    this.particleSystem("effects.stars", {
+      x: { min: -100, max: 900 },
+      y: { min: -100, max: 700 },
+      lifespan: {
+        min: prop("effects.stars.lifespan") * 0.5,
+        max: prop("effects.stars.lifespan") * 2,
+      },
+      scale: {
+        start: 0,
+        end: 1,
+        ease: (t) => (t < 0.2 ? 5 * t : 1 - (t - 0.2)),
+      },
+      alpha: {
+        start: 0,
+        end: 0.75,
+        ease: (t) => (t < 0.2 ? 5 * t : 1 - (t - 0.2)),
+      },
+      tint: [0xf6c456, 0xec5b55, 0xaaaaaa],
+      onAdd: (particles, emitter) => {
+        particles.setDepth(-1);
+        level.stars = { particles, emitter };
+      },
+    });
+  }
+
   createLevel(id) {
     const levelId = this.levelIds()[id];
     const level = super.createLevel(levelId);
@@ -268,6 +294,7 @@ export default class PlayScene extends SuperScene {
 
     this.createHealthBar(level.player);
     this.createSmoker(level.player);
+    this.createStars(level);
 
     level.blockingObjects = [];
     Object.entries(level.groups).forEach(([name, group]) => {
@@ -593,6 +620,30 @@ export default class PlayScene extends SuperScene {
     let vx = player.body.velocity.x + dx * prop("player.speed");
     vx *= 1 - prop("player.drag");
     player.setVelocityX(vx);
+
+    // squash and stretch
+    {
+      let targetX = 1;
+      let targetY = 1;
+
+      const { x, y } = player.body.velocity;
+      let dx = Math.abs(x) / (24 * 24);
+      let dy = Math.abs(y) / (24 * 24);
+
+      if (dx + dy > 0.1) {
+        [dx, dy] = [(dx - dy) / (dx + dy), (dy - dx) / (dx + dy)];
+
+        // intentionally flipped
+        const max = 0.1;
+        targetX = dy * max + 1;
+        targetY = dx * max + 1;
+      }
+
+      const lerp = 0.1;
+      const sx = player.scaleX + (targetX - player.scaleX) * lerp;
+      const sy = player.scaleY + (targetY - player.scaleY) * lerp;
+      player.setScale(sx, sy);
+    }
   }
 
   processJumping(time, dt) {
@@ -764,6 +815,8 @@ export default class PlayScene extends SuperScene {
     this.moveShadowObjects();
 
     const maxCrisp = 2000;
+    level.stars.emitter.on = true;
+    level.stars.particles.visible = true;
 
     if (this.playerDying) {
       player.smoker.lightAsh.emitter.on = false;
@@ -792,6 +845,10 @@ export default class PlayScene extends SuperScene {
 
     let desiredTimeScale = 1;
     let desiredZoom = 1;
+    if (this.crispPercent >= 0.6) {
+      level.stars.emitter.on = false;
+      level.stars.particles.visible = false;
+    }
 
     this.minTrauma = 0;
     if (this.crispPercent >= 1) {
