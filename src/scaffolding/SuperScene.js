@@ -622,7 +622,7 @@ export default class SuperScene extends Phaser.Scene {
         xl += ox;
         yl += oy;
 
-        const label = this.text(xl, yl, text);
+        const label = this.text(xl, yl, text, options);
         const halfWidth = label.width / 2;
         const halfHeight = label.height / 2;
         label.x -= halfWidth;

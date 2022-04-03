@@ -429,7 +429,7 @@ export default class PlayScene extends SuperScene {
       }, wait);
     } else {
       if (!this.respawn) {
-        this.speak("@", level.hi, { dy: -50 });
+        this.speak("@", level.hi, { dy: -50, fontSize: "18px" });
       }
     }
   }
@@ -1196,6 +1196,7 @@ export default class PlayScene extends SuperScene {
   }
 
   textSize(options) {
+    console.log(options);
     return "24px";
   }
 
