@@ -263,7 +263,7 @@ export default class PlayScene extends SuperScene {
       },
       tint: [0xf6c456, 0xec5b55, 0xaaaaaa],
       onAdd: (particles, emitter) => {
-        particles.setDepth(-1);
+        particles.setDepth(-50);
         level.stars = { particles, emitter };
       },
     });
@@ -289,7 +289,7 @@ export default class PlayScene extends SuperScene {
       onAdd: (particles, emitter) => {
         particles.x = this.randBetween("comet", 100, 700);
         particles.y = this.randBetween("comet", 100, 500);
-        particles.setDepth(-1);
+        particles.setDepth(-49);
         level.comet = { particles, emitter };
         this.timer(() => {
           emitter.stop();
@@ -358,6 +358,11 @@ export default class PlayScene extends SuperScene {
             alternate.visible = false;
 
             obj.alternate = alternate;
+          });
+          break;
+        case "button":
+          objects.forEach((obj) => {
+            obj.setDepth(-5);
           });
           break;
         default:

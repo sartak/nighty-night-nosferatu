@@ -933,7 +933,6 @@ export default class SuperScene extends Phaser.Scene {
             tile.image
           );
           image.tile = tile;
-          image.alpha = 0.5;
           tile.image = image;
           tile.object = object;
         });
