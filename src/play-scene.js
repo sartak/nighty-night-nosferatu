@@ -329,7 +329,6 @@ export default class PlayScene extends SuperScene {
         case "spinner":
         case "reverseSpinner":
           objects.forEach((obj) => {
-            obj.setScale(5, 1);
             obj.setImmovable();
             if (name === "reverseSpinner") {
               obj.body.setAngularVelocity(-30);
@@ -342,16 +341,19 @@ export default class PlayScene extends SuperScene {
           break;
         case "drawbridge":
           objects.forEach((obj) => {
-            obj.setScale(8, 1);
             obj.setImmovable();
             obj.body.pushable = false;
-            obj.setOrigin(1, 0.5);
+            obj.setOrigin(0.95, 0.25);
             obj.angle = prop("effects.drawbridge.rotation");
             obj.body.enable = false;
 
-            const alternate = group.group.create(obj.x, obj.y, "drawbridge");
-            alternate.setScale(1, 8);
-            alternate.setOrigin(0.5, 0);
+            const fudge = 12;
+            const alternate = group.group.create(
+              obj.x + fudge,
+              obj.y,
+              "drawbridgeAlt"
+            );
+            alternate.setOrigin(1 - 0.25, 1 - 0.95);
             alternate.setImmovable();
             alternate.body.pushable = false;
 
@@ -502,30 +504,16 @@ export default class PlayScene extends SuperScene {
       return;
     }
 
-    const { level } = this;
-    const { map } = level;
-    const [tile] = block.tiles;
-    const { x, y } = tile;
-
-    const platform = [];
-
-    map[y].forEach((t) => {
-      if (tile.glyph === t.glyph && Math.abs(t.x - x) < 3) {
-        platform.push(t.object);
-      }
-    });
-
-    platform.forEach((block) => {
-      block.crumbling = true;
-      this.tween("effects.firstCrumble", block, {
-        onComplete: () => {
-          this.tween("effects.crumble", block, {
-            onComplete: () => {
-              block.disableBody(true, false);
-            },
-          });
-        },
-      });
+    block.crumbling = true;
+    block.anims.play("crumbling");
+    this.tween("effects.firstCrumble", block, {
+      onComplete: () => {
+        this.tween("effects.crumble", block, {
+          onComplete: () => {
+            block.disableBody(true, false);
+          },
+        });
+      },
     });
   }
 
@@ -575,6 +563,15 @@ export default class PlayScene extends SuperScene {
         {
           key: "idle",
           frame: 0,
+        },
+      ],
+    });
+    this.anims.create({
+      key: "crumbling",
+      frames: [
+        {
+          key: "crumble",
+          frame: 1,
         },
       ],
     });

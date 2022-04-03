@@ -3,26 +3,36 @@
 import dot from "./dot.png";
 import hpbar from "./hpbar.png";
 import player from "./player.png";
-import test from "./test.png";
+import translucent from "./translucent.png";
+import solid from "./solid.png";
 import crumble from "./crumble.png";
 import button from "./button.png";
 import drawbridge from "./drawbridge.png";
+import drawbridgeAlt from "./drawbridgeAlt.png";
 import smoke from "./smoke.png";
 import bead from "./bead.png";
+import spinner from "./spinner.png";
 
 export const imageAssets = {
   dot,
   bead,
   smoke,
   hpbar,
-  test,
-  crumble,
   button,
   drawbridge,
+  drawbridgeAlt,
+  spinner,
+  translucent,
+  solid,
 };
 
 export const spriteAssets = {
   player,
+  crumble: {
+    file: crumble,
+    frameWidth: 2 + 24 * 3,
+    frameHeight: 24,
+  },
 };
 
 export const musicAssets = {};

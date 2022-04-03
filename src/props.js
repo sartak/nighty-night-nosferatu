@@ -148,9 +148,9 @@ export const propSpecs = {
     {
       duration: 200,
       ease: "Cubic.easeInOut",
-      scaleX: 1.2,
+      scaleX: 1.05,
       dy: 3,
-      scaleY: 0.9,
+      scaleY: 0.95,
       refreshPhysics: true,
       yoyo: true,
     },
@@ -161,6 +161,8 @@ export const propSpecs = {
       ease: "Quad.easeOut",
       dy: 10,
       refreshPhysics: true,
+      scaleX: 1.1,
+      scaleY: 0.9,
       alpha: 0,
     },
   ],
@@ -273,21 +275,21 @@ propSpecs["scene.camera.deadzoneY"][0] = 200;
 export const tileDefinitions = {
   ".": null, // background
   "#": {
-    image: "test",
+    image: "solid",
     group: "wall",
     combine: "#",
     isStatic: true,
     shadow: true,
   },
   "|": {
-    image: "test",
+    image: "translucent",
     group: "ground",
     combine: "|",
     preferCombineVertical: true,
     isStatic: true,
   },
   I: {
-    image: "test",
+    image: "solid",
     group: "wall",
     combine: "I",
     preferCombineVertical: true,
@@ -295,18 +297,18 @@ export const tileDefinitions = {
     shadow: true,
   },
   _: {
-    image: "test",
+    image: "translucent",
     group: "ground",
     combine: "_",
     isStatic: true,
   },
   "/": {
-    image: "test",
+    image: "spinner",
     group: "spinner",
     shadow: true,
   },
   "\\": {
-    image: "test",
+    image: "spinner",
     group: "reverseSpinner",
     shadow: true,
   },
