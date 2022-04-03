@@ -261,9 +261,9 @@ export const propSpecs = {
   "effects.comet.particles": [
     {
       image: "dot",
-      blendMode: "ADD",
       lifespan: 1000,
       frequency: 1,
+      quantity: 5,
     },
   ],
 };

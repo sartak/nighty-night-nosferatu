@@ -16,14 +16,13 @@ const {
 
 // DELAY THE INEVITABLE
 
-let CoronaSamples = 0;
-let AmbientSamples = 20;
-const Downsamples = [[0, 4], [0, 1]];
+const Downsamples = [24, 12, 4, 1];
+let AmbientSamples = Downsamples.shift();
 
 const Downsample = (t) => {
   if (Downsamples.length) {
     console.log("downsampling to ", Downsamples[0]);
-    [CoronaSamples, AmbientSamples] = Downsamples.shift();
+    AmbientSamples = Downsamples.shift();
     t();
   }
 };
@@ -138,7 +137,7 @@ export default class PlayScene extends SuperScene {
       }, 0.8)`,
       distance: 100,
       radius: 10,
-      samples: CoronaSamples,
+      samples: 0,
     });
     const ambient = new Lamp({
       position: new Vec2(x - this.lightX, y - this.lightY),
@@ -177,7 +176,6 @@ export default class PlayScene extends SuperScene {
 
   resampleSuns() {
     (this.suns || []).forEach(({ corona, ambient }) => {
-      corona.samples = CoronaSamples;
       ambient.samples = AmbientSamples;
     });
   }
@@ -1205,8 +1203,8 @@ export default class PlayScene extends SuperScene {
       );
       const { r, g, b } = tint;
 
-      const coronaPulse = 0.5 + Math.sin(time / 1000) / 2;
-      let coronaAlpha = 0.8 + 0.2 * coronaPulse;
+      const coronaPulse = 0.5 + Math.sin(time / 500) / 2;
+      let coronaAlpha = 0.7 + 0.3 * coronaPulse;
       if (this.winning) {
         coronaAlpha = alpha;
       }
