@@ -8,9 +8,11 @@ import crumble from "./crumble.png";
 import button from "./button.png";
 import drawbridge from "./drawbridge.png";
 import smoke from "./smoke.png";
+import bead from "./bead.png";
 
 export const imageAssets = {
   dot,
+  bead,
   smoke,
   hpbar,
   test,

@@ -16,15 +16,14 @@ const {
 
 // DELAY THE INEVITABLE
 
-let BeadSamples = 1;
 let CoronaSamples = 10;
 let AmbientSamples = 20;
-const Downsamples = [[1, 2, 4], [1, 1, 1], [0, 0, 1]];
+const Downsamples = [[2, 4], [1, 1], [0, 1]];
 
 const Downsample = (t) => {
   if (Downsamples.length) {
     console.log("downsampling to ", Downsamples[0]);
-    [BeadSamples, CoronaSamples, AmbientSamples] = Downsamples.shift();
+    [CoronaSamples, AmbientSamples] = Downsamples.shift();
     t();
   }
 };
@@ -128,12 +127,8 @@ export default class PlayScene extends SuperScene {
     let ambientPrimary = 255;
     let ambientSecondary = 200;
 
-    const bead = new Lamp({
-      position: new Vec2(x - this.lightX, y - this.lightY),
-      distance: 10,
-      radius: 6,
-      samples: BeadSamples,
-    });
+    const bead = this.add.image(x, y, "bead");
+
     const corona = new Lamp({
       position: new Vec2(x - this.lightX, y - this.lightY),
       color: `rgba(${
@@ -162,16 +157,12 @@ export default class PlayScene extends SuperScene {
       objects,
     });
     const lighting2 = new Lighting({
-      light: bead,
-      objects,
-    });
-    const lighting3 = new Lighting({
       light: corona,
       objects,
     });
 
-    const lamps = [bead, corona, ambient];
-    const lightings = [lighting1, lighting2, lighting3];
+    const lamps = [corona, ambient];
+    const lightings = [lighting1, lighting2];
 
     const set = { bead, corona, ambient, lamps, lightings, backwards };
 
@@ -185,8 +176,7 @@ export default class PlayScene extends SuperScene {
   }
 
   resampleSuns() {
-    (this.suns || []).forEach(({ bead, corona, ambient }) => {
-      bead.samples = BeadSamples;
+    (this.suns || []).forEach(({ corona, ambient }) => {
       corona.samples = CoronaSamples;
       ambient.samples = AmbientSamples;
     });
@@ -1127,7 +1117,7 @@ export default class PlayScene extends SuperScene {
     ctx.clearRect(0, 0, lightWidth, lightHeight);
 
     suns.forEach((sun) => {
-      const { lamps, ambient, corona, bead, backwards } = sun;
+      const { bead, lamps, ambient, corona, backwards } = sun;
       const [x, y] = this.sunPosition(
         backwards ? 1 - percent : percent,
         backwards
@@ -1137,6 +1127,8 @@ export default class PlayScene extends SuperScene {
       lamps.forEach((lamp) => {
         lamp.position = pos;
       });
+      bead.x = x;
+      bead.y = y;
 
       const crispingColor = {
         r: 255,
@@ -1170,7 +1162,6 @@ export default class PlayScene extends SuperScene {
 
       ambient.color = `rgba(${r}, ${g}, ${b}, ${alpha})`;
       if (this.winning) {
-        bead.color = `rgba(255, 255, 255, ${alpha})`;
         if (backwards) {
           corona.color = `rgba(0, 0, 255, ${alpha})`;
         } else {
