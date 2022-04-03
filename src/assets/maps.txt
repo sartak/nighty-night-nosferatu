@@ -88,7 +88,7 @@
   "id": "yerp",
   "sunSpeed": 50,
   "hi": "Delay the inevitable.",
-  "bye": "todo"
+  "bye": ""
 }
 
 ...............................
@@ -242,7 +242,7 @@
 {
   "id": "button",
   "sunSpeed": 30,
-  "hi": "",
+  "hi": "A peculiar apparatus . . .",
   "bye": ""
 }
 
