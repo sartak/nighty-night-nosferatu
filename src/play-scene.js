@@ -226,6 +226,35 @@ export default class PlayScene extends SuperScene {
     fill.setCrop(1, 1, fill.width * percent - 2, fill.height - 2);
   }
 
+  createSmoker(player) {
+    const lightAsh = {};
+    this.particleSystem("effects.lightAsh", {
+      follow: player,
+      x: { min: -player.width / 2, max: player.width / 2 },
+      y: { min: -player.height / 2, max: player.height / 2 },
+      alpha: { start: 1, end: 0 },
+      scale: { start: 0.75, end: 1.125 },
+      speedY: {
+        min: 0.5 * prop("effects.lightAsh.speedY"),
+        max: prop("effects.lightAsh.speedY"),
+      },
+      speedX: {
+        min: -prop("effects.lightAsh.speedX"),
+        max: prop("effects.lightAsh.speedX"),
+      },
+      tint: [0xf6c456, 0xec5b55, 0xaaaaaa],
+      onAdd: (particles, emitter) => {
+        lightAsh.particles = particles;
+        lightAsh.emitter = emitter;
+        emitter.on = false;
+      },
+    });
+
+    player.smoker = {
+      lightAsh,
+    };
+  }
+
   createLevel(id) {
     const levelId = this.levelIds()[id];
     const level = super.createLevel(levelId);
@@ -238,6 +267,7 @@ export default class PlayScene extends SuperScene {
     this.cameraFollow(level.player);
 
     this.createHealthBar(level.player);
+    this.createSmoker(level.player);
 
     level.blockingObjects = [];
     Object.entries(level.groups).forEach(([name, group]) => {
@@ -508,7 +538,12 @@ export default class PlayScene extends SuperScene {
     let dy = 0;
     let stickInput = false;
 
-    const canJump = player.body.touching.down && !player.isJumping;
+    const touchingDown = player.body.touching.down;
+    if (touchingDown) {
+      player.lastTouchDown = time;
+    }
+
+    const canJump = player.lastTouchDown > time - 75 && !player.isJumping;
     if (command.jump.started) {
       if (canJump) {
         player.isJumping = true;
@@ -569,9 +604,14 @@ export default class PlayScene extends SuperScene {
     }
 
     const touchingDown = player.body.touching.down;
+    if (touchingDown) {
+      player.lastTouchDown = time;
+    }
+
     if (!touchingDown) {
       player.pressingButton = false;
     }
+
     if (player.isJumping && !player.hasLiftedOff && !touchingDown) {
       player.hasLiftedOff = true;
     }
@@ -725,7 +765,9 @@ export default class PlayScene extends SuperScene {
 
     const maxCrisp = 2000;
 
-    if (!this.playerDying) {
+    if (this.playerDying) {
+      player.smoker.lightAsh.emitter.on = false;
+    } else {
       if (this.spinnered()) {
         this.playerDie(true);
       }
@@ -738,11 +780,14 @@ export default class PlayScene extends SuperScene {
 
       if (this.crispingSuns) {
         this.crispTime = Math.min(maxCrisp, (this.crispTime || 0) + dt);
+        player.smoker.lightAsh.emitter.on = true;
       } else {
         this.crispTime = Math.max(0, (this.crispTime || 0) - dt);
+        player.smoker.lightAsh.emitter.on = false;
       }
 
       this.crispPercent = this.crispTime / maxCrisp;
+      player.smoker.lightAsh.emitter.frequency = 100 * (1 - this.crispPercent);
     }
 
     let desiredTimeScale = 1;
@@ -826,7 +871,7 @@ export default class PlayScene extends SuperScene {
           max: player.y + player.height * 0.4,
         },
         alpha: { start: 1, end: 0 },
-        scale: { start: 1, end: 1.5 },
+        scale: { start: 0.75, end: 1 },
         speedY: {
           min: 0.5 * prop("effects.playerAsh.speedY"),
           max: prop("effects.playerAsh.speedY"),
@@ -836,6 +881,34 @@ export default class PlayScene extends SuperScene {
           max: prop("effects.playerAsh.speedX"),
         },
         tint: [0xf6c456, 0xec5b55, 0xaaaaaa],
+        onAdd: (particles, emitter) => {
+          this.timer(() => {
+            emitter.stop();
+          }, prop("effects.playerDie.duration") * 2 /* + prop("level.replaceDelay") - prop("effects.playerAsh.lifespan") */);
+        },
+      });
+      this.particleSystem("effects.playerSmoke", {
+        x: {
+          min: player.x - player.width * 0.4,
+          max: player.x + player.width * 0.4,
+        },
+        y: {
+          min: player.y - player.height * 0.4,
+          max: player.y + player.height * 0.4,
+        },
+        alpha: { start: 1, end: 0 },
+        //scale: { start: 0.25, end: 0.5 },
+        scale: { start: 0.5, end: 1 },
+        rotate: { start: 0, end: 360 },
+        speedY: {
+          min: 0.5 * prop("effects.playerSmoke.speedY"),
+          max: prop("effects.playerSmoke.speedY"),
+        },
+        speedX: {
+          min: -prop("effects.playerSmoke.speedX"),
+          max: prop("effects.playerSmoke.speedX"),
+        },
+        tint: [0x333333, 0x777777, 0xaaaaaa, 0xff9999],
         onAdd: (particles, emitter) => {
           this.timer(() => {
             emitter.stop();

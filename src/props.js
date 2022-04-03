@@ -6,7 +6,7 @@ import {
   preprocessPropSpecs,
 } from "./scaffolding/lib/props";
 
-const particleImages = ["dot"];
+const particleImages = ["dot", "smoke"];
 
 export const commands = {
   jump: {
@@ -214,6 +214,30 @@ export const propSpecs = {
       speedY: -1000,
       frequency: 1,
       quantity: 5,
+    },
+  ],
+  "effects.lightAsh.particles": [
+    {
+      image: "dot",
+      blendMode: "ADD",
+      accelerationY: 2000,
+      lifespan: 250,
+      speedX: 250,
+      speedY: -500,
+      frequency: 100,
+      quantity: 1,
+    },
+  ],
+  "effects.playerSmoke.particles": [
+    {
+      image: "smoke",
+      blendMode: "ADD",
+      accelerationY: -100,
+      lifespan: 1000,
+      speedX: 100,
+      speedY: -100,
+      frequency: 1,
+      quantity: 1,
     },
   ],
 };

@@ -7,9 +7,11 @@ import test from "./test.png";
 import crumble from "./crumble.png";
 import button from "./button.png";
 import drawbridge from "./drawbridge.png";
+import smoke from "./smoke.png";
 
 export const imageAssets = {
   dot,
+  smoke,
   hpbar,
   test,
   crumble,
