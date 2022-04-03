@@ -574,6 +574,9 @@ export default class SuperScene extends Phaser.Scene {
         oy,
         noOut,
         follow,
+        scrollFactor,
+        onAdd,
+        onExit,
       } = {
         inTime: 200,
         outTime: 200,
@@ -585,6 +588,9 @@ export default class SuperScene extends Phaser.Scene {
         oy: 0,
         noOut: false,
         follow: true,
+        scrollFactor: null,
+        onAdd: null,
+        onExit: null,
         ...options,
         ...(typeof line === "object" ? line : { text: line }),
       };
@@ -625,6 +631,14 @@ export default class SuperScene extends Phaser.Scene {
         let lx = label.x;
         let ly = label.y;
         label.alpha = 0;
+
+        if (scrollFactor !== null) {
+          label.setScrollFactor(scrollFactor);
+        }
+
+        if (onAdd) {
+          onAdd(label);
+        }
 
         this.tweenPercent(
           inTime,
@@ -709,6 +723,9 @@ export default class SuperScene extends Phaser.Scene {
               label.y = ly - dy1 * factor + oy;
             },
             () => {
+              if (onExit) {
+                onExit();
+              }
               label.destroy();
             },
             0,

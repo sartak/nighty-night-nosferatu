@@ -74,6 +74,25 @@ export const commands = {
       }
     },
   },
+  skip: {
+    input: ["keyboard.N"],
+    execute: "skipLevel",
+    unignorable: true,
+    unreplayable: true,
+  },
+  prev: {
+    input: ["keyboard.P"],
+    execute: "prevLevel",
+    unignorable: true,
+    unreplayable: true,
+  },
+  win: {
+    input: ["keyboard.T"],
+    execute: "wonLevel",
+    debug: true,
+    unignorable: true,
+    unreplayable: true,
+  },
 };
 
 export const shaderCoordFragments = ["shockwave"];
@@ -92,6 +111,11 @@ export const propSpecs = {
     null,
     (scene) => scene.command.ignoreAll("dying"),
   ],
+  "command.ignore_all.winning": [
+    false,
+    null,
+    (scene) => scene.command.ignoreAll("winning"),
+  ],
 
   "player.speed": [150, 1, 1000],
   "player.drag": [0.3, 0, 1],
@@ -105,14 +129,49 @@ export const propSpecs = {
   "player.maxJumpTime": [200, 0, 10000],
   "player.maxJumpTrauma": [0.5, 0, 1],
   "player.jumpTraumaDivisor": [3000, 0, 10000],
+  "player.invincible": [false],
 
-  "sun.speed": [10, 1, 100],
   "sun.downsamplesLeft": [
     0,
     null,
     (scene) => scene.downsamples && scene.downsamples.length,
   ],
   "level.replaceDelay": [2000, 0, 10000],
+  "level.fadeOutFactor": [10, 0, 100],
+  "effects.firstCrumble.tween": [
+    {
+      duration: 200,
+      ease: "Cubic.easeInOut",
+      scaleX: 1.2,
+      scaleY: 0.9,
+      yoyo: true,
+    },
+  ],
+  "effects.crumble.tween": [
+    {
+      duration: 800,
+      ease: "Quad.easeOut",
+      dy: 5,
+      alpha: 0,
+    },
+  ],
+  "effects.attract.tween": [
+    {
+      duration: 1000,
+      ease: "Cubic.easeInOut",
+      dy: 16,
+      loop: 999,
+      yoyo: true,
+    },
+  ],
+  "effects.goodNight.tween": [
+    {
+      duration: 1000,
+      ease: "Cubic.easeIn",
+      dy: 100,
+      alpha: 0,
+    },
+  ],
   "effects.playerDie.tween": [
     {
       duration: 200,
@@ -139,6 +198,10 @@ export const propSpecs = {
     },
   ],
 };
+
+propSpecs["scene.camera.lerp"][0] = 0.005;
+propSpecs["scene.camera.deadzoneX"][0] = 200;
+propSpecs["scene.camera.deadzoneY"][0] = 200;
 
 export const tileDefinitions = {
   ".": null, // background
@@ -170,9 +233,24 @@ export const tileDefinitions = {
     combine: "_",
     isStatic: true,
   },
+  "/": {
+    image: "test",
+    group: "spinner",
+    shadow: true,
+  },
+  "\\": {
+    image: "test",
+    group: "reverseSpinner",
+    shadow: true,
+  },
   "@": {
     image: "player",
     group: "player",
+  },
+  "~": {
+    image: "crumble",
+    group: "crumble",
+    isStatic: true,
   },
 };
 

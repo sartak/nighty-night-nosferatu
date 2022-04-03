@@ -54,6 +54,8 @@ export default class PlayScene extends SuperScene {
   initialSaveState() {
     return {
       createdAt: Date.now(),
+      deaths: 0,
+      level: 0,
     };
   }
 
@@ -228,18 +230,39 @@ export default class PlayScene extends SuperScene {
     const levelId = this.levelIds()[id];
     const level = super.createLevel(levelId);
 
+    level.index = id;
     level.player = level.groups.player.objects[0];
     level.player.setGravityY(prop("player.gravityBase"));
     //level.player.anims.play("idle");
 
+    this.cameraFollow(level.player);
+
     this.createHealthBar(level.player);
 
     level.blockingObjects = [];
-    Object.entries(level.groups).forEach(([name, { objects, shadow }]) => {
-      if (shadow) {
-        level.blockingObjects.push(...objects);
+    Object.entries(level.groups).forEach(
+      ([name, { objects, shadow, reverse }]) => {
+        if (shadow) {
+          level.blockingObjects.push(...objects);
+        }
+        switch (name) {
+          case "spinner":
+          case "reverseSpinner":
+            objects.forEach((obj) => {
+              obj.setScale(5, 1);
+              if (name === "reverseSpinner") {
+                obj.body.setAngularVelocity(-30);
+                obj.rotation = 180;
+              } else {
+                obj.body.setAngularVelocity(30);
+              }
+            });
+            break;
+          default:
+            break;
+        }
       }
-    });
+    );
 
     level.shadowObjects = [level.player, ...level.blockingObjects];
 
@@ -249,27 +272,26 @@ export default class PlayScene extends SuperScene {
   create(config) {
     super.create(config);
 
-    const level = this.createLevel(0);
+    // lol doh!
+    let levelIndex;
+    if (config.levelIndex !== undefined) {
+      levelIndex = config.levelIndex;
+    } else if (this.save.level !== undefined) {
+      levelIndex = this.save.level;
+    } else {
+      levelIndex = 0;
+    }
+
+    levelIndex = levelIndex % this.levelIds().length;
+
+    this.save.level = levelIndex;
+    this.saveState();
+
+    this.respawn = config.respawn;
+
+    const level = this.createLevel(levelIndex);
 
     this.createLightCanvas();
-
-    /*
-    const sprites = (this.objects = [1, 1, 1, 1, 1, 1, 1, 1].map((_, i) => {
-      const s = this.physics.add.sprite(
-        20 + 100 * i,
-        200 + this.randFloat("sprite") * 200,
-        "test"
-      );
-      //s.setScale(this.randBetween("x", 0.5, 3), this.randBetween("y", 0.5, 3));
-      s.setScale(this.randBetween("x", 2, 5), 1);
-      s.setAngularVelocity(this.randBetween("r", 10, 50));
-      s.setVelocityX(this.randBetween("dx", -50, 50));
-      s.setVelocityY(this.randBetween("dy", -50, 50));
-      s.setRotation(this.randBetween("t", 0, 2 * Math.PI));
-
-      return s;
-    }));
-    */
 
     level.illObjects = level.shadowObjects.map((sprite) => {
       const occ = new PolygonObject({ points: this.rotatedVecs(sprite) });
@@ -278,21 +300,69 @@ export default class PlayScene extends SuperScene {
     });
 
     this.createSun(0, 0, level.illObjects);
-    //this.createSun(0, 0, level.illObjects, true);
+    if (level.dualSun) {
+      this.createSun(0, 0, level.illObjects, true);
+    }
 
     this.hud = this.createHud();
     this.setupPhysics();
 
     this.command.ignoreAll("spawn", true);
+    this.command.ignoreAll("winning", false);
     this.command.ignoreAll("dying", false);
 
     this.spawn();
   }
 
   spawn() {
+    const { level, save } = this;
+
     this.timer(() => {
       this.command.ignoreAll("spawn", false);
     }, 500);
+
+    if (level.lastLevel) {
+      const wait = 500;
+      this.speak(400, 300, level.hi, {
+        duration: wait,
+        noOut: true,
+        onAdd: (label) => {
+          this.timer(() => {
+            this.tween("effects.attract", label);
+          }, wait);
+        },
+      });
+
+      let label;
+      const { deaths } = save;
+      switch (deaths) {
+        case 0:
+          label = "You won without dying!!! You are inevitable!";
+          break;
+        case 1:
+          label = "You perished only once!!";
+          break;
+        default:
+          label = `You delayed the inevitable, but perished ${deaths} times`;
+          break;
+      }
+
+      this.timer(() => {
+        this.speak(400, 400, label, {
+          duration: wait,
+          noOut: true,
+          onAdd: (label) => {
+            this.timer(() => {
+              this.tween("effects.attract", label);
+            }, wait);
+          },
+        });
+      }, wait);
+    } else {
+      if (!this.respawn) {
+        this.speak("@", level.hi, { dy: -50 });
+      }
+    }
   }
 
   createHud() {
@@ -308,10 +378,51 @@ export default class PlayScene extends SuperScene {
   setupPhysics() {
     const { level, physics } = this;
     const { player, groups } = level;
-    const { wall, ground } = groups;
+    const { wall, ground, spinner, reverseSpinner, crumble } = groups;
 
     physics.add.collider(player, wall.group);
     physics.add.collider(player, ground.group);
+    // physics.add.collider(player, spinner.group);
+    // physics.add.collider(player, reverseSpinner.group);
+    physics.add.collider(player, crumble.group, (...args) =>
+      this.crumble(...args)
+    );
+  }
+
+  crumble(player, block) {
+    if (block.crumbling) {
+      return;
+    }
+
+    if (player.y > block.y) {
+      return;
+    }
+
+    const { level } = this;
+    const { map } = level;
+    const [tile] = block.tiles;
+    const { x, y } = tile;
+
+    const platform = [];
+
+    map[y].forEach((t) => {
+      if (tile.glyph === t.glyph && Math.abs(t.x - x) < 3) {
+        platform.push(t.object);
+      }
+    });
+
+    platform.forEach((block) => {
+      block.crumbling = true;
+      this.tween("effects.firstCrumble", block, {
+        onComplete: () => {
+          this.tween("effects.crumble", block, {
+            onComplete: () => {
+              block.disableBody(true, false);
+            },
+          });
+        },
+      });
+    });
   }
 
   setupAnimations() {
@@ -424,23 +535,38 @@ export default class PlayScene extends SuperScene {
     player.previousVelocityY = player.body.velocity.y;
   }
 
-  sunPosition(percent = this.percent) {
-    if (percent < 0 || percent > 1) {
-      return [0, 0];
-    }
+  sunPosition(percent = this.percent, backwards) {
+    const firstKey = backwards ? "bwFirstPoint" : "firstPoint";
+    const lastKey = backwards ? "bwLastPoint" : "lastPoint";
+    const splineKey = backwards ? "bwSpline" : "spline";
 
-    if (!this.spline) {
+    if (!this[splineKey]) {
       const points = [];
-      points.push(new Phaser.Math.Vector2(10, 600));
+      if (backwards) {
+        points.push(new Phaser.Math.Vector2(0, 750));
+      } else {
+        points.push(new Phaser.Math.Vector2(10, 600));
+      }
+
       points.push(new Phaser.Math.Vector2(100, 200));
       points.push(new Phaser.Math.Vector2(400, 10));
       points.push(new Phaser.Math.Vector2(700, 200));
-      points.push(new Phaser.Math.Vector2(790, 600));
-      this.spline = new Phaser.Curves.Spline(points);
+      points.push(new Phaser.Math.Vector2(800, 750));
+      this[firstKey] = points[0];
+      this[lastKey] = points[points.length - 1];
+      this[splineKey] = new Phaser.Curves.Spline(points);
     }
 
-    const { x, y } = this.spline.getPoint(percent);
-    return [x, y];
+    let p;
+    if (percent < 0) {
+      p = this[firstKey];
+    } else if (this.winning || percent > 1) {
+      p = this[lastKey];
+    } else {
+      p = this[splineKey].getPoint(percent);
+    }
+
+    return [p.x, p.y];
   }
 
   crispingSun() {
@@ -451,7 +577,10 @@ export default class PlayScene extends SuperScene {
 
     const sunrays = suns.map((sun) => {
       const { backwards } = sun;
-      const [sunX, sunY] = this.sunPosition(backwards ? 1 - percent : percent);
+      const [sunX, sunY] = this.sunPosition(
+        backwards ? 1 - percent : percent,
+        backwards
+      );
       const ray = new Phaser.Geom.Line(sunX, sunY, playerX, playerY);
       return [sun, ray, Phaser.Geom.Line.Length(ray)];
     });
@@ -481,36 +610,56 @@ export default class PlayScene extends SuperScene {
     return touchingSunrays;
   }
 
-  fixedUpdate(time, dt) {
+  moveShadowObjects() {
     const { level } = this;
-    this.processInput(time, dt);
-    this.processJumping(time, dt);
-
-    const rawTime = (this.t = (this.t || 0) + dt);
-    const speed = prop("sun.speed");
-    const t = (rawTime * speed) / 1000;
-    this.percent = t / 800;
 
     level.shadowObjects.forEach((s) => {
       const { occ } = s;
       occ.points = this.rotatedVecs(s);
     });
+  }
+
+  fixedUpdate(time, dt) {
+    const { level } = this;
+    const { player } = level;
+
+    const rawTime = (this.t = (this.t || 0) + dt);
+    const speed = this.level.sunSpeed;
+    const t = (rawTime * speed) / 1000;
+    this.percent = t / 800;
+
+    const invincible = prop("player.invincible");
+
+    this.processInput(time, dt);
+    this.processJumping(time, dt);
+    this.moveShadowObjects();
 
     const maxCrisp = 2000;
-    this.crispingSuns = this.crispingSun();
-    if (this.crispingSuns) {
-      this.crispTime = Math.min(maxCrisp, (this.crispTime || 0) + dt);
-    } else {
-      this.crispTime = Math.max(0, (this.crispTime || 0) - dt);
+
+    if (!this.playerDying) {
+      this.crispingSuns =
+        !this.winning && this.percent < 0.9 && this.crispingSun();
+      if (this.level.dualSun && this.percent < 0.1) {
+        this.crispingSuns = undefined;
+      }
+
+      if (this.crispingSuns) {
+        this.crispTime = Math.min(maxCrisp, (this.crispTime || 0) + dt);
+      } else {
+        this.crispTime = Math.max(0, (this.crispTime || 0) - dt);
+      }
+
+      this.crispPercent = this.crispTime / maxCrisp;
     }
-    this.crispPercent = this.crispTime / maxCrisp;
 
     let desiredTimeScale = 1;
     let desiredZoom = 1;
 
     this.minTrauma = 0;
     if (this.crispPercent >= 1) {
-      this.playerDie();
+      if (!invincible) {
+        this.playerDie(true);
+      }
     } else if (!this.playerDying && this.crispPercent >= 0.3) {
       if (this.crispPercent >= 0.6) {
         if (this.crispingSuns) {
@@ -521,6 +670,12 @@ export default class PlayScene extends SuperScene {
       } else {
         this.minTrauma = 0.1;
       }
+
+      if (invincible) {
+        this.minTrauma = 0;
+        desiredTimeScale = 1;
+        desiredZoom = 1;
+      }
       this.trauma(0);
     }
 
@@ -529,6 +684,16 @@ export default class PlayScene extends SuperScene {
       this.timeScale + (desiredTimeScale - this.timeScale) * factor;
     this.camera.zoom =
       this.camera.zoom + (desiredZoom - this.camera.zoom) * (factor * 1.5);
+
+    const grace = 200;
+    if (
+      player.x < -grace ||
+      player.x > grace + level.width ||
+      player.y < -grace ||
+      player.y > grace + level.height
+    ) {
+      this.playerDie(false);
+    }
   }
 
   unlightObject(obj) {
@@ -541,51 +706,59 @@ export default class PlayScene extends SuperScene {
     });
   }
 
-  playerDie() {
-    const { level } = this;
+  playerDie(crisped) {
+    const { level, save } = this;
     const { player } = level;
     if (this.playerDying) {
       return;
     }
+
+    save.deaths = (save.deaths || 0) + 1;
+    this.saveState();
+
     this.playerDying = true;
     this.unlightObject(player);
     this.shockwave(player.x, player.y);
     this.command.ignoreAll("dying", true);
     this.trauma(1);
-    this.particleSystem("effects.playerAsh", {
-      x: {
-        min: player.x - player.width * 0.4,
-        max: player.x + player.width * 0.4,
-      },
-      y: {
-        min: player.y - player.height * 0.4,
-        max: player.y + player.height * 0.4,
-      },
-      alpha: { start: 1, end: 0 },
-      scale: { start: 1, end: 1.5 },
-      speedY: {
-        min: 0.5 * prop("effects.playerAsh.speedY"),
-        max: prop("effects.playerAsh.speedY"),
-      },
-      speedX: {
-        min: -prop("effects.playerAsh.speedX"),
-        max: prop("effects.playerAsh.speedX"),
-      },
-      tint: [0xf6c456, 0xec5b55, 0xaaaaaa],
-      onAdd: (particles, emitter) => {
-        this.timer(() => {
-          emitter.stop();
-        }, prop("effects.playerDie.duration") * 2 /* + prop("level.replaceDelay") - prop("effects.playerAsh.lifespan") */);
-      },
-    });
-    this.tween("effects.playerDieHealthBar", player.healthBar.fill);
-    this.tween("effects.playerDieHealthBar", player.healthBar.border);
+
+    if (crisped) {
+      this.particleSystem("effects.playerAsh", {
+        x: {
+          min: player.x - player.width * 0.4,
+          max: player.x + player.width * 0.4,
+        },
+        y: {
+          min: player.y - player.height * 0.4,
+          max: player.y + player.height * 0.4,
+        },
+        alpha: { start: 1, end: 0 },
+        scale: { start: 1, end: 1.5 },
+        speedY: {
+          min: 0.5 * prop("effects.playerAsh.speedY"),
+          max: prop("effects.playerAsh.speedY"),
+        },
+        speedX: {
+          min: -prop("effects.playerAsh.speedX"),
+          max: prop("effects.playerAsh.speedX"),
+        },
+        tint: [0xf6c456, 0xec5b55, 0xaaaaaa],
+        onAdd: (particles, emitter) => {
+          this.timer(() => {
+            emitter.stop();
+          }, prop("effects.playerDie.duration") * 2 /* + prop("level.replaceDelay") - prop("effects.playerAsh.lifespan") */);
+        },
+      });
+      this.tween("effects.playerDieHealthBar", player.healthBar.fill);
+      this.tween("effects.playerDieHealthBar", player.healthBar.border);
+    }
+
     this.tween("effects.playerDie", player, {
       onComplete: () => {
         this.timer(() => {
           this.replaceWithSelf(
             true,
-            {},
+            { respawn: true },
             {
               animation: "crossFade",
               duration: 200,
@@ -603,6 +776,101 @@ export default class PlayScene extends SuperScene {
     const { player } = level;
     this.renderLights();
     this.updateHealthBarFor(player, this.crispPercent);
+  }
+
+  skipLevel() {
+    const { level } = this;
+    if (level.index === this.levelIds().length - 1) {
+      this.goToLevel(0);
+    } else {
+      this.goToLevel(level.index + 1);
+    }
+  }
+
+  prevLevel() {
+    const { level } = this;
+    if (level.index === 0) {
+      return;
+    }
+
+    this.goToLevel(level.index - 1);
+  }
+
+  goToLevel(id) {
+    this.replaceWithSelf(
+      true,
+      { respawn: false, levelIndex: id },
+      {
+        animation: "crossFade",
+        duration: 200,
+        delayNewSceneShader: true,
+        removeOldSceneShader: true,
+      }
+    );
+  }
+
+  wonLevel() {
+    const { level } = this;
+    const { player, groups } = level;
+    const { wall, ground, spinner, reverseSpinner } = groups;
+
+    if (this.winning) {
+      return;
+    }
+
+    this.winning = true;
+    this.command.ignoreAll("winning", true);
+
+    const dynamic = [player];
+    const images = [];
+
+    [spinner, reverseSpinner].forEach(({ objects }) => {
+      dynamic.push(...objects);
+    });
+
+    [wall, ground].forEach(({ objects }) => {
+      objects.forEach(({ tiles }) => {
+        images.push(...tiles.map(({ image }) => image));
+      });
+    });
+
+    dynamic.forEach((object) => {
+      object.disableBody(true, false);
+    });
+
+    [...dynamic, ...images].forEach((obj) => {
+      this.timer(
+        () => {
+          this.tween("effects.goodNight", obj, {
+            dy:
+              this.randBetween("goodnight", 0.5, 1) *
+              prop("effects.goodNight.dy"),
+          });
+        },
+        obj === player ? 3000 : this.randBetween("goodnight", 0, 1000)
+      );
+    });
+
+    this.save.level = level.index + 1;
+    this.saveState();
+
+    this.timer(() => {
+      this.speak(400, 300, level.bye, {
+        scrollFactor: 0,
+        onExit: () => {
+          this.replaceWithSelf(
+            true,
+            { respawn: false, levelIndex: level.index + 1 },
+            {
+              animation: "crossFade",
+              duration: 200,
+              delayNewSceneShader: true,
+              removeOldSceneShader: true,
+            }
+          );
+        },
+      });
+    }, 2000);
   }
 
   renderLights() {
@@ -626,8 +894,11 @@ export default class PlayScene extends SuperScene {
     ctx.clearRect(0, 0, lightWidth, lightHeight);
 
     suns.forEach((sun) => {
-      const { lamps, ambient, backwards } = sun;
-      const [x, y] = this.sunPosition(backwards ? 1 - percent : percent);
+      const { lamps, ambient, corona, bead, backwards } = sun;
+      const [x, y] = this.sunPosition(
+        backwards ? 1 - percent : percent,
+        backwards
+      );
 
       const pos = new Vec2(x - lightX, y - lightY);
       lamps.forEach((lamp) => {
@@ -646,6 +917,15 @@ export default class PlayScene extends SuperScene {
         b: 150,
       };
       let alpha = (0.3 + this.crispPercent * 0.5) / suns.length;
+      if (this.winning || this.percent > 1) {
+        const extra = this.winning ? 100 : this.percent - 1;
+        alpha = alpha - extra * prop("level.fadeOutFactor");
+
+        if (alpha <= 0) {
+          alpha = 0;
+          this.wonLevel();
+        }
+      }
 
       const tint = Phaser.Display.Color.Interpolate.ColorWithColor(
         safeColor,
@@ -656,6 +936,14 @@ export default class PlayScene extends SuperScene {
       const { r, g, b } = tint;
 
       ambient.color = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      if (this.winning) {
+        bead.color = `rgba(255, 255, 255, ${alpha})`;
+        if (backwards) {
+          corona.color = `rgba(0, 0, 255, ${alpha})`;
+        } else {
+          corona.color = `rgba(255, 0, 0, ${alpha})`;
+        }
+      }
     });
 
     suns.forEach(({ lightings }) => {
@@ -684,7 +972,12 @@ export default class PlayScene extends SuperScene {
   }
 
   textColor(options) {
-    return "rgb(255, 0, 0)";
+    if (this.level.lastLevel) {
+      return "#f6c456";
+      //return "rgb(255, 0, 255)";
+    } else {
+      return "rgb(255, 0, 0)";
+    }
   }
 
   strokeColor(options) {
@@ -757,7 +1050,8 @@ export default class PlayScene extends SuperScene {
 
     x += this.camera.scrollX;
     y += this.camera.scrollY;
-    this.shockwave(x, y);
+    this.level.player.x = x;
+    this.level.player.y = y;
   }
 
   _hotReloadCurrentLevel() {

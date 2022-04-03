@@ -4,11 +4,13 @@ import dot from "./dot.png";
 import hpbar from "./hpbar.png";
 import player from "./player.png";
 import test from "./test.png";
+import crumble from "./crumble.png";
 
 export const imageAssets = {
   dot,
   hpbar,
   test,
+  crumble,
 };
 
 export const spriteAssets = {
