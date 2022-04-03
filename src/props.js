@@ -200,7 +200,7 @@ export const propSpecs = {
   "effects.drawbridge.tween": [
     {
       duration: 1000,
-      ease: "Cubic.easeInOut",
+      ease: "Bounce.easeOut",
       rotation: -90,
     },
   ],

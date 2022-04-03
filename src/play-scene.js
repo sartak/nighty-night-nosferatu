@@ -328,7 +328,6 @@ export default class PlayScene extends SuperScene {
     this.hud = this.createHud();
     this.setupPhysics();
 
-    this.command.ignoreAll("spawn", true);
     this.command.ignoreAll("winning", false);
     this.command.ignoreAll("dying", false);
 
@@ -338,9 +337,11 @@ export default class PlayScene extends SuperScene {
   spawn() {
     const { level, save } = this;
 
+    // make absolutely sure :D
     this.timer(() => {
-      this.command.ignoreAll("spawn", false);
-    }, 500);
+      this.command.ignoreAll("winning", false);
+      this.command.ignoreAll("dying", false);
+    }, 300);
 
     if (level.lastLevel) {
       const wait = 500;
@@ -755,7 +756,7 @@ export default class PlayScene extends SuperScene {
     } else if (!this.playerDying && this.crispPercent >= 0.3) {
       if (this.crispPercent >= 0.6) {
         if (this.crispingSuns) {
-          desiredTimeScale = 3;
+          desiredTimeScale = 1.5;
           desiredZoom = 1.02;
         }
         this.minTrauma = 0.2;
@@ -904,7 +905,15 @@ export default class PlayScene extends SuperScene {
   wonLevel() {
     const { level } = this;
     const { player, groups } = level;
-    const { wall, ground, spinner, reverseSpinner } = groups;
+    const {
+      wall,
+      ground,
+      spinner,
+      reverseSpinner,
+      crumble,
+      drawbridge,
+      button,
+    } = groups;
 
     if (this.winning) {
       return;
@@ -916,9 +925,11 @@ export default class PlayScene extends SuperScene {
     const dynamic = [player];
     const images = [];
 
-    [spinner, reverseSpinner].forEach(({ objects }) => {
-      dynamic.push(...objects);
-    });
+    [spinner, reverseSpinner, crumble, drawbridge, button].forEach(
+      ({ objects }) => {
+        dynamic.push(...objects);
+      }
+    );
 
     [wall, ground].forEach(({ objects }) => {
       objects.forEach(({ tiles }) => {
