@@ -93,7 +93,7 @@ export default class PlayScene extends SuperScene {
 
     [[0, 0], [0, h], [w, h], [w, 0]].forEach(([x, y]) => {
       const { x: newX, y: newY } = Phaser.Math.RotateAround(
-        { x: x - w / 2, y: y - h / 2 },
+        { x: x - w * originX, y: y - h * originY },
         originX,
         originY,
         rotation
@@ -250,12 +250,22 @@ export default class PlayScene extends SuperScene {
           case "reverseSpinner":
             objects.forEach((obj) => {
               obj.setScale(5, 1);
+              obj.setImmovable();
               if (name === "reverseSpinner") {
                 obj.body.setAngularVelocity(-30);
+                // This 180 is misleading, it's radians
                 obj.rotation = 180;
               } else {
                 obj.body.setAngularVelocity(30);
               }
+            });
+            break;
+          case "drawbridge":
+            objects.forEach((obj) => {
+              obj.setScale(8, 1);
+              obj.setImmovable();
+              obj.setOrigin(1, 0.5);
+              obj.angle = prop("effects.drawbridge.rotation");
             });
             break;
           default:
@@ -378,7 +388,7 @@ export default class PlayScene extends SuperScene {
   setupPhysics() {
     const { level, physics } = this;
     const { player, groups } = level;
-    const { wall, ground, spinner, reverseSpinner, crumble } = groups;
+    const { wall, ground, spinner, reverseSpinner, crumble, button } = groups;
 
     physics.add.collider(player, wall.group);
     physics.add.collider(player, ground.group);
@@ -387,6 +397,9 @@ export default class PlayScene extends SuperScene {
     physics.add.collider(player, crumble.group, (...args) =>
       this.crumble(...args)
     );
+    physics.add.collider(player, button.group, (...args) =>
+      this.button(...args)
+    );
   }
 
   crumble(player, block) {
@@ -394,7 +407,7 @@ export default class PlayScene extends SuperScene {
       return;
     }
 
-    if (player.y > block.y) {
+    if (player.y + player.height * 0.9 >= block.y) {
       return;
     }
 
@@ -423,6 +436,39 @@ export default class PlayScene extends SuperScene {
         },
       });
     });
+  }
+
+  button(player, button) {
+    if (player.y + player.height * 0.9 >= button.y) {
+      return;
+    }
+
+    if (player.pressingButton) {
+      return;
+    }
+    player.pressingButton = true;
+
+    if (button.toggling) {
+      return;
+    }
+    button.toggling = true;
+
+    const [drawbridge] = this.level.groups.drawbridge.objects;
+    this.tween("effects.buttonPress", button, {
+      onComplete: () => {
+        button.toggling = false;
+      },
+    });
+
+    if (button.pressed) {
+      button.pressed = false;
+      this.tween("effects.drawbridge", drawbridge, {});
+    } else {
+      button.pressed = true;
+      this.tween("effects.drawbridge", drawbridge, {
+        rotation: 0,
+      });
+    }
   }
 
   setupAnimations() {
@@ -506,6 +552,9 @@ export default class PlayScene extends SuperScene {
     }
 
     const touchingDown = player.body.touching.down;
+    if (!touchingDown) {
+      player.pressingButton = false;
+    }
     if (player.isJumping && !player.hasLiftedOff && !touchingDown) {
       player.hasLiftedOff = true;
     }

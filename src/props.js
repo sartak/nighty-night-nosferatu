@@ -143,7 +143,9 @@ export const propSpecs = {
       duration: 200,
       ease: "Cubic.easeInOut",
       scaleX: 1.2,
+      dy: 3,
       scaleY: 0.9,
+      refreshPhysics: true,
       yoyo: true,
     },
   ],
@@ -151,7 +153,8 @@ export const propSpecs = {
     {
       duration: 800,
       ease: "Quad.easeOut",
-      dy: 5,
+      dy: 10,
+      refreshPhysics: true,
       alpha: 0,
     },
   ],
@@ -183,6 +186,22 @@ export const propSpecs = {
       duration: 200,
       dy: 100,
       alpha: 0,
+    },
+  ],
+  "effects.buttonPress.tween": [
+    {
+      duration: 500,
+      ease: "Cubic.easeInOut",
+      dy: 16,
+      refreshPhysics: true,
+      yoyo: true,
+    },
+  ],
+  "effects.drawbridge.tween": [
+    {
+      duration: 1000,
+      ease: "Cubic.easeInOut",
+      rotation: -90,
     },
   ],
   "effects.playerAsh.particles": [
@@ -251,6 +270,17 @@ export const tileDefinitions = {
     image: "crumble",
     group: "crumble",
     isStatic: true,
+  },
+  n: {
+    image: "button",
+    group: "button",
+    isStatic: true,
+  },
+  "=": {
+    image: "drawbridge",
+    group: "drawbridge",
+    shadow: true,
+    // isStatic: true,
   },
 };
 

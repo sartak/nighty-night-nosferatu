@@ -5,12 +5,16 @@ import hpbar from "./hpbar.png";
 import player from "./player.png";
 import test from "./test.png";
 import crumble from "./crumble.png";
+import button from "./button.png";
+import drawbridge from "./drawbridge.png";
 
 export const imageAssets = {
   dot,
   hpbar,
   test,
   crumble,
+  button,
+  drawbridge,
 };
 
 export const spriteAssets = {
