@@ -21,6 +21,17 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>%GAME_NAME%</title>
+    <script>
+      var ua = navigator.userAgent.toLowerCase();
+      if (ua.indexOf("safari") != -1) {
+        if (ua.indexOf("chrome") > -1) {
+        } else {
+          alert(
+            "Some features don't work consistently in Safari; for best results please use Chrome!"
+          );
+        }
+      }
+    </script>
   </head>
   <body class="ld-slate">
     <noscript>You need to enable JavaScript to run this app.</noscript>
