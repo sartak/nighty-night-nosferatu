@@ -314,7 +314,7 @@
   "id": "button1.5",
 "music": "c",
   "sunSpeed": 30,
-  "hi": "",
+  "hi": "This is like trying to ice skate uphill . . .",
   "bye": ""
 }
 
