@@ -1,3 +1,11 @@
+[![Nighty Night, Nosferatu](https://github.com/sartak/nighty-night-nosferatu/blob/master/src/assets/cover.png?raw=true)](https://nosferatu.shawn.dev/)
+
+[![Nighty Night, Nosferatu](https://github.com/sartak/nighty-night-nosferatu/blob/master/src/assets/gameplay.gif?raw=true)](https://nosferatu.shawn.dev/)
+
+# Play Live
+
+[https://nosferatu.shawn.dev/](https://nosferatu.shawn.dev/)
+
 # Development
 
 First install the dependencies with `npm install`.
