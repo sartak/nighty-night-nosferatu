@@ -207,7 +207,7 @@ export const propSpecs = {
   ],
   "effects.drawbridge.tween": [
     {
-      duration: 1000,
+      duration: 1500,
       ease: "Bounce.easeOut",
       rotation: -90,
     },
@@ -268,6 +268,7 @@ export const propSpecs = {
   ],
 };
 
+propSpecs["scene.musicVolume"][0] = 0.66;
 propSpecs["scene.camera.lerp"][0] = 0.005;
 propSpecs["scene.camera.deadzoneX"][0] = 200;
 propSpecs["scene.camera.deadzoneY"][0] = 200;

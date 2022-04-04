@@ -24,6 +24,7 @@
 
 {
   "id": "tutorial",
+"music": "a",
   "sunSpeed": 30,
   "hi": "The wretched dawn . . .",
   "bye": "The soothing embrace of night . . ."
@@ -55,6 +56,7 @@
 
 {
   "id": "blart",
+"music": "a",
   "sunSpeed": 19,
   "hi": "It passes so quickly . . .",
   "bye": "At best all I can do is . . ."
@@ -86,6 +88,7 @@
 
 {
   "id": "yerp",
+"music": "a",
   "sunSpeed": 50,
   "hi": "Delay the inevitable.",
   "bye": ""
@@ -117,6 +120,7 @@
 
 {
   "id": "yas",
+"music": "a",
   "sunSpeed": 50,
   "hi": "",
   "bye": ""
@@ -148,6 +152,7 @@
 
 {
   "id": "crumble",
+"music": "b",
   "sunSpeed": 30,
   "hi": "These weary stones offer no respite.",
   "bye": ""
@@ -179,6 +184,7 @@
 
 {
   "id": "missthespinner",
+"music": "b",
   "sunSpeed": 50,
   "hi": "",
   "bye": ""
@@ -210,6 +216,7 @@
 
 {
   "id": "crumble2",
+"music": "b",
   "sunSpeed": 30,
   "hi": "",
   "bye": "\"Inevitable\"? How foolish."
@@ -241,6 +248,7 @@
 
 {
   "id": "crumble3",
+"music": "b",
   "sunSpeed": 30,
   "hi": "",
   "bye": ""
@@ -272,6 +280,7 @@
 
 {
   "id": "button",
+"music": "c",
   "sunSpeed": 30,
   "hi": "A peculiar apparatus . . .",
   "bye": ""
@@ -303,6 +312,7 @@
 
 {
   "id": "button1.5",
+"music": "c",
   "sunSpeed": 30,
   "hi": "",
   "bye": ""
@@ -334,6 +344,7 @@
 
 {
   "id": "button2",
+"music": "c",
   "sunSpeed": 30,
   "hi": "",
   "bye": ""
@@ -365,6 +376,7 @@
 
 {
   "id": "dual",
+"music": "d",
   "sunSpeed": 30,
   "dualSun": true,
   "hi": "What is this fresh hell‽",
@@ -397,6 +409,7 @@
 
 {
   "id": "done",
+"music": "d",
   "sunSpeed": 80,
   "dualSun": true,
   "hi": "Thanks for playing.",

@@ -12,6 +12,19 @@ import drawbridgeAlt from "./drawbridgeAlt.png";
 import smoke from "./smoke.png";
 import bead from "./bead.png";
 import spinner from "./spinner.png";
+import a from "./a.mp3";
+import b from "./b.mp3";
+import c from "./c.mp3";
+import d from "./d.mp3";
+import explode from "./explode.wav";
+import jump1 from "./jump1.wav";
+import jump2 from "./jump2.wav";
+import jump3 from "./jump3.wav";
+import land from "./land.wav";
+import crisp from "./crisp.wav";
+import night from "./night.wav";
+import drawbridgeSound from "./drawbridge.wav";
+import breaking from "./break.wav";
 
 export const imageAssets = {
   dot,
@@ -39,6 +52,21 @@ export const spriteAssets = {
   },
 };
 
-export const musicAssets = {};
+export const musicAssets = {
+  a,
+  b,
+  c,
+  d,
+};
 
-export const soundAssets = {};
+export const soundAssets = {
+  explode,
+  jump1,
+  jump2,
+  jump3,
+  land,
+  crisp,
+  night,
+  breaking,
+  drawbridge: drawbridgeSound,
+};

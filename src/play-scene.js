@@ -534,6 +534,7 @@ export default class PlayScene extends SuperScene {
 
     block.crumbling = true;
     block.anims.play("crumbling");
+    this.playSound("breaking");
     this.tween("effects.firstCrumble", block, {
       onComplete: () => {
         this.tween("effects.crumble", block, {
@@ -562,6 +563,7 @@ export default class PlayScene extends SuperScene {
 
     const [drawbridge] = this.level.groups.drawbridge.objects;
     const alternate = drawbridge.alternate;
+    this.playSound("drawbridge");
 
     this.tween("effects.buttonPress", button, {
       onComplete: () => {
@@ -669,6 +671,7 @@ export default class PlayScene extends SuperScene {
         player.setVelocityY(
           player.body.velocity.y - prop("player.baseJumpVelocity")
         );
+        this.playSound("jump", 3);
       }
     }
 
@@ -775,6 +778,14 @@ export default class PlayScene extends SuperScene {
     if (player.isJumping && player.hasLiftedOff && touchingDown) {
       player.hasLiftedOff = false;
       player.isJumping = false;
+      this.playSound(
+        "land",
+        false,
+        Math.min(
+          0.8,
+          (1.5 * player.previousVelocityY) / prop("player.jumpTraumaDivisor")
+        )
+      );
       this.trauma(
         Math.min(
           prop("player.maxJumpTrauma"),
@@ -946,6 +957,13 @@ export default class PlayScene extends SuperScene {
 
       this.crispPercent = this.crispTime / maxCrisp;
       player.smoker.lightAsh.emitter.frequency = 100 * (1 - this.crispPercent);
+
+      if (this.crispingSuns) {
+        if (time > (this.lastCrisp || 0) + 100) {
+          this.playSound("crisp", false, Math.min(0.8, this.crispPercent));
+          this.lastCrisp = time;
+        }
+      }
     }
 
     let desiredTimeScale = 1;
@@ -1015,6 +1033,8 @@ export default class PlayScene extends SuperScene {
 
     save.deaths = (save.deaths || 0) + 1;
     this.saveState();
+
+    this.playSound("explode");
 
     this.playerDying = true;
     this.unlightObject(player);
@@ -1161,6 +1181,7 @@ export default class PlayScene extends SuperScene {
 
     this.winning = true;
     this.command.ignoreAll("winning", true);
+    this.playSound("night");
 
     const dynamic = [player];
     const images = [];
@@ -1351,8 +1372,7 @@ export default class PlayScene extends SuperScene {
   }
 
   musicName() {
-    // return this.level && this.level.music;
-    return undefined;
+    return this.level && this.level.music;
   }
 
   launchTimeSight() {
