@@ -15,6 +15,7 @@ export const commands = {
       "keyboard.Z",
       "keyboard.W",
       "keyboard.SPACE",
+      "gamepad.UP",
       "gamepad.A",
       "gamepad.B",
       "gamepad.X",
