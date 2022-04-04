@@ -475,7 +475,7 @@ export default class PlayScene extends SuperScene {
           label = "You perished only once!!";
           break;
         default:
-          label = `You delayed the inevitable, but perished ${deaths} times`;
+          label = `You delayed the inevitable, but perished ${deaths} times.`;
           break;
       }
 
