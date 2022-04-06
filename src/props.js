@@ -14,6 +14,8 @@ export const commands = {
       "keyboard.UP",
       "keyboard.Z",
       "keyboard.W",
+      "keyboard.COLON",
+      "keyboard.SEMICOLON",
       "keyboard.SPACE",
       "gamepad.UP",
       "gamepad.A",
