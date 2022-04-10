@@ -47,6 +47,11 @@ export const commands = {
     execute: "comet",
     unignorable: true,
   },
+  shadows: {
+    input: ["keyboard.C"],
+    execute: "cleanShadows",
+    unignorable: true,
+  },
 
   restart: {
     input: ["keyboard.R"],

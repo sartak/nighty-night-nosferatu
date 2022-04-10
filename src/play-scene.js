@@ -18,11 +18,12 @@ const {
 
 const Downsamples = [24, 12, 4, 1];
 let AmbientSamples = Downsamples.shift();
+let OldAmbient = AmbientSamples;
 
 const Downsample = (t) => {
-  if (Downsamples.length) {
+  if (AmbientSamples > 1 && Downsamples.length) {
     console.log("downsampling to ", Downsamples[0]);
-    AmbientSamples = Downsamples.shift();
+    AmbientSamples = OldAmbient = Downsamples.shift();
     t();
   }
 };
@@ -1444,6 +1445,17 @@ export default class PlayScene extends SuperScene {
         }
       )
       .then((scene) => {});
+  }
+
+  cleanShadows() {
+    if (AmbientSamples > 1) {
+      OldAmbient = AmbientSamples;
+      AmbientSamples = 1;
+    } else {
+      AmbientSamples = OldAmbient;
+    }
+
+    this.resampleSuns();
   }
 
   _hot() {}
