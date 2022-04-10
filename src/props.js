@@ -13,6 +13,7 @@ export const commands = {
     input: [
       "keyboard.UP",
       "keyboard.Z",
+      "keyboard.Y",
       "keyboard.W",
       "keyboard.COLON",
       "keyboard.SEMICOLON",
